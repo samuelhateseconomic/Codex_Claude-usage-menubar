@@ -15,8 +15,8 @@ A small macOS menu bar app that shows how much of your Claude plan limits you ha
 Requires macOS 13+ and the Xcode command line tools (`xcode-select --install`).
 
 ```bash
-git clone https://github.com/jiachengw-sf/claude-usage-bar.git
-cd claude-usage-bar
+git clone https://github.com/jiachengw-sf/claude-usage-menubar.git
+cd claude-usage-menubar
 ./build.sh
 open /Applications/ClaudeUsageBar.app
 ```
