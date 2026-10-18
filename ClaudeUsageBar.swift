@@ -232,6 +232,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, UNUser
     var timer: Timer?
     var resetTimer: Timer?
     var prunedThisLaunch = false
+    let accountsModel = AccountsModel()
+    let accountsWindow = AccountsWindowController()
     let reporter = SessionReporter()
     let defaults = UserDefaults.standard
 
@@ -282,7 +284,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, UNUser
             try? SMAppService.mainApp.register()
             defaults.set(true, forKey: "loginItemSetUp")
         }
+        accountsModel.signIn = { [weak self] in self?.signIn() }
+        accountsModel.remove = { [weak self] service in self?.removeAccount(service) }
+        accountsModel.rename = { [weak self] service in self?.renameAccount(service) }
+        accountsModel.close = { [weak self] in
+            self?.defaults.set(true, forKey: "welcomed")
+            self?.accountsWindow.close()
+        }
         refresh()
+        // First launch with no account of its own: show the welcome window with "Sign in with Claude".
+        if (!defaults.bool(forKey: "welcomed") && LoginStore.emails().isEmpty)
+            || CommandLine.arguments.contains("--accounts") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { self.showAccounts() }
+        }
         // Waking from sleep: refresh right away instead of showing hours-old numbers.
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 10) { self?.refresh() }
@@ -364,6 +378,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, UNUser
             var seen = Set<String>()
             accounts = results.filter { seen.insert($0.name).inserted }
             writeStatusLog()
+            syncAccountsModel()
             if !prunedThisLaunch {
                 prunedThisLaunch = true
                 let services = accounts.map(\.service)
@@ -492,7 +507,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, UNUser
         let withData = accounts.filter { tightest($0) != nil }
         if withData.isEmpty {
             b.image = nil
-            b.attributedTitle = NSAttributedString(string: globalError != nil || !accounts.isEmpty ? "Claude ⚠︎" : "Claude …")
+            b.attributedTitle = NSAttributedString(string: accounts.isEmpty && globalError == FetchError.noCredentials.description
+                ? "Claude: Sign In" : (globalError != nil || !accounts.isEmpty ? "Claude ⚠︎" : "Claude …"))
             return
         }
         // One account, both limits: "P ▬ 80% · 33%" (session · week).
@@ -636,6 +652,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, UNUser
 
         // Accounts: rename, sign in/out.
         let acctMenu = NSMenu()
+        acctMenu.addItem(withTarget(NSMenuItem(title: "Manage Accounts…", action: #selector(showAccounts), keyEquivalent: ",")))
+        acctMenu.addItem(.separator())
         for a in accounts {
             let sub = NSMenu()
             let rename = withTarget(NSMenuItem(title: "Rename…", action: #selector(rename(_:)), keyEquivalent: ""))
@@ -720,7 +738,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, UNUser
     func withTarget(_ mi: NSMenuItem) -> NSMenuItem { mi.target = self; return mi }
 
     @objc func rename(_ sender: NSMenuItem) {
-        guard let service = sender.representedObject as? String else { return }
+        if let service = sender.representedObject as? String { renameAccount(service) }
+    }
+
+    func renameAccount(_ service: String) {
         let alert = NSAlert()
         alert.messageText = "Short name for this account"
         alert.informativeText = accounts.first { $0.service == service }?.name ?? ""
@@ -735,7 +756,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, UNUser
         let v = field.stringValue.trimmingCharacters(in: .whitespaces)
         if v.isEmpty { defaults.removeObject(forKey: "nick:\(service)") }
         else { defaults.set(v, forKey: "nick:\(service)") }
-        updateButton(); rebuildMenu()
+        updateButton(); rebuildMenu(); syncAccountsModel()
     }
 
     @objc func openClaudeApp() {
@@ -754,16 +775,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, UNUser
         let flow = SignInFlow { [weak self] result in
             guard let self else { return }
             self.signInFlow = nil
+            self.accountsModel.signingIn = false
             switch result {
             case .success(let login):
+                self.accountsModel.lastError = nil
                 self.adoptSettings(fromClaudeCodeLoginOf: login.email)
                 self.notifyPlain("Signed in", "\(login.email) will stay signed in and show live usage.")
             case .failure(let e):
+                self.accountsModel.lastError = "Sign-in failed: \(e)"
                 self.globalError = "Sign-in failed: \(e)"
             }
             self.refresh()
         }
         signInFlow = flow
+        accountsModel.signingIn = true
+        accountsModel.lastError = nil
         flow.start()
         rebuildMenu()
     }
@@ -781,9 +807,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, UNUser
     }
 
     @objc func signOut(_ sender: NSMenuItem) {
-        guard let service = sender.representedObject as? String, service.hasPrefix("app:") else { return }
+        if let service = sender.representedObject as? String { removeAccount(service) }
+    }
+
+    func removeAccount(_ service: String) {
+        guard service.hasPrefix("app:") else { return }
         LoginStore.remove(String(service.dropFirst(4)))
         refresh()
+    }
+
+    @objc func showAccounts() {
+        syncAccountsModel()
+        accountsWindow.show(model: accountsModel)
+    }
+
+    func syncAccountsModel() {
+        accountsModel.rows = accounts.map { a in
+            let session = a.windows.first { $0.key == "five_hour" }
+            let week = a.windows.first { $0.key == "seven_day" }
+            var summary = [session.map { "\(Int($0.remaining.rounded()))% session" },
+                           week.map { "\(Int($0.remaining.rounded()))% week" }].compactMap { $0 }.joined(separator: " · ")
+            if !a.ownLogin { summary += summary.isEmpty ? "Using Claude Code's login" : " · via Claude Code" }
+            return AccountsModel.Row(id: a.service, email: a.name, label: shortLabel(a), ownLogin: a.ownLogin,
+                                     summary: a.error ?? summary, hasError: a.error != nil)
+        }
     }
 
     func notifyPlain(_ title: String, _ body: String) {
