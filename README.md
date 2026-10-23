@@ -72,3 +72,7 @@ open /Applications/ClaudeUsageBar.app
 - **Your data** stays on your Mac: reports in `~/Library/Application Support/ClaudeUsageBar/Reports`, a status log in `~/Library/Logs/ClaudeUsageBar.log`. Anything older than 4 weeks is deleted automatically.
 
 "API-equivalent cost" figures in reports use public list prices for comparison only. On a subscription you aren't charged per token.
+
+## Windows companion: Codex + Claude
+
+The [Windows Usage Tray](windows/README.md) shows remaining Codex and Claude subscription limits in the Windows system tray. It reuses your existing CLI sign-ins and includes a Windows executable build script. The original macOS app above is unchanged.

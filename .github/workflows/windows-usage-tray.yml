@@ -1,0 +1,33 @@
+name: Build Windows Usage Tray
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'windows/**'
+      - '.github/workflows/windows-usage-tray.yml'
+  pull_request:
+    paths:
+      - 'windows/**'
+      - '.github/workflows/windows-usage-tray.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test and build executable
+        shell: powershell
+        run: ./windows/build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UsageTray-Windows
+          path: windows/dist/UsageTray.exe
+          if-no-files-found: error
