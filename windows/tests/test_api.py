@@ -26,7 +26,7 @@ from usage_runtime import PollingRuntime,AlreadyRunning
 from usage_core import Snapshot,Window,UsageError
 from usage_config import load_settings,settings_data,save_settings
 from usage_index import UsageIndex
-from usage_index_db import IndexBusy,transaction
+from usage_index_db import IndexBusy,IndexUnavailable,transaction
 
 
 class ApiFixture(IndexFixture):
@@ -75,6 +75,84 @@ class FrozenQueryGates(ApiFixture):
             self.assertEqual(sum(int(event['tokens']['total_tokens']) for event in events['data']['items']),int(row['summary']['tokens']['total_tokens']))
             self.assertTrue(all(event['occurred_at'].endswith('Z') for event in events['data']['items']))
         self.assertEqual(sum(int(row['summary']['tokens']['total_tokens']) for row in response['data']['days']),2905000)
+
+    def test_cached_core_results_validate_publication_freshness_filters_and_read_failures(self):
+        first=self.overview();params=self.frozen(first)
+        # Reusing typed results must not cache mutable DTOs, skip snapshot reads,
+        # or hide stale source state without a usage-revision change.
+        first['data']['summary']['tokens']['total_tokens']='999'
+        self.assertEqual(self.overview(params)['data']['summary']['tokens']['total_tokens'],'200')
+        selected=self.overview({'base_query_context_id':[first['query_context_id']],'model':['absent']})
+        self.assertEqual(selected['data']['summary']['value']['state'],'empty')
+        with self.store.connection() as connection,transaction(connection,True):
+            connection.execute("UPDATE datasets SET freshness='stale',code='interrupted' WHERE id=?",(self.store.dataset_id,))
+        stale=self.overview(params)
+        self.assertEqual(stale['usage_revision'],first['usage_revision'])
+        self.assertEqual(stale['data']['freshness'],'stale')
+        self.assertEqual(next(r for r in stale['data']['coverage'] if r['provider']=='codex')['state'],'stale')
+        with patch.object(self.store,'read_snapshot',side_effect=IndexUnavailable('controlled read failure')):
+            with self.assertRaises(IndexUnavailable):self.overview(params)
+        self.write(events=[counter(300,30)]);self.store.import_settings()
+        self.error(409,lambda:self.overview(params))
+        self.assertEqual(self.overview()['data']['summary']['tokens']['total_tokens'],'300')
+        # A fee-only publication invalidates old contexts without changing facts.
+        before=self.overview();self.change_settings(codex_fee='21')
+        self.store.reprice();self.error(409,lambda:self.overview(self.frozen(before)))
+        current=self.overview()
+        self.assertEqual(current['usage_revision'],before['usage_revision'])
+        self.assertEqual(current['data']['summary'],before['data']['summary'])
+        self.assertEqual(Decimal(next(r for r in current['data']['comparisons'] if r['provider']=='codex')['fee_usd']),Decimal('21'))
+
+    def test_owner_reader_detects_external_commits_and_never_hides_read_failure(self):
+        from usage_index_db import IndexRecoveryError
+        cached=QueryService(self.store,clock=lambda:NOW,cache_snapshot=True)
+        try:
+            first=cached.read('/overview',{})
+            params=self.frozen(first)
+            # Both snapshot AND result reuse must invalidate after an external
+            # commit, even if direct SQL neglected publication version updates.
+            with self.store.connection() as connection,transaction(connection,True):
+                row=connection.execute('SELECT id,payload FROM events LIMIT 1').fetchone()
+                altered=json.loads(row['payload']);altered['record']['effort']='changed'
+                connection.execute('UPDATE events SET payload=? WHERE id=?',(json.dumps(altered),row['id']))
+            changed=cached.read('/overview',params)
+            self.assertEqual({r['effort'] for r in changed['data']['models']},{'changed','high'})
+            with self.store.connection() as connection,transaction(connection,True):
+                connection.execute("UPDATE datasets SET freshness='stale',code='interrupted' WHERE id=?",(self.store.dataset_id,))
+            changed=cached.read('/overview',params)
+            self.assertEqual(changed['data']['freshness'],'stale')
+            # External SQL changes invalidate the owner snapshot even if the
+            # caller failed to advance publication versions. Corruption fails.
+            with self.store.connection() as connection,transaction(connection,True):
+                row=connection.execute('SELECT id,payload FROM events LIMIT 1').fetchone()
+                damaged=json.loads(row['payload']);damaged['event_anchor']='damaged'
+                connection.execute('UPDATE events SET payload=? WHERE id=?',(json.dumps(damaged),row['id']))
+            with self.assertRaises(IndexRecoveryError):cached.read('/overview',params)
+            self.assertIsNone(cached.reader.connection)
+            # Recovery has to read storage again, not resurrect the cached view.
+            with self.store.connection() as connection,transaction(connection,True):
+                connection.execute('UPDATE events SET payload=? WHERE id=?',(row['payload'],row['id']))
+            self.assertEqual(cached.read('/overview',params)['data']['summary']['tokens']['total_tokens'],'200')
+            original=self.path.with_name('preserved.sqlite3')
+            cached.close()
+            self.path.rename(original)
+            with self.assertRaises(OSError):cached.read('/overview',params)
+            original.rename(self.path)
+        finally:cached.close()
+        self.assertIsNone(cached.reader.connection)
+
+    def test_self_omitting_facets_preserve_all_other_active_filters(self):
+        self.write('other.jsonl',[counter(50,10)],session='other',model='other-model',project='C:/other')
+        self.store.import_settings()
+        one=self.overview({'model':['fixture-model'],'effort':['high']})
+        facets=self.query.read('/usage/facets',self.frozen(one))['data']
+        self.assertEqual({r['value']:r['record_count'] for r in facets['models']},{'fixture-model':2,'other-model':1})
+        self.assertEqual({r['value']:r['record_count'] for r in facets['efforts']},{'high':2})
+        self.assertEqual(sum(r['record_count'] for r in facets['projects']),2)
+        none=self.overview({'model':['fixture-model'],'effort':['absent']})
+        facets=self.query.read('/usage/facets',self.frozen(none))['data']
+        self.assertEqual({r['value']:r['record_count'] for r in facets['models']},{'fixture-model':0})
+        self.assertEqual({r['value']:r['record_count'] for r in facets['efforts']},{'absent':0,'high':2})
 
     def test_clock_advance_keeps_range_context_across_facets_pages_and_detail(self):
         first=self.overview();params=self.frozen(first)

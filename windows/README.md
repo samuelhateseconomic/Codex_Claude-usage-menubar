@@ -232,3 +232,14 @@ The optional headless local index is documented in [S11](../docs/s11-local-index
 
 
 The explicit production local API is documented in [S12](../docs/s12-local-api.md), with [OpenAPI](../docs/api/usage-hub-v1.openapi.json), [response schema](../docs/api/usage-hub-v1.schema.json) and [synthetic examples](../docs/api/usage-hub-v1.fixtures.json). Run `windows/usage_api_main.py` with the project interpreter; it uses the recoverable index and does not poll providers unless `--live-limits` is explicit. `--open` opens the authenticated developer status page at `/service`. `usage_tray.py --dashboard` is the real dashboard launcher. `usage_api_main.py --tray` can host offline local usage; add `--live-limits` only to enable provider checks.
+
+
+### Packaged hub release checks
+
+Version 0.13.0 retains explicit dashboard launch and terminal access. Use the [S14 release record](../docs/s14-hub-release.md) for executable migration/restart/authentication checks, fixture-specific performance measurements and native/distribution qualifications. After building, from this `windows` folder:
+
+```powershell
+.\.venv\Scripts\python.exe tests/packaged_hub_release.py --exe dist/UsageTray.exe --measurements build/hub-release-measurements.json
+```
+
+This check uses owned synthetic roots and offline real-mode data, not your account histories or provider login. It preserves old publications across interrupted imports, tests restore to new paths and verifies terminal fallback when an optional index cannot open. It does not click the native tray or certify a physically disconnected clean machine. Close/reopen browser tabs independently; use the tray's **Quit** action to stop the owner. Quit and relaunch after updating the executable or changing the owner's offline/live profile. Explicit/API tray launches now honor your saved report format as the ordinary tray does.

@@ -256,10 +256,11 @@ def _group_key(dimension, detail, timezone):
     # display session label (including a weak source surrogate) cannot merge it.
     if dimension == "conversation":
         return (r.provider, detail.conversation_id)
+    if dimension == "day":
+        return (local_datetime(r.timestamp, timezone).date().isoformat(),)
     return {"provider": (r.provider,), "model_effort": (r.provider, r.model, r.effort),
             "effort": (r.provider, r.effort), "model": (r.provider, r.model),
-            "project": (r.provider, r.project),
-            "day": (local_datetime(r.timestamp, timezone).date().isoformat(),)}[dimension]
+            "project": (r.provider, r.project)}[dimension]
 
 
 def build_usage_result(entries, context, catalog=None, fees=None, sources=(), notices=(),

@@ -39,8 +39,16 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged dashboard smoke failed." }
           ./windows/.venv/Scripts/python.exe windows/tests/packaged_local_hub_smoke.py --exe windows/dist/UsageTray.exe
           if ($LASTEXITCODE -ne 0) { throw "Packaged local hub smoke failed." }
+          ./windows/.venv/Scripts/python.exe windows/tests/packaged_hub_release.py --exe windows/dist/UsageTray.exe --measurements windows/build/hub-release-measurements.json
+          if ($LASTEXITCODE -ne 0) { throw "Packaged hub release acceptance failed." }
       - uses: actions/upload-artifact@v4
         with:
           name: UsageTray-Windows-Python-${{ matrix.python }}
           path: windows/dist/UsageTray.exe
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UsageHub-release-measurements-Python-${{ matrix.python }}
+          path: windows/build/hub-release-measurements.json
           if-no-files-found: error

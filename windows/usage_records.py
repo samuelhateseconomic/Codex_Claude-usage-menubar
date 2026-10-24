@@ -1,7 +1,7 @@
 """Shared usage facts, independent of pricing, source parsing, and presentation."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -17,7 +17,11 @@ class Tokens:
         return self.input + self.output + self.cached + self.write5m + self.write1h
 
     def __add__(self, other):
-        return Tokens(*(a + b for a, b in zip(asdict(self).values(), asdict(other).values())))
+        # Five integer categories; deep-copying dataclass dictionaries here
+        # dominated repeated summaries in the measured 4,000-event query.
+        return Tokens(self.input + other.input, self.output + other.output,
+                      self.cached + other.cached, self.write5m + other.write5m,
+                      self.write1h + other.write1h)
 
 
 @dataclass(frozen=True)

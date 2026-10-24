@@ -38,7 +38,7 @@ class HubOwner:
         try:
             self.index=UsageIndex(self.index_path,config_path=self.config_path)
             self.jobs=JobController(self.index)
-            self.service=ApiService(self.index,self.jobs,self.runtime)
+            self.service=ApiService(self.index,self.jobs,self.runtime,cache_snapshot=True)
             self.server=create_server(self.service,self.port)
             self.thread=threading.Thread(target=self.server.serve_forever,name='usage-api-http',daemon=True);self.thread.start()
             payload={'origin':self.origin,'control':self.server.sessions.control,'configuration_key':self.configuration_key}
@@ -83,6 +83,7 @@ class HubOwner:
         if self.jobs is not None:
             try:self.service.limits.flush()
             except Exception:pass
+            if getattr(self,'service',None) is not None:self.service.queries.close()
         if self.owner is not None:
             try:
                 data=json.loads(self.discovery.read_text(encoding='utf-8'))

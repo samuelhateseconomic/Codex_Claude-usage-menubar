@@ -10,10 +10,10 @@ from usage_config import load_settings,SettingsError
 
 class ApiService:
     contract_version=CONTRACT_VERSION
-    def __init__(self,index,jobs,runtime,*,clock=time.time):
+    def __init__(self,index,jobs,runtime,*,clock=time.time,cache_snapshot=False):
         if index.mode!='real':raise ValueError('Production v1 accepts only the explicit real index; use the separate labeled demo preview.')
         self.index,self.jobs,self.runtime,self.clock=index,jobs,runtime,clock
-        self.queries=QueryService(index,clock=clock)
+        self.queries=QueryService(index,clock=clock,cache_snapshot=cache_snapshot)
         self.limits=LimitCache(index,runtime,clock=clock)
         self.jobs.idle_hook=self.limits.flush
 

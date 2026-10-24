@@ -14,7 +14,7 @@ def _notice(message):
 
 def run_host(*, config_path=None, index_path=None, port=8765, open_browser=False,
              tray=False, live_limits=False, selected='both', status_page=False,
-             report_format='text', owner_path=None):
+             report_format=None, owner_path=None):
     """Run one owner, or hand an explicit launch to the existing owner.
 
     Hosting/provider choices apply to a new owner only. Reuse never silently
@@ -47,7 +47,10 @@ def run_host(*, config_path=None, index_path=None, port=8765, open_browser=False
             _notice('Browser could not be opened. The local service remains running.')
         _notice('Usage Hub local API: ' + owner.origin + ' (authenticated; open explicitly from the application)')
         if tray:
+            from usage_config import load_settings
             from usage_tray import run_tray
+            if report_format is None:
+                report_format = load_settings(owner.config_path).report_format
             providers = tuple(p for p in ('Codex', 'Claude') if selected in ('both', p.lower()))
             run_tray(selected=selected, report_format=report_format,
                      shared_runtime=owner.runtime,

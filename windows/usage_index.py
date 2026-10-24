@@ -4,7 +4,7 @@ The existing reconciliation, valuation and summary services remain authoritative
 Writers publish a complete tuple in one transaction; readers use one WAL snapshot.
 """
 from dataclasses import dataclass, replace
-from contextlib import closing
+from contextlib import closing, nullcontext
 from datetime import datetime, timezone
 import hashlib
 import ntpath
@@ -422,9 +422,9 @@ class UsageIndex:
         self._fault(fault, 'before_commit')
         return revision
 
-    def read_snapshot(self, max_events=100000, max_bytes=64 * 1024 * 1024):
+    def read_snapshot(self, max_events=100000, max_bytes=64 * 1024 * 1024, *, _connection=None):
         """One consistent publication read, offline; never scans, polls or reprices."""
-        with self.connection(True) as connection, transaction(connection):
+        with (self.connection(True) if _connection is None else nullcontext(_connection)) as connection, transaction(connection):
             dataset = self._dataset(connection)
             if not dataset['ready']:
                 raise IndexUnavailable('No committed usage publication; import explicitly first.')

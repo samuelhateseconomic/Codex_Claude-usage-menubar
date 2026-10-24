@@ -36,12 +36,90 @@ class FrozenQuery:
         return {key:list(value) if isinstance(value,tuple) else value.casefold() if key=='q' else value for key,value in self.filters}
 
 
+class CommittedReader:
+    """One owner-controlled read connection and bounded immutable publication.
+
+    SQLite data_version is meaningful across reads of the SAME connection. Every
+    external commit (including jobs, failures and manual SQL) invalidates reuse.
+    Never compare data_version across newly opened connections or use file mtime
+    as publication identity. The lock owns all use of the shared connection.
+    """
+    def __init__(self,index):
+        self.index=index
+        self.lock=threading.RLock()
+        self.connection=None
+        self.identity=self.version=self.snapshot=None
+        self.generation=0
+
+    def close(self):
+        with self.lock:
+            if self.connection is not None:self.connection.close()
+            self.connection=None
+            self.identity=self.version=self.snapshot=None
+
+    def read(self):
+        from usage_index_db import connect
+        with self.lock:
+            try:
+                info=self.index.path.stat()
+                identity=(info.st_dev,info.st_ino)
+                if identity!=self.identity:self.close()
+                if self.connection is None:
+                    self.connection=connect(self.index.path,True,check_same_thread=False)
+                    self.identity=identity
+                version=self.connection.execute('PRAGMA data_version').fetchone()[0]
+                if self.snapshot is not None and version==self.version:return self.snapshot,self.generation
+                # No read transaction is held across requests. The snapshot's
+                # transaction follows this version read; a racing commit can
+                # only force another decode next time, never mask that commit.
+                self.snapshot=None
+                snapshot=self.index.read_snapshot(_connection=self.connection)
+                self.generation+=1
+                if len(snapshot.events)<=10000:
+                    self.snapshot=snapshot
+                    self.version=version
+                return snapshot,self.generation
+            except BaseException:
+                self.close()
+                raise
+
+
 class QueryService:
-    def __init__(self, index, *, clock=time.time, monotonic=time.monotonic, secret=None):
+    def __init__(self, index, *, clock=time.time, monotonic=time.monotonic, secret=None, cache_snapshot=False):
         self.index, self.clock, self.monotonic = index, clock, monotonic
         self.secret = secret or secrets.token_bytes(32)
         self.contexts = OrderedDict()
         self.lock = threading.RLock()
+        self.result_lock = threading.RLock()
+        self.results = OrderedDict()
+        self.result_publication = None
+        self.reader = CommittedReader(index) if cache_snapshot else None
+
+    def close(self):
+        if self.reader is not None:self.reader.close()
+        with self.result_lock:
+            self.results.clear()
+            self.result_publication=None
+
+    def _result(self, snapshot, context, snapshot_token=None):
+        # Validate the current SQLite publication and resolve the frozen
+        # context before reaching here. Never serve a cache as a read fallback.
+        # Reuse only immutable core summaries, not mutable wire responses.
+        publication = (snapshot.versions, snapshot.freshness, snapshot.sources, snapshot_token)
+        with self.result_lock:
+            if publication != self.result_publication:
+                self.results.clear()
+                self.result_publication = publication
+            result = self.results.get(context)
+            if result is None:
+                result = snapshot.query(context).result
+                if len(result.details) <= 20000:
+                    self.results[context] = result
+                    while len(self.results) > 8 or sum(len(r.details) for r in self.results.values()) > 20000:
+                        self.results.popitem(last=False)
+            else:
+                self.results.move_to_end(context)
+            return result
 
     def _normalize(self, params, snapshot, base=None):
         if params.keys()-ALLOWED: raise invalid()
@@ -212,13 +290,16 @@ class QueryService:
         paginated=path in ('/usage/conversations','/usage/projects') or path.endswith('/events')
         if 'cursor' in params and not paginated: raise invalid('cursor')
         if params.get('sort')==['events'] and not path.endswith('/events'): raise invalid('sort')
-        snapshot=self.index.read_snapshot()
+        if self.reader is None:
+            snapshot,snapshot_token=self.index.read_snapshot(),None
+        else:
+            snapshot,snapshot_token=self.reader.read()
         frozen=self.resolve(params,snapshot)
         context=self.context(snapshot,frozen)
-        result=snapshot.query(context).result
-        conversations=self._groups(result,snapshot,'conversations')
-        projects=self._groups(result,snapshot,'projects')
+        result=self._result(snapshot,context,snapshot_token)
         if path=='/overview':
+            conversations=self._groups(result,snapshot,'conversations')
+            projects=self._groups(result,snapshot,'projects')
             coverage=[{'provider':s.provider.lower(),'state':s.state,'ingestion_issues':s.issue_counts,
                        'accounting_issues':dict(Counter(i.code for i in s.accounting_issues))} for s in result.sources]
             model_rows=[{'provider':g.key[0].lower(),'model':g.key[1],'effort':g.key[2],'summary':summary(g.summary)} for g in result.groups_for('model_effort','value_desc')]
@@ -231,12 +312,14 @@ class QueryService:
                   'recent_conversations':[self.row_dto(row) for row in sorted(conversations,key=lambda r:self.sort_key(r,'last_activity_desc'))[:10]]}
             kind='overview'
         elif path in ('/usage/conversations','/usage/projects'):
-            rows,pagination=self.page(conversations if path.endswith('conversations') else projects,params,frozen,path)
+            rows,pagination=self.page(self._groups(result,snapshot,'conversations' if path.endswith('conversations') else 'projects'),params,frozen,path)
             data={'summary':summary(result.total),'items':[self.row_dto(row) for row in rows],'pagination':pagination};kind='list'
         elif path=='/usage/facets':
             data={}
             for field,dimension in (('project_id','projects'),('model','models'),('effort','efforts')):
-                facet=snapshot.query(self.context(snapshot,frozen,changes={field:()})).result
+                # Self-omission only changes a query with an active filter.
+                # Reuse this request's immutable authoritative result otherwise.
+                facet=self._result(snapshot,self.context(snapshot,frozen,changes={field:()}),snapshot_token) if dict(frozen.filters)[field] else result
                 membership=dict(snapshot.event_project_ids)
                 buckets=defaultdict(set)
                 for detail in facet.details:
@@ -250,7 +333,7 @@ class QueryService:
         elif path.startswith('/conversations/'):
             parts=path.split('/');conversation=parts[2]
             if len(parts)>4 or (len(parts)==4 and parts[3]!='events'): raise ApiError(404,'not_found','Unknown API route.')
-            scoped=snapshot.query(self.context(snapshot,frozen,conversation=conversation)).result
+            scoped=self._result(snapshot,self.context(snapshot,frozen,conversation=conversation),snapshot_token)
             all_ids=dict(snapshot.conversation_ids)
             lifetime=[event for event in snapshot.events if all_ids[event.event_id]==conversation]
             label=next(row[-1] for row in snapshot.conversations if row[0]==conversation)

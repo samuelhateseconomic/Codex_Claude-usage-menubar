@@ -22,6 +22,7 @@ from usage_index_db import IndexUnavailable
 from usage_runtime import AlreadyRunning
 from usage_core import Snapshot, Window
 from usage_config import load_settings, save_settings
+from test_index import counter
 
 
 class ProductionAssets(HttpFixture):
@@ -189,6 +190,51 @@ class NativeLaunch(ApiFixture):
             release.set();worker.join(timeout=6);owner.close()
         with HubOwner(config_path=self.config,index_path=self.path,owner_path=owner_path,port=0) as restarted:
             self.assertTrue(restarted.owner.stream)
+
+    def test_clean_quit_cancels_before_publication_and_retains_owner_until_job_stops(self):
+        self.write(events=[counter(300,30)])
+        owner_path=self.base/'job-quit.lock'
+        owner=HubOwner(config_path=self.config,index_path=self.path,owner_path=owner_path,port=0)
+        owner.start(start_jobs=False)
+        entered,release=threading.Event(),threading.Event()
+        def before_commit(fault,stage):
+            if stage=='before_commit':
+                entered.set()
+                if not release.wait(8):raise AssertionError('Controlled publication was not released.')
+            if fault is not None:fault(stage)
+        try:
+            job,_=owner.jobs.submit()
+            with patch.object(owner.index,'_fault',side_effect=before_commit):
+                owner.jobs.start()
+                self.assertTrue(entered.wait(5))
+                self.assertEqual(owner.service.read('/overview',{})['data']['summary']['tokens']['total_tokens'],'200')
+                self.assertFalse(owner.close(timeout=.05))
+                contender=HubOwner(config_path=self.config,index_path=self.path,owner_path=owner_path,port=0)
+                with self.assertRaises(AlreadyRunning):contender.start(start_jobs=False)
+                release.set()
+                self.assertTrue(owner.close(timeout=5))
+            self.assertEqual(owner.jobs.get(job['id'])['code'],'interrupted')
+            self.assertEqual(owner.jobs.get(job['id'])['status'],'failed')
+        finally:
+            release.set();owner.close()
+        restarted=HubOwner(config_path=self.config,index_path=self.path,owner_path=owner_path,port=0)
+        try:
+            restarted.start(start_jobs=False)
+            self.assertEqual(restarted.service.read('/overview',{})['data']['summary']['tokens']['total_tokens'],'200')
+            self.assertEqual(restarted.service.read('/overview',{})['data']['freshness'],'stale')
+            restarted.jobs.start()
+            deadline=time.monotonic()+6
+            while restarted.jobs.active() and time.monotonic()<deadline:time.sleep(.025)
+            self.assertEqual(restarted.service.read('/overview',{})['data']['summary']['tokens']['total_tokens'],'300')
+        finally:restarted.close()
+
+    def test_explicit_tray_host_honors_saved_report_preference(self):
+        from usage_config import effective_settings
+        save_settings(effective_settings(load_settings(self.config),report_format='html'),self.config)
+        with patch.object(tray,'run_tray') as run:
+            self.assertEqual(launch.run_host(config_path=self.config,index_path=self.path,
+                owner_path=self.base/'preference.lock',port=0,tray=True),0)
+        self.assertEqual(run.call_args.kwargs['report_format'],'html')
 
     def test_live_tray_and_http_share_one_selected_provider_scheduler(self):
         calls = []

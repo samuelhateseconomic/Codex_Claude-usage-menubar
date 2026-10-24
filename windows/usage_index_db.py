@@ -88,9 +88,9 @@ def reject_link(path):
         if path.is_symlink() or getattr(info, 'st_file_attributes', 0) & getattr(stat, 'FILE_ATTRIBUTE_REPARSE_POINT', 1024):
             raise IndexRecoveryError('Linked index or backup paths are unsupported; choose an application-owned local path.')
 
-def connect(path, readonly=False):
+def connect(path, readonly=False, *, check_same_thread=True):
     connection = sqlite3.connect(Path(path).resolve().as_uri() + ('?mode=ro' if readonly else '?mode=rw'),
-                                 uri=True, timeout=BUSY_MS / 1000, isolation_level=None)
+                                 uri=True, timeout=BUSY_MS / 1000, isolation_level=None, check_same_thread=check_same_thread)
     try:
         connection.row_factory = sqlite3.Row
         connection.execute('PRAGMA foreign_keys=ON')
