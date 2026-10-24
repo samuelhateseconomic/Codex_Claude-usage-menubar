@@ -1,0 +1,3112 @@
+{
+  "candidate_version": "frontend-preparation-1",
+  "purpose": "Synthetic candidate responses, not implemented API output",
+  "cases": [
+    {
+      "name": "overview-complete",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "20000",
+            "output_tokens": "1850000",
+            "cache_read_tokens": "1030000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2905000"
+          },
+          "conversation_count": 2,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "complete",
+            "amount_usd": "18.891000000000",
+            "priced_record_count": 2,
+            "unpriced_record_count": 0,
+            "priced_tokens": "2905000",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "1260000",
+            "known_record_count": 1,
+            "unknown_record_count": 1
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "days": [
+          {
+            "day": "2026-10-23",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "20000",
+                "output_tokens": "1850000",
+                "cache_read_tokens": "1030000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2905000"
+              },
+              "conversation_count": 2,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.891000000000",
+                "priced_record_count": 2,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2905000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "models": [
+          {
+            "model": "fixture-codex-model",
+            "effort": "high",
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "model": "fixture-claude-model",
+            "effort": "high",
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "projects": [
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "conversation-page-1",
+      "kind": "conversations",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "20000",
+            "output_tokens": "1850000",
+            "cache_read_tokens": "1030000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2905000"
+          },
+          "conversation_count": 2,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "complete",
+            "amount_usd": "18.891000000000",
+            "priced_record_count": 2,
+            "unpriced_record_count": 0,
+            "priced_tokens": "2905000",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "1260000",
+            "known_record_count": 1,
+            "unknown_record_count": 1
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "items": [
+          {
+            "conversation_id": "fixture-conversation-codex",
+            "provider": "codex",
+            "provider_conversation_id": "fixture-provider-codex",
+            "display_label": "Same visible label",
+            "projects": [
+              {
+                "project_id": "fixture-project",
+                "display_path": "C:/synthetic/usage-project"
+              }
+            ],
+            "models": [
+              "fixture-codex-model"
+            ],
+            "efforts": [
+              "high"
+            ],
+            "last_activity_at": "2026-10-23T12:00:00Z",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "page": {
+          "next_cursor": "opaque:next/+?=cursor",
+          "page_size": 1
+        }
+      }
+    },
+    {
+      "name": "conversation-page-2",
+      "kind": "conversations",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "20000",
+            "output_tokens": "1850000",
+            "cache_read_tokens": "1030000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2905000"
+          },
+          "conversation_count": 2,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "complete",
+            "amount_usd": "18.891000000000",
+            "priced_record_count": 2,
+            "unpriced_record_count": 0,
+            "priced_tokens": "2905000",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "1260000",
+            "known_record_count": 1,
+            "unknown_record_count": 1
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "items": [
+          {
+            "conversation_id": "fixture-conversation-claude",
+            "provider": "claude",
+            "provider_conversation_id": "fixture-provider-claude",
+            "display_label": "Same visible label",
+            "projects": [
+              {
+                "project_id": "fixture-project",
+                "display_path": "C:/synthetic/usage-project"
+              }
+            ],
+            "models": [
+              "fixture-claude-model"
+            ],
+            "efforts": [
+              "high"
+            ],
+            "last_activity_at": "2026-10-23T13:00:00Z",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "page": {
+          "next_cursor": null,
+          "page_size": 1
+        }
+      }
+    },
+    {
+      "name": "detail",
+      "kind": "detail",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "conversation": {
+          "conversation_id": "fixture-conversation-codex",
+          "provider": "codex",
+          "provider_conversation_id": "fixture-provider-codex",
+          "display_label": "Same visible label",
+          "projects": [
+            {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            }
+          ],
+          "models": [
+            "fixture-codex-model"
+          ],
+          "efforts": [
+            "high"
+          ],
+          "last_activity_at": "2026-10-23T12:00:00Z",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000"
+            },
+            "conversation_count": 1,
+            "project_count": 1,
+            "unknown_project_record_count": 0,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_record_count": 1,
+              "unpriced_record_count": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0"
+            },
+            "reasoning": {
+              "known_tokens": "1260000",
+              "known_record_count": 1,
+              "unknown_record_count": 0
+            },
+            "plan_comparison": {
+              "state": "unavailable",
+              "reason": "period_not_month_to_date",
+              "fee_usd": null,
+              "difference_usd": null,
+              "qualifications": []
+            }
+          }
+        },
+        "lifetime": {
+          "first_activity_at": "2026-09-01T12:00:00Z",
+          "last_activity_at": "2026-10-23T12:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "events",
+      "kind": "events",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "conversation_id": "fixture-conversation-codex",
+        "items": [
+          {
+            "event_id": "fixture-event-codex",
+            "conversation_id": "fixture-conversation-codex",
+            "provider": "codex",
+            "occurred_at": "2026-10-23T12:00:00Z",
+            "model": "fixture-codex-model",
+            "effort": "high",
+            "effort_source": "fixture explicit metadata",
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000"
+            },
+            "reasoning_tokens": "1260000",
+            "valuation": {
+              "state": "priced",
+              "amount_usd": "18.420000000000",
+              "rate_id": "fixture-rate-codex",
+              "tier": "standard",
+              "assumptions": [],
+              "pricing_version": "fixture-prices-1"
+            },
+            "issue_codes": []
+          }
+        ],
+        "page": {
+          "next_cursor": null,
+          "page_size": 1
+        }
+      }
+    },
+    {
+      "name": "facets",
+      "kind": "facets",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "projects": [
+          {
+            "id": "fixture-project",
+            "label": "C:/synthetic/usage-project",
+            "count": 2,
+            "selected": false
+          }
+        ],
+        "models": [
+          {
+            "id": "fixture-codex-model",
+            "label": "fixture-codex-model",
+            "count": 1,
+            "selected": false
+          },
+          {
+            "id": "fixture-claude-model",
+            "label": "fixture-claude-model",
+            "count": 1,
+            "selected": false
+          }
+        ],
+        "efforts": [
+          {
+            "id": "high",
+            "label": "high",
+            "count": 2,
+            "selected": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "overview-empty",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "0",
+            "output_tokens": "0",
+            "cache_read_tokens": "0",
+            "cache_write_5m_tokens": "0",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "0"
+          },
+          "conversation_count": 0,
+          "project_count": 0,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "empty",
+            "amount_usd": null,
+            "priced_record_count": 0,
+            "unpriced_record_count": 0,
+            "priced_tokens": "0",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "0",
+            "known_record_count": 0,
+            "unknown_record_count": 0
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "days": [],
+        "models": [],
+        "projects": []
+      }
+    },
+    {
+      "name": "overview-partial",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "20100",
+            "output_tokens": "1850000",
+            "cache_read_tokens": "1030000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2905100"
+          },
+          "conversation_count": 3,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "partial",
+            "amount_usd": "18.891000000000",
+            "priced_record_count": 2,
+            "unpriced_record_count": 1,
+            "priced_tokens": "2905000",
+            "unpriced_tokens": "100"
+          },
+          "reasoning": {
+            "known_tokens": "1260000",
+            "known_record_count": 1,
+            "unknown_record_count": 2
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "days": [],
+        "models": [],
+        "projects": []
+      }
+    },
+    {
+      "name": "overview-unpriced",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "100",
+            "output_tokens": "0",
+            "cache_read_tokens": "0",
+            "cache_write_5m_tokens": "0",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "100"
+          },
+          "conversation_count": 1,
+          "project_count": 0,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "unpriced",
+            "amount_usd": null,
+            "priced_record_count": 0,
+            "unpriced_record_count": 1,
+            "priced_tokens": "0",
+            "unpriced_tokens": "100"
+          },
+          "reasoning": {
+            "known_tokens": "0",
+            "known_record_count": 0,
+            "unknown_record_count": 1
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "days": [],
+        "models": [],
+        "projects": []
+      }
+    },
+    {
+      "name": "overview-zero",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "20000",
+            "output_tokens": "1850000",
+            "cache_read_tokens": "1030000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2905000"
+          },
+          "conversation_count": 2,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "complete",
+            "amount_usd": "0.000000000000",
+            "priced_record_count": 2,
+            "unpriced_record_count": 0,
+            "priced_tokens": "2905000",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "1260000",
+            "known_record_count": 1,
+            "unknown_record_count": 1
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "days": [],
+        "models": [],
+        "projects": []
+      }
+    },
+    {
+      "name": "overview-stale",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "local",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "stale",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 1,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [
+            "read_failed"
+          ],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "failed",
+              "issue_codes": [
+                "read_failed"
+              ]
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "20000",
+            "output_tokens": "1850000",
+            "cache_read_tokens": "1030000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2905000"
+          },
+          "conversation_count": 2,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "complete",
+            "amount_usd": "18.891000000000",
+            "priced_record_count": 2,
+            "unpriced_record_count": 0,
+            "priced_tokens": "2905000",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "1260000",
+            "known_record_count": 1,
+            "unknown_record_count": 1
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "days": [
+          {
+            "day": "2026-10-23",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "20000",
+                "output_tokens": "1850000",
+                "cache_read_tokens": "1030000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2905000"
+              },
+              "conversation_count": 2,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.891000000000",
+                "priced_record_count": 2,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2905000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "models": [
+          {
+            "model": "fixture-codex-model",
+            "effort": "high",
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "model": "fixture-claude-model",
+            "effort": "high",
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "projects": [
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "overview-failed-retained",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "local",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "failed",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 1,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [
+            "read_failed"
+          ],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "failed",
+              "issue_codes": [
+                "read_failed"
+              ]
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "20000",
+            "output_tokens": "1850000",
+            "cache_read_tokens": "1030000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2905000"
+          },
+          "conversation_count": 2,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "complete",
+            "amount_usd": "18.891000000000",
+            "priced_record_count": 2,
+            "unpriced_record_count": 0,
+            "priced_tokens": "2905000",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "1260000",
+            "known_record_count": 1,
+            "unknown_record_count": 1
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "days": [
+          {
+            "day": "2026-10-23",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "20000",
+                "output_tokens": "1850000",
+                "cache_read_tokens": "1030000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2905000"
+              },
+              "conversation_count": 2,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.891000000000",
+                "priced_record_count": 2,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2905000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "models": [
+          {
+            "model": "fixture-codex-model",
+            "effort": "high",
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "model": "fixture-claude-model",
+            "effort": "high",
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "projects": [
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "overview-large",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "0",
+            "output_tokens": "9223372036854775807",
+            "cache_read_tokens": "0",
+            "cache_write_5m_tokens": "0",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "9223372036854775807"
+          },
+          "conversation_count": 2,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "complete",
+            "amount_usd": "999999999999999999999999.999999999999",
+            "priced_record_count": 2,
+            "unpriced_record_count": 0,
+            "priced_tokens": "9223372036854775807",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "1260000",
+            "known_record_count": 1,
+            "unknown_record_count": 1
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "days": [],
+        "models": [],
+        "projects": []
+      }
+    },
+    {
+      "name": "overview-unknown-fee",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "20000",
+            "output_tokens": "1850000",
+            "cache_read_tokens": "1030000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2905000"
+          },
+          "conversation_count": 2,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "complete",
+            "amount_usd": "18.891000000000",
+            "priced_record_count": 2,
+            "unpriced_record_count": 0,
+            "priced_tokens": "2905000",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "1260000",
+            "known_record_count": 1,
+            "unknown_record_count": 1
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "fee_unavailable",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": [
+              "Not an actual bill"
+            ]
+          }
+        },
+        "days": [
+          {
+            "day": "2026-10-23",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "20000",
+                "output_tokens": "1850000",
+                "cache_read_tokens": "1030000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2905000"
+              },
+              "conversation_count": 2,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.891000000000",
+                "priced_record_count": 2,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2905000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "models": [
+          {
+            "model": "fixture-codex-model",
+            "effort": "high",
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "model": "fixture-claude-model",
+            "effort": "high",
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "projects": [
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "overview-zero-fee",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "20000",
+            "output_tokens": "1850000",
+            "cache_read_tokens": "1030000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2905000"
+          },
+          "conversation_count": 2,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "complete",
+            "amount_usd": "18.891000000000",
+            "priced_record_count": 2,
+            "unpriced_record_count": 0,
+            "priced_tokens": "2905000",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "1260000",
+            "known_record_count": 1,
+            "unknown_record_count": 1
+          },
+          "plan_comparison": {
+            "state": "available",
+            "reason": null,
+            "fee_usd": "0.00",
+            "difference_usd": "18.891000000000",
+            "qualifications": [
+              "Not an actual bill"
+            ]
+          }
+        },
+        "days": [
+          {
+            "day": "2026-10-23",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "20000",
+                "output_tokens": "1850000",
+                "cache_read_tokens": "1030000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2905000"
+              },
+              "conversation_count": 2,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.891000000000",
+                "priced_record_count": 2,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2905000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "models": [
+          {
+            "model": "fixture-codex-model",
+            "effort": "high",
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "model": "fixture-claude-model",
+            "effort": "high",
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "projects": [
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "overview-known-zero-reasoning",
+      "kind": "overview",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "summary": {
+          "tokens": {
+            "uncached_input_tokens": "20000",
+            "output_tokens": "1850000",
+            "cache_read_tokens": "1030000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2905000"
+          },
+          "conversation_count": 2,
+          "project_count": 1,
+          "unknown_project_record_count": 0,
+          "value": {
+            "state": "complete",
+            "amount_usd": "18.891000000000",
+            "priced_record_count": 2,
+            "unpriced_record_count": 0,
+            "priced_tokens": "2905000",
+            "unpriced_tokens": "0"
+          },
+          "reasoning": {
+            "known_tokens": "0",
+            "known_record_count": 2,
+            "unknown_record_count": 0
+          },
+          "plan_comparison": {
+            "state": "unavailable",
+            "reason": "period_not_month_to_date",
+            "fee_usd": null,
+            "difference_usd": null,
+            "qualifications": []
+          }
+        },
+        "days": [
+          {
+            "day": "2026-10-23",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "20000",
+                "output_tokens": "1850000",
+                "cache_read_tokens": "1030000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2905000"
+              },
+              "conversation_count": 2,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.891000000000",
+                "priced_record_count": 2,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2905000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "models": [
+          {
+            "model": "fixture-codex-model",
+            "effort": "high",
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "model": "fixture-claude-model",
+            "effort": "high",
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ],
+        "projects": [
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "codex",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "1830000",
+                "cache_read_tokens": "1000000",
+                "cache_write_5m_tokens": "0",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "2840000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "18.420000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "2840000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "1260000",
+                "known_record_count": 1,
+                "unknown_record_count": 0
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          },
+          {
+            "project": {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            "provider": "claude",
+            "summary": {
+              "tokens": {
+                "uncached_input_tokens": "10000",
+                "output_tokens": "20000",
+                "cache_read_tokens": "30000",
+                "cache_write_5m_tokens": "5000",
+                "cache_write_1h_tokens": "0",
+                "total_tokens": "65000"
+              },
+              "conversation_count": 1,
+              "project_count": 1,
+              "unknown_project_record_count": 0,
+              "value": {
+                "state": "complete",
+                "amount_usd": "0.471000000000",
+                "priced_record_count": 1,
+                "unpriced_record_count": 0,
+                "priced_tokens": "65000",
+                "unpriced_tokens": "0"
+              },
+              "reasoning": {
+                "known_tokens": "0",
+                "known_record_count": 0,
+                "unknown_record_count": 1
+              },
+              "plan_comparison": {
+                "state": "unavailable",
+                "reason": "period_not_month_to_date",
+                "fee_usd": null,
+                "difference_usd": null,
+                "qualifications": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "multi-project-detail",
+      "kind": "detail",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "query_context_id": "fixture-context-1",
+        "usage_revision": "fixture-revision-1",
+        "pricing_version": "fixture-prices-1",
+        "configuration_version": "fixture-config-1",
+        "range": {
+          "preset": "month",
+          "start_at": "2026-10-01T07:00:00Z",
+          "end_at": "2026-10-23T14:00:00Z",
+          "timezone": "America/Los_Angeles"
+        },
+        "applied_filters": {
+          "providers": [
+            "codex",
+            "claude"
+          ],
+          "project_ids": [],
+          "models": [],
+          "efforts": [],
+          "search": "",
+          "selected_day": null
+        },
+        "coverage": {
+          "scope": "local_logs",
+          "account_scope": "all_local_accounts_unmatched",
+          "index_status": "ready",
+          "last_successful_scan_at": "2026-10-23T13:59:00Z",
+          "missing_root_count": 0,
+          "unreadable_file_count": 0,
+          "skipped_interval_count": 0,
+          "skipped_tokens": null,
+          "issue_codes": [],
+          "providers": [
+            {
+              "provider": "codex",
+              "source_status": "complete",
+              "issue_codes": []
+            },
+            {
+              "provider": "claude",
+              "source_status": "complete",
+              "issue_codes": []
+            }
+          ]
+        },
+        "conversation": {
+          "conversation_id": "fixture-conversation-codex",
+          "provider": "codex",
+          "provider_conversation_id": "fixture-provider-codex",
+          "display_label": "Same visible label",
+          "projects": [
+            {
+              "project_id": "fixture-project",
+              "display_path": "C:/synthetic/usage-project"
+            },
+            {
+              "project_id": "different/project?=",
+              "display_path": "C:/synthetic/second"
+            }
+          ],
+          "models": [
+            "fixture-codex-model"
+          ],
+          "efforts": [
+            "high"
+          ],
+          "last_activity_at": "2026-10-23T12:00:00Z",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000"
+            },
+            "conversation_count": 1,
+            "project_count": 2,
+            "unknown_project_record_count": 0,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_record_count": 1,
+              "unpriced_record_count": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0"
+            },
+            "reasoning": {
+              "known_tokens": "1260000",
+              "known_record_count": 1,
+              "unknown_record_count": 0
+            },
+            "plan_comparison": {
+              "state": "unavailable",
+              "reason": "period_not_month_to_date",
+              "fee_usd": null,
+              "difference_usd": null,
+              "qualifications": []
+            }
+          }
+        },
+        "lifetime": {
+          "first_activity_at": "2026-09-01T12:00:00Z",
+          "last_activity_at": "2026-10-23T12:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "status-initial-failure",
+      "kind": "status",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "build_version": "fixture-build",
+        "usage_revision": null,
+        "pricing_version": null,
+        "configuration_version": "fixture-config-1",
+        "index_status": "failed",
+        "active_job_ids": []
+      }
+    },
+    {
+      "name": "job-queued",
+      "kind": "job_response",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "job": {
+          "job_id": "fixture-job",
+          "kind": "index",
+          "state": "queued",
+          "started_at": null,
+          "completed_at": null,
+          "phase": null,
+          "completed_count": 0,
+          "total_count": 2,
+          "issue_code": null,
+          "usage_revision": null,
+          "pricing_version": null,
+          "configuration_version": "fixture-config-1"
+        }
+      }
+    },
+    {
+      "name": "job-running",
+      "kind": "job_response",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "job": {
+          "job_id": "fixture-job",
+          "kind": "index",
+          "state": "running",
+          "started_at": "2026-10-23T13:00:00Z",
+          "completed_at": null,
+          "phase": "import",
+          "completed_count": 1,
+          "total_count": 2,
+          "issue_code": null,
+          "usage_revision": null,
+          "pricing_version": null,
+          "configuration_version": "fixture-config-1"
+        }
+      }
+    },
+    {
+      "name": "job-succeeded",
+      "kind": "job_response",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "job": {
+          "job_id": "fixture-job",
+          "kind": "index",
+          "state": "succeeded",
+          "started_at": "2026-10-23T13:00:00Z",
+          "completed_at": "2026-10-23T14:00:00Z",
+          "phase": "import",
+          "completed_count": 1,
+          "total_count": 2,
+          "issue_code": null,
+          "usage_revision": "fixture-revision-1",
+          "pricing_version": "fixture-prices-1",
+          "configuration_version": "fixture-config-1"
+        }
+      }
+    },
+    {
+      "name": "job-failed",
+      "kind": "job_response",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "job": {
+          "job_id": "fixture-job",
+          "kind": "index",
+          "state": "failed",
+          "started_at": "2026-10-23T13:00:00Z",
+          "completed_at": "2026-10-23T14:00:00Z",
+          "phase": "import",
+          "completed_count": 1,
+          "total_count": 2,
+          "issue_code": "read_failed",
+          "usage_revision": null,
+          "pricing_version": null,
+          "configuration_version": "fixture-config-1"
+        }
+      }
+    },
+    {
+      "name": "job-superseded",
+      "kind": "job_response",
+      "response": {
+        "contract_version": "1.0",
+        "dataset_id": "fixture-demo-local",
+        "mode": "demo",
+        "generated_at": "2026-10-23T14:00:00Z",
+        "request_id": "fixture-request-1",
+        "job": {
+          "job_id": "fixture-job",
+          "kind": "index",
+          "state": "superseded",
+          "started_at": "2026-10-23T13:00:00Z",
+          "completed_at": "2026-10-23T14:00:00Z",
+          "phase": "import",
+          "completed_count": 1,
+          "total_count": 2,
+          "issue_code": null,
+          "usage_revision": null,
+          "pricing_version": null,
+          "configuration_version": "fixture-config-1"
+        }
+      }
+    },
+    {
+      "name": "error-revision_changed",
+      "kind": "error",
+      "http_status": 409,
+      "response": {
+        "request_id": "fixture-error",
+        "error": {
+          "code": "revision_changed",
+          "message": "Safe synthetic operation message",
+          "field_errors": [],
+          "retry_at": null
+        }
+      }
+    },
+    {
+      "name": "error-context_expired",
+      "kind": "error",
+      "http_status": 409,
+      "response": {
+        "request_id": "fixture-error",
+        "error": {
+          "code": "context_expired",
+          "message": "Safe synthetic operation message",
+          "field_errors": [],
+          "retry_at": null
+        }
+      }
+    },
+    {
+      "name": "error-invalid_input",
+      "kind": "error",
+      "http_status": 422,
+      "response": {
+        "request_id": "fixture-error",
+        "error": {
+          "code": "invalid_input",
+          "message": "Safe synthetic operation message",
+          "field_errors": [
+            {
+              "field": "q",
+              "code": "too_long"
+            }
+          ],
+          "retry_at": null
+        }
+      }
+    },
+    {
+      "name": "error-cooldown",
+      "kind": "error",
+      "http_status": 429,
+      "response": {
+        "request_id": "fixture-error",
+        "error": {
+          "code": "cooldown",
+          "message": "Safe synthetic operation message",
+          "field_errors": [],
+          "retry_at": "2026-10-23T14:05:00Z"
+        }
+      }
+    },
+    {
+      "name": "error-unauthorized",
+      "kind": "error",
+      "http_status": 401,
+      "response": {
+        "request_id": "fixture-error",
+        "error": {
+          "code": "unauthorized",
+          "message": "Safe synthetic operation message",
+          "field_errors": [],
+          "retry_at": null
+        }
+      }
+    },
+    {
+      "name": "error-not_found",
+      "kind": "error",
+      "http_status": 404,
+      "response": {
+        "request_id": "fixture-error",
+        "error": {
+          "code": "not_found",
+          "message": "Safe synthetic operation message",
+          "field_errors": [],
+          "retry_at": null
+        }
+      }
+    }
+  ]
+}
