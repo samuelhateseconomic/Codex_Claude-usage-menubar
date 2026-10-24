@@ -1,6 +1,6 @@
 # Usage Hub local database handoff
 
-Prepared October 24, 2026, America/Los_Angeles, against `446e2e0`. Status: **mapping preparation complete; physical schema and database integration not implemented**. This handoff supplements the [integration contract](usage-hub-integration-plan.md), which owns data semantics; the [refinement plan](project-refinement-plan.md) owns dependencies.
+Prepared October 24, 2026, America/Los_Angeles, against `446e2e0`. Historical status at preparation: **mapping complete; physical schema not implemented**. Current implementation and gate evidence belong to [S11](s11-local-index.md) and the refinement ledger; the mapping below is retained as the original handoff, not current implementation status. This handoff supplements the [integration contract](usage-hub-integration-plan.md), which owns data semantics; the [refinement plan](project-refinement-plan.md) owns dependencies.
 
 ## 1. Discovery and local-first decision
 

@@ -178,6 +178,38 @@ def parsed_entries(data, path, issues, conservative=False):
         yield index, entry
 
 
+def observations_from_prefix(provider, path, data, generation):
+    """Extract one verified prefix; raw bytes are never returned or retained."""
+    if provider not in ("Codex", "Claude"):
+        raise ValueError("Unsupported observation provider")
+    path = Path(path)
+    issues = []
+    entries = parsed_entries(data, path, issues, conservative=True)
+    if provider == "Codex":
+        extracted = extract_codex(entries, str(path.resolve()), generation)
+    else:
+        extracted = extract_claude(entries, str(path.resolve()), path.parent.name, generation)
+    for observation in extracted:
+        for code in sorted(set(observation.issues)):
+            issues.append(ScanIssue(code, "Usage metadata is unavailable or invalid (" + code + ").", _id(path), observation.source.line))
+        cumulative = observation.cumulative
+        has_cumulative = cumulative.state == "invalid" or any(
+            c.state != "missing" for c in (cumulative.input, cumulative.output, cumulative.cached))
+        counters = (observation.message_usage if provider == "Claude" else
+                    cumulative if has_cumulative else observation.last_usage)
+        core = (counters.input, counters.output, counters.cached)
+        if provider == "Claude":
+            detailed = counters.cache_details_state == "valid" and any(
+                c.state != "missing" for c in (counters.write5m, counters.write1h))
+            core += (counters.write5m, counters.write1h) if detailed else (counters.legacy_write,)
+            if counters.cache_details_state == "invalid":
+                issues.append(ScanIssue("invalid_cache_metadata", "Claude cache-write details are invalid; their amount is unknown.", _id(path), observation.source.line))
+        for state, code in (("missing", "missing_counter_metadata"), ("invalid", "invalid_counter_metadata")):
+            if any(counter.state == state for counter in core):
+                issues.append(ScanIssue(code, "Required token counter metadata is " + state + "; excluded amounts stay unknown.", _id(path), observation.source.line))
+    return tuple(extracted), tuple(issues)
+
+
 def scan_observations(provider, roots):
     if provider not in ("Codex", "Claude"):
         raise ValueError("Unsupported observation provider")
@@ -189,28 +221,7 @@ def scan_observations(provider, roots):
         if data is None:
             continue
         files_read += 1
-        entries = parsed_entries(data, path, issues, conservative=True)
-        if provider == "Codex":
-            extracted = extract_codex(entries, str(path.resolve()), generation)
-        else:
-            extracted = extract_claude(entries, str(path.resolve()), path.parent.name, generation)
+        extracted, extracted_issues = observations_from_prefix(provider, path, data, generation)
         observations.extend(extracted)
-        for observation in extracted:
-            for code in sorted(set(observation.issues)):
-                issues.append(ScanIssue(code, "Usage metadata is unavailable or invalid (" + code + ").", _id(path), observation.source.line))
-            cumulative = observation.cumulative
-            has_cumulative = cumulative.state == "invalid" or any(
-                c.state != "missing" for c in (cumulative.input, cumulative.output, cumulative.cached))
-            counters = (observation.message_usage if provider == "Claude" else
-                        cumulative if has_cumulative else observation.last_usage)
-            core = (counters.input, counters.output, counters.cached)
-            if provider == "Claude":
-                detailed = counters.cache_details_state == "valid" and any(
-                    c.state != "missing" for c in (counters.write5m, counters.write1h))
-                core += (counters.write5m, counters.write1h) if detailed else (counters.legacy_write,)
-                if counters.cache_details_state == "invalid":
-                    issues.append(ScanIssue("invalid_cache_metadata", "Claude cache-write details are invalid; their amount is unknown.", _id(path), observation.source.line))
-            for state, code in (("missing", "missing_counter_metadata"), ("invalid", "invalid_counter_metadata")):
-                if any(counter.state == state for counter in core):
-                    issues.append(ScanIssue(code, "Required token counter metadata is " + state + "; excluded amounts stay unknown.", _id(path), observation.source.line))
+        issues.extend(extracted_issues)
     return ScanResult(tuple(observations), tuple(issues), roots_read, len(paths), files_read)

@@ -2,12 +2,14 @@
 
 This module owns selection, ordering, group membership and summary arithmetic.
 Renderers format UsageResult; they never infer accounting from display labels.
-No database revision, API pagination or retained stale dataset is implied.
+Database publication and API pagination belong to their adapters. Direct scans
+do not imply retained history. Indexed queries may supply committed valuations
+and known-project identities without creating another accounting policy.
 """
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 import hashlib
 import json
@@ -232,9 +234,12 @@ def summarize_values(values, conversation_ids=None):
                         len({r.project for r in records}))
 
 
-def _summarize_details(details):
+def _summarize_details(details, project_ids=None):
     details = tuple(details)
-    return summarize_values((d.valuation for d in details), (d.conversation_id for d in details))
+    summary = summarize_values((d.valuation for d in details), (d.conversation_id for d in details))
+    if project_ids is not None:
+        summary = replace(summary, project_count=len({project_ids[d.detail_id] for d in details if project_ids[d.detail_id] is not None}))
+    return summary
 
 
 def _conversation_id(entry):
@@ -255,11 +260,15 @@ def _group_key(dimension, detail, timezone):
             "day": (local_datetime(r.timestamp, timezone).date().isoformat(),)}[dimension]
 
 
-def build_usage_result(entries, context, catalog=None, fees=None, sources=(), notices=(), calendar_compatible=True):
+def build_usage_result(entries, context, catalog=None, fees=None, sources=(), notices=(),
+                       calendar_compatible=True, valuations=None, project_ids=None):
     """Pure query over accepted events (or explicit legacy Record projections).
 
     Reconciliation precedes this seam. Duplicate canonical IDs are rejected;
-    repeated legacy records remain separate compatibility occurrences.
+    repeated legacy records remain separate compatibility occurrences. Optional
+    persisted valuations are validated against facts/catalog. An optional complete
+    canonical-event project map counts normalized known identities; null is unknown.
+    Legacy callers retain their exact-label project-count behavior.
     """
     catalog = build_catalog() if catalog is None else catalog
     ranges = dict(context.ranges)
@@ -288,9 +297,20 @@ def build_usage_result(entries, context, catalog=None, fees=None, sources=(), no
         occurrence = occurrences[identity]
         occurrences[identity] += 1
         detail_id = identity if isinstance(entry, CanonicalEvent) else identity + ":" + str(occurrence)
-        value = value_event(entry, catalog)
+        if valuations is None:
+            value = value_event(entry, catalog)
+        else:
+            value = valuations.get(identity)
+            record = entry.record if isinstance(entry, CanonicalEvent) else entry
+            if (not isinstance(value, EventValuation) or value.record != record
+                    or value.event_id != identity or value.pricing_version != catalog.version):
+                raise ValueError("Persisted valuations must cover the matching event and pricing version.")
         details.append(UsageDetail(detail_id, _conversation_id(entry), entry if isinstance(entry, CanonicalEvent) else None,
                                    value, summarize_values((value,), (_conversation_id(entry),))))
+        if project_ids is not None:
+            if identity not in project_ids or (project_ids[identity] is not None and not isinstance(project_ids[identity], str)):
+                raise ValueError("Indexed queries require explicit known or unknown project identities.")
+            details[-1] = replace(details[-1], summary=replace(details[-1].summary, project_count=int(project_ids[identity] is not None)))
     groups = []
     for dimension in DIMENSIONS:
         buckets = defaultdict(list)
@@ -298,7 +318,7 @@ def build_usage_result(entries, context, catalog=None, fees=None, sources=(), no
             buckets[_group_key(dimension, detail, context.timezone)].append(detail)
         rows = tuple(sorted((UsageGroup("group-v1:" + _digest([dimension, key]),
                                (members[0].record.provider, members[0].record.session) if dimension == "conversation" else key,
-                               _summarize_details(members), tuple(d.detail_id for d in members),
+                               _summarize_details(members, project_ids), tuple(d.detail_id for d in members),
                                max(d.record.timestamp for d in members))
                      for key, members in buckets.items()), key=lambda g: (g.key, g.group_id)))
         groups.append((dimension, rows))
@@ -310,7 +330,7 @@ def build_usage_result(entries, context, catalog=None, fees=None, sources=(), no
         r.start == resolve_range("month", context.captured_at, timezone=context.timezone).start for _, r in context.ranges)
     comparisons, combined = compare_plans((d.valuation for d in details),
         ComparisonScope(context.providers, context.period, calendar, context.is_filtered), fees, qualifications)
-    return UsageResult(context, context.captured_at, _summarize_details(details),
+    return UsageResult(context, context.captured_at, _summarize_details(details, project_ids),
                        tuple(details), tuple(groups), sources, tuple(sorted(set(notices))), catalog, comparisons, combined,
                        tuple(sorted({d.record.model for d in details})),
                        tuple(sorted({d.record.model for d in details if d.valuation.state == "unpriced"})),

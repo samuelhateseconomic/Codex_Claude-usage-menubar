@@ -207,3 +207,6 @@ From this `windows` folder, after building:
 ```
 
 The audit prints allowlisted counts, bounded display-safe model labels, coverage states, structured issue counts, inventory bytes and measured scan/query time. It checks exact category/value reconciliation through provider, conversation and all other groupings. It does not export paths, transcript text, identifiers, arbitrary notices or raw errors. Its inventory is measured separately from the query, so active writes can change file counts/bytes between them. A passing reconciliation check can accompany failed/partial source coverage; inspect the provider states. It deliberately uses environment-default roots and bundled rates, without loading saved configuration. This is a developer release check, not account verification or an alternative report/diagnostic format. See the [S09 record](../docs/s09-windows-release.md).
+
+
+The optional headless local index is documented in [S11](../docs/s11-local-index.md). It supports explicit metadata-only import, recoverable SQLite publication and offline shared-service queries. It is not yet connected to the tray/dashboard preview; production API and real-data dashboard integration follow S12/S13.
