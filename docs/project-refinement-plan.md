@@ -2,7 +2,7 @@
 
 Status: implementation backlog. This document does not implement its fixes or authorize executing every session automatically.
 
-Baseline: local working tree based on Git `f93f87e`, with existing uncommitted Windows changes and documentation. Prepared from the October 23, 2026 review and subsequent refinement discussion. Windows is the primary runtime target; macOS observations are source review only.
+Historical planning baseline: local working tree based on Git `f93f87e`, with then-uncommitted Windows changes and documentation. Prepared from the October 23, 2026 review and subsequent refinement discussion. S00 captured the implementation baseline at clean commit `810b3a8`; see [the baseline and handoff](s00-baseline.md). Windows is the primary runtime target; macOS observations are source review only.
 
 ## 1. Purpose and success criteria
 
@@ -387,7 +387,7 @@ The expected build artifact is `windows/dist/UsageTray.exe`; generated artifacts
 
 ## 10. Progress ledger and handoff template
 
-Initial status: **all S00–S14 sessions are not started under this plan**. Earlier reviews, tests, pricing fixes, and documentation are baseline evidence; they do not automatically complete the broader session gates. Some tasks may already be satisfied when implementation begins; verify and record that evidence rather than repeating work unnecessarily.
+Current status: **S00 complete; S01–S14 not_started**. Earlier reviews, tests, pricing fixes, and documentation are baseline evidence; they do not automatically complete the broader session gates. Some tasks may already be satisfied when implementation begins; verify and record that evidence rather than repeating work unnecessarily.
 
 Create one entry per session and update it when work changes:
 
@@ -418,6 +418,30 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - Limits: the independent accounting probes still produce 300 instead of 200 for truncated-first overlap and 200 instead of 250 for the reset case. These remain open S02 gates. The Figma report is carried forward from its authoring work; this publication check did not repeat its Figma inspection/playback.
 - Next: S00 baseline/decision capture, then S01/S02 reconciliation; no refinement-session gate is marked complete by publication alone.
 
+### Figma workflow integration — October 23, 2026
+
+- Scope: apply the installed Figma skills to the existing repository instructions and check compatibility with the core plan. This is a workflow update, not implementation of the dashboard or completion of S00-S14.
+- Starting state: clean working tree at `810b3a8`; no database schema, API, or browser frontend was found in the tracked project inventory.
+- Decision: keep one repository-wide `AGENTS.md`; reference installed skills instead of copying their API guidance. Core/session gates and the integration contract remain authoritative for accounting and data semantics. Figma remains the visual/interaction reference, including the confirmed token-format and chart-axis rules.
+- Files changed: `AGENTS.md` and this ledger. Python, tray behavior, packaging, and the Figma design were not changed.
+- Checks: `windows/.venv/Scripts/python.exe -m unittest discover -s windows/tests` passed all 57 tests with workspace-local TEMP/TMP (`windows/build/refinement-temp`). `docs/review_accounting_probes.py` still reported overlap truncated-first **300 vs expected 200**, complete-first **200 vs expected 200**, and reset **200 vs expected 250**. Its successful exit is not a passing accounting gate.
+- Figma reference check: the connected plugin returned current metadata for page `0:1` in file `6Axot2OcYiKcSfGYcLh3Jh`, confirming Overview `2:43` with the current token labels and labeled chart axes. This was a read-only structure check, not design implementation or presentation playback.
+- Verification: local Markdown links and `git diff --check` passed after the documentation edits. No runtime implementation or new API was tested by this update.
+- Remaining limits / next dependency: the two S02 defects remain open. S00 baseline/decision capture is the next core implementation session, followed by S01/S02; optional real-data hub integration still follows the later gates and inspection of any separately developed database.
+
+### Session S00 — Capture the baseline and establish the work ledger
+
+- Status: **complete**. Scope: F1/F6/F9 baseline and implementation decisions; no application behavior changes.
+- Starting commit / local changes: `810b3a8`, `main...origin/main`, clean working tree. Repository-wide AGENTS.md read; Windows source, tests, build, and CLI inventoried.
+- Decisions and rationale: [S00 baseline and handoff](s00-baseline.md) records D00-1 conservative observation-first overlap/reset handling, D00-2 visible request-tier assumptions, D00-3 per-user settings location and invocation-only override precedence, and D00-4 compatibility/session boundaries. Concrete identity algorithms remain S01/S02 work.
+- Files changed: `docs/s00-baseline.md` and this plan. Generated demo/temp artifacts remain ignored.
+- Concurrent changes: separate Figma workflow additions appeared in `AGENTS.md` and this ledger after S00's initial clean-status check. Updated instructions were read and those additions preserved; they are not S00-authored work.
+- Checks: project Python 3.14.5; fresh full suite passed **57 tests in 7.527 seconds**. Probes reproduced truncated-first overlap **300 vs expected 200**, complete-first **200 vs 200**, and reset **200 vs expected 250**. Inspected every comparison rather than trusting exit zero. `--help` inventory matched source.
+- Packaged check: existing executable's hidden offline month-demo saved report exited 0 and contained DEMO, 108,000 tokens, USD 0.2658, and the monthly comparison. Source was unchanged, so no rebuild was run. Interactive launch behavior remains source/test evidence rather than a fresh manual check.
+- Acceptance gate: actual baseline and known failures reproduced; public options/periods/providers/packaged branches recorded; next-session invariants and scope explicit. Changed documentation links/fences/whitespace and `git diff --check` passed.
+- Limitations: both accounting defects remain open; no real-log/account, macOS, CI, price-verification, or interactive lifecycle checks were run. S00 completion does not raise runtime maturity scores.
+- Next ready: **S01 observation/canonical-event contracts**. S02 requires that seam and regression assertions before fixing deltas. No unresolved S00 decision blocks S01.
+
 ## 11. Completion and reassessment
 
 - **Core complete:** S00–S09 gates pass; terminal functionality remains available; known accounting defects have regression coverage and correct outcomes.
@@ -425,4 +449,4 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - **Hub complete:** the explicitly scoped S11–S14 gates pass; plans/Figma alone do not count as runtime integration.
 - **Factor reassessment:** revisit F1–F10 using linked tests, runtime checks, and remaining limitations. Keep weights stable or explain a scope-driven change. Do not raise the score just to hit a target number.
 
-Recommended next implementation unit: **S00, followed by S01/S02**. Do not start by restyling the report or creating a database around the current reconciliation defects.
+Recommended next implementation unit: **S01, followed by S02**. S00 is complete; do not start by restyling the report or creating a database around the current reconciliation defects.
