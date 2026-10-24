@@ -16,7 +16,8 @@ from usage_core import RateLimited, UsageError, demo_snapshot, fetch_claude, fet
 from usage_valuation import DEFAULT_PLAN_FEES, bounded_decimal
 from usage_time import DEFAULT_TIMEZONE
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-from usage_reports import collect_report, load_prices, render_text_report, report_directory, save_report
+from usage_service import query_usage
+from usage_reports import load_prices, render_text_report, report_directory, save_report
 
 
 PROVIDERS = {"Codex": fetch_codex, "Claude": fetch_claude}
@@ -121,7 +122,7 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
                 for state in states:
                     with state.lock:
                         snapshots[state.provider] = state.snapshot
-                report = collect_report(period, [s.provider for s in states], snapshots, prices=prices, demo=demo, plan_costs=plan_costs, timezone=timezone)
+                report = query_usage(period, [s.provider for s in states], snapshots, prices=prices, demo=demo, plan_costs=plan_costs, timezone=timezone)
                 path = save_report(report, format=report_format)
                 report_status[0] = "Report saved — select a report to refresh it"
                 open_report(path, report_format)
@@ -244,7 +245,7 @@ def main():
     if args.report:
         providers = [p for p in PROVIDERS if args.provider in ("both", p.lower())]
         try:
-            report = collect_report(args.report, providers, prices=prices, demo=args.demo, plan_costs=plan_costs, timezone=args.timezone)
+            report = query_usage(args.report, providers, prices=prices, demo=args.demo, plan_costs=plan_costs, timezone=args.timezone)
             if args.report_format == "text" and not args.output and not args.open_report and sys.stdout is not None:
                 print(render_text_report(report))
                 return 0

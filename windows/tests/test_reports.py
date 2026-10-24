@@ -241,7 +241,7 @@ class ReportTests(unittest.TestCase):
 
     def test_400_million_tokens_have_nonzero_correct_value(self):
         # 2,000 short-context calls: 20M uncached + 2M output + 378M cached.
-        record = reports.Record("Codex", NOW, "s", "p", "gpt-6.1-sol", reports.Tokens(10000, 1000, 189000))
+        record = reports.Record("Codex", NOW - 1, "s", "p", "gpt-6.1-sol", reports.Tokens(10000, 1000, 189000))
         report = reports.Report([record] * 2000, {"Codex": reports.period_bounds("month", NOW)}, NOW, period="month")
         self.assertEqual(sum(r.tokens.total for r in report.records), 400_000_000)
         # 20 * $2 + 2 * $10 + 378 * $0.10 = $97.80; monthly fee $20.
@@ -251,7 +251,7 @@ class ReportTests(unittest.TestCase):
         self.assertIn("Estimated API value minus monthly fee: +$77.80", "\n".join(reports.plan_comparison(report)))
 
     def test_all_unpriced_tokens_never_show_zero_or_false_plan_savings(self):
-        record = reports.Record("Codex", NOW, "s", "p", "no-published-rate", reports.Tokens(cached=400_000_000))
+        record = reports.Record("Codex", NOW - 1, "s", "p", "no-published-rate", reports.Tokens(cached=400_000_000))
         report = reports.Report([record], {"Codex": reports.period_bounds("month", NOW)}, NOW, period="month")
         for renderer in (reports.render_text_report, reports.render_report):
             rendered = renderer(report)
@@ -349,7 +349,7 @@ class ReportTests(unittest.TestCase):
 
     def test_text_report_totals_and_unpriced_usage(self):
         report = reports.collect_report(now=NOW, demo=True)
-        report.records.append(reports.Record("Codex", NOW, "s", "p\x1b[2J", "unknown-model", reports.Tokens(10)))
+        report.records.append(reports.Record("Codex", NOW - 1, "s", "p\x1b[2J", "unknown-model", reports.Tokens(10)))
         rendered = reports.render_text_report(report)
         self.assertIn("108,010", rendered)
         self.assertIn("DEMO", rendered)
@@ -367,8 +367,8 @@ class ReportTests(unittest.TestCase):
     def test_monthly_api_value_minus_plan_fees(self):
         report = reports.collect_report(period="month", now=NOW, demo=True)
         report.records = [
-            reports.Record("Codex", NOW, "s", "p", "gpt-5.4", reports.Tokens(output=10_000_000)),
-            reports.Record("Claude", NOW, "c", "p", "claude-sonnet-4-6", reports.Tokens(output=1_000_000)),
+            reports.Record("Codex", NOW - 1, "s", "p", "gpt-5.4", reports.Tokens(output=10_000_000)),
+            reports.Record("Claude", NOW - 1, "c", "p", "claude-sonnet-4-6", reports.Tokens(output=1_000_000)),
         ]
         comparison = "\n".join(reports.plan_comparison(report))
         self.assertIn("Codex: Estimated API value $150.00 | Monthly plan $20.00", comparison)
@@ -380,7 +380,7 @@ class ReportTests(unittest.TestCase):
 
     def test_comparison_respects_selected_providers_and_unknown_prices(self):
         report = reports.collect_report(period="month", providers=["Codex"], now=NOW, demo=True, plan_costs={"Codex": 10})
-        report.records.append(reports.Record("Codex", NOW, "s", "p", "unpriced", reports.Tokens(100)))
+        report.records.append(reports.Record("Codex", NOW - 1, "s", "p", "unpriced", reports.Tokens(100)))
         comparison = "\n".join(reports.plan_comparison(report))
         self.assertIn("Monthly plan $10.00", comparison)
         self.assertIn("Monthly plans $10.00", comparison)

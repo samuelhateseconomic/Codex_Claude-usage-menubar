@@ -66,6 +66,8 @@ Report boundaries and daily groups use **America/Los_Angeles** by default, with 
 
 Pricing uses exact Decimal rates and money, with half-even rounding once per event to 12 fractional USD digits and exact summation. Reports distinguish empty, all-unpriced, partially priced, and completely rate-covered results, with independent source-quality and tier/TTL qualifications. Catalog, override and computation versions identify the applied pricing snapshot; bundled checked dates are retained rather than silently refreshed. See [S04 exact valuation](../docs/s04-exact-valuation.md) for precision/bounds, provenance, compatibility changes and verification.
 
+CLI and tray reports now use one immutable headless query result for totals, groups, event details, source quality and signed fee comparisons. Text and HTML format the same result. Metadata filters and exact stable ranking are available to Python consumers without importing provider adapters or GUI packages; no database or API is required. See [S05 shared query service](../docs/s05-headless-query-service.md) for the contract, compatibility adapters and limits.
+
 Reports are saved under `%LOCALAPPDATA%\UsageTray\Reports`. They contain local project names and conversation IDs, so review before sharing. Delete files there when no longer needed.
 
 You can also generate reports without starting the tray, without API access, and without the tray dependencies:
