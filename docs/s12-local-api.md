@@ -18,7 +18,7 @@ Default port is 8765; `--port 0` selects an available loopback port. `--config` 
 
 One S07 `RuntimeOwner` owns the installation; one S12 worker runs SQLite import/reprice jobs. Repeated launches with the same index/settings paths reuse the existing process through a native capability exchange; they do not start a second writer/provider scheduler. Hosting/provider flags apply when creating the owner; reuse does not silently reconfigure a running host. Quit/relaunch that owner to change its hosting mode. An already-running legacy tray without this API is reported honestly; it is not killed or bypassed. The combined `--tray` mode injects the same `PollingRuntime` and a committed-index report callback into the existing tray. Legacy standalone terminal/report/tray modes remain; offline reports/diagnostics do not acquire the polling owner. Legacy CLI settings saves now acquire the owner and recheck their loaded version, refusing competing writes while an API/tray owner controls settings. Use the running settings API or quit that owner before a native CLI save.
 
-The service starts through `usage_api_main.py` in S12. It is not yet the existing `UsageTray.exe --dashboard` real-data path. S13 integrates that launcher/frontend; S14 validates final packaged hub delivery. Existing packaged terminal/demo paths are compatibility gates here.
+The S12 checkpoint starts through `usage_api_main.py`. The [S13 runtime integration](s13-runtime-integration.md) adds the real dashboard/native launcher; S14 validates final packaged hub delivery. Existing packaged terminal/demo paths remain compatibility gates.
 
 ## Component ownership
 

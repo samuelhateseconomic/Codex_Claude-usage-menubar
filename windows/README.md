@@ -1,6 +1,6 @@
 # Usage Tray for Windows — Codex + Claude
 
-A Windows system-tray companion showing subscription usage remaining, reset times, and **local token/cost reports for both Codex and Claude**. Inspired by this repository's macOS app; the Swift app is unchanged. Supports the active account in each CLI for live limits. Reports analyze local logs across accounts; multi-account sign-in and automatic end-of-session notifications are not implemented.
+A Windows system-tray companion showing subscription usage remaining, reset times, and **local token reports and estimated API-equivalent value for Codex and Claude**. Inspired by this repository's macOS app; the Swift app is unchanged. Supports the active account in each CLI for live limits. Reports analyze local logs across accounts; multi-account sign-in and automatic end-of-session notifications are not implemented.
 
 ## Run on Windows
 
@@ -22,9 +22,27 @@ Each provider refreshes independently every five minutes. Failures back off; Cla
 
 The tray redraws on state/report changes rather than every second. Both providers receive Refresh independently, and repeated clicks preserve cooldown/backoff. Login, network, unsupported-response, blocked-usage and unexpected local states are identified separately; a blocked Codex status remains blocked even when a percentage shows remaining capacity.
 
-One tray or real `--once` process owns the local application-data `runtime.lock` file. A duplicate launch exits 3 without starting another poller; use the existing tray or Quit before restarting. Offline reports and diagnostics still work while it runs. Quit cancels Codex RPC waits and cleans up only the app-owned Codex process tree; report viewers already opened for you can stay open. A new process starts a new in-memory polling schedule. See [S07 runtime/recovery](../docs/s07-runtime-recovery.md) for ownership, timing and shutdown limits.
+One shared tray/API owner or real `--once` process owns the local application-data `runtime.lock`. Repeated shared launches reuse that owner without starting another writer or provider scheduler. A legacy/one-shot owner without a reusable API still rejects a competing launch with exit 3. Offline reports and diagnostics work while it runs. Quit drains admitted HTTP operations, cancels Codex RPC waits, stops index work safely, and cleans up only the app-owned Codex process tree; already-open report viewers can stay open. The shared hub restores cached provider state and remaining cooldown after restart. See [S07 runtime/recovery](../docs/s07-runtime-recovery.md) for ownership, timing and shutdown limits.
 
 To use only one provider, add `--provider codex` or `--provider claude`. A missing provider login does not stop the other provider.
+
+## Explicit local usage dashboard
+
+From the repository root:
+
+```powershell
+.\windows\.venv\Scripts\python.exe windows/usage_tray.py --dashboard
+# Serve without opening a browser; Ctrl+C stops this source host.
+.\windows\.venv\Scripts\python.exe windows/usage_tray.py --dashboard --no-browser --dashboard-port 0
+```
+
+The real dashboard reads the committed local index through the authenticated v1 API. It uses the existing saved fees, timezone, approved source roots and rates. Its explicit standalone launch imports local metadata but does not poll provider accounts. Open it from the ordinary live tray's **Open usage dashboard...** action to share that tray's cached active-account limits. The normal tray starts no browser automatically; its reports remain accessible in the terminal.
+
+The source dashboard host stays alive until Ctrl+C. A windowed executable with `--dashboard` hosts an offline tray; Quit stops the service. Closing a browser tab does not quit the application. Repeated launches reuse the first owner's port, hosting mode and provider schedule; quit/relaunch that owner to change its mode. `--dashboard-port` defaults to 8765; 0 selects an available port. Launch URLs contain short-lived one-use handoffs, and a plain unauthenticated page visit grants no private data access. Reload can resume an existing session.
+
+The real launch rejects temporary fee/price/timezone overrides and report/export/root commands. Save configuration separately before launch, or use supported browser settings. Temporary settings on the legacy tray retain their existing behavior and label its dashboard unavailable. If optional hub startup fails, the ordinary tray retains its terminal/core path; an explicit dashboard failure reports an error and never substitutes sample data.
+
+S13 integrates the reviewed month/provider, summary, conversation and Back flow. Final packaged hub acceptance remains the separate S14 gate. See [runtime integration and validation](../docs/s13-runtime-integration.md), the [v1 contract](../docs/s12-local-api.md), and the [refinement ledger](../docs/project-refinement-plan.md).
 
 ## Local dashboard development preview
 
@@ -40,7 +58,7 @@ This opens the browser at `http://127.0.0.1:8765/`. Stop the source-mode server 
 
 The preview supports Codex/Claude/Both, month/today/week, text search, project/model/effort filters, daily token/value charts with labeled axes, conversation details, preserved Back state, two-page sample results, and keyboard shortcuts. It uses local bundled UI assets, Geist fonts, and named timezone data; no frontend build server or CDN is required. Settings are explicitly read-only, and Limits uses sample readings in demo mode.
 
-**Real-data dashboard launch is gated:** `--dashboard` currently requires `--demo`. Core accounting/shared-service gates and the existing database handoff must be completed before enabling real history. The preview neither replaces the terminal nor silently falls back to demo data. Existing real terminal reports and provider limits retain their current behavior and known refinement limitations. See the [implementation handoff](../docs/dashboard-implementation.md).
+**Demo is explicit:** `--dashboard --demo` retains the isolated sample preview; `--dashboard` selects the real v1 path described above. A real connection failure never selects demo. See the [historical preview implementation handoff](../docs/dashboard-implementation.md).
 
 Run the dashboard checks from the repository root:
 
@@ -209,7 +227,7 @@ From this `windows` folder, after building:
 The audit prints allowlisted counts, bounded display-safe model labels, coverage states, structured issue counts, inventory bytes and measured scan/query time. It checks exact category/value reconciliation through provider, conversation and all other groupings. It does not export paths, transcript text, identifiers, arbitrary notices or raw errors. Its inventory is measured separately from the query, so active writes can change file counts/bytes between them. A passing reconciliation check can accompany failed/partial source coverage; inspect the provider states. It deliberately uses environment-default roots and bundled rates, without loading saved configuration. This is a developer release check, not account verification or an alternative report/diagnostic format. See the [S09 record](../docs/s09-windows-release.md).
 
 
-The optional headless local index is documented in [S11](../docs/s11-local-index.md). It supports explicit metadata-only import, recoverable SQLite publication and offline shared-service queries. It is not yet connected to the tray/dashboard preview; production API and real-data dashboard integration follow S12/S13.
+The optional headless local index is documented in [S11](../docs/s11-local-index.md). It supports explicit metadata-only import, recoverable SQLite publication and offline shared-service queries. The shared real tray/API uses this index; the explicit demo preview remains separate.
 
 
-The explicit production local API is documented in [S12](../docs/s12-local-api.md), with [OpenAPI](../docs/api/usage-hub-v1.openapi.json), [response schema](../docs/api/usage-hub-v1.schema.json) and [synthetic examples](../docs/api/usage-hub-v1.fixtures.json). Run `windows/usage_api_main.py` with the project interpreter; it uses the recoverable index and does not poll providers unless `--live-limits` is explicit. `--open` opens the authenticated service status page; the reviewed dashboard remains the labeled preview until S13.
+The explicit production local API is documented in [S12](../docs/s12-local-api.md), with [OpenAPI](../docs/api/usage-hub-v1.openapi.json), [response schema](../docs/api/usage-hub-v1.schema.json) and [synthetic examples](../docs/api/usage-hub-v1.fixtures.json). Run `windows/usage_api_main.py` with the project interpreter; it uses the recoverable index and does not poll providers unless `--live-limits` is explicit. `--open` opens the authenticated developer status page at `/service`. `usage_tray.py --dashboard` is the real dashboard launcher. `usage_api_main.py --tray` can host offline local usage; add `--live-limits` only to enable provider checks.
