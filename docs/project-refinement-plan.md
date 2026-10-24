@@ -387,7 +387,7 @@ The expected build artifact is `windows/dist/UsageTray.exe`; generated artifacts
 
 ## 10. Progress ledger and handoff template
 
-Current status: **S00 complete; S01–S14 not_started**. Earlier reviews, tests, pricing fixes, and documentation are baseline evidence; they do not automatically complete the broader session gates. Some tasks may already be satisfied when implementation begins; verify and record that evidence rather than repeating work unnecessarily.
+Current main-branch core status: **S00 complete; S01–S14 not_started here**. Discovery on October 24 found S01-S03 recorded complete in the isolated `codex/s01-observation-contracts` branch through `b9495f0`, with S04 active there; those commits are not merged here. Preserve that work and verify combined integration rather than restarting those sessions. Dashboard and pre-S08/database preparation are tracked separately below and do not complete core/hub gates.
 
 Create one entry per session and update it when work changes:
 
@@ -463,6 +463,16 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - Commit isolation: the staged snapshot ran 74 Python tests in 8.446 seconds (71 passes, three expected failures) against the committed core, excluding concurrent edits; the strict probe reproduced all three gaps with exit 1. Both Node formatter/axis tests, staged whitespace, and changed-document links/fences passed.
 - Next dependency: finish S04, then S05-S07; resolve the three findings and remove expected-failure annotations before completing S08. Remaining paths and release limits are explicit in the handoff. No core session gate was advanced by this preparation.
 
+### Local database mapping preparation — October 24, 2026
+
+- Status: preparation **complete**; S11 implementation remains **not_started** and gated by the core through S09. Starting commit: `446e2e0`. User confirmed local-first scope and authorized commit/push of this handoff.
+- Discovery: bounded schema/configuration filename searches across this checkout, local branches/worktrees, nearby development folders/saved local project locations, and the application-data location found no Usage Hub database. A separate planner's schema was not reused. No database contents, credentials, or real histories were read.
+- Branch distinction: S01-S03 commits through `b9495f0` exist in `codex/s01-observation-contracts`, where S04 is active; they are not merged here. Existing shared-checkout core edits remain preserved and excluded. This entry does not certify or merge the other branch's gates.
+- Decision: plan a per-user local SQLite adapter at S11, retain S06 settings-file authority, and map database settings as versioned projections. Physical DDL/migrations and final S04 numeric adapters remain pending. No runtime/database/package changes or duplicate configuration defaults were introduced.
+- Files: [database mapping handoff](usage-hub-database-handoff.md), [synthetic fixture](fixtures/usage-hub-database-alignment.json), a cross-reference in the integration contract, and this ledger. Mapping covers entity/key ownership, exact numerics, import/repricing/publication, frozen reads, source retention, migration/backup recovery, privacy gates, and current preview discrepancies.
+- Checks: independent project-Python JSON/Decimal/zoneinfo validation passed for duplicate keys, integer/decimal wire types, bounded fixture counts, category/total arithmetic, reasoning subset/coverage, half-even event values, provider/full summaries, signed full-fee differences, frozen UTC/local-day buckets, exact ordering, IDs and source references. Changed-document local links, fences, whitespace, and `git diff --check` passed. No database, API, migration, reconciliation, application-suite, or packaged-runtime check is claimed by this documentation/fixture-only preparation.
+- Next dependency: finish and integrate the core branch with combined validation, then S11 actual schema/adapter implementation and its persisted-fixture gates; S12/S13 consume that result. No core or hub gate advanced from example validation.
+
 ## 11. Completion and reassessment
 
 - **Core complete:** S00–S09 gates pass; terminal functionality remains available; known accounting defects have regression coverage and correct outcomes.
@@ -470,4 +480,4 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - **Hub complete:** the explicitly scoped S11–S14 gates pass; plans/Figma alone do not count as runtime integration.
 - **Factor reassessment:** revisit F1–F10 using linked tests, runtime checks, and remaining limitations. Keep weights stable or explain a scope-driven change. Do not raise the score just to hit a target number.
 
-Recommended next implementation unit: **S01, followed by S02**. S00 is complete; do not start by restyling the report or creating a database around the current reconciliation defects.
+Recommended next core implementation unit: **continue S04 in the isolated refinement worktree**, then S05 onward. S01-S03 already have commits there; their integration into this branch needs combined validation. Local database mapping is preparation only; S11 still requires the core gates through S09.
