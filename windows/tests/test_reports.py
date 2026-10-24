@@ -242,17 +242,17 @@ class ReportTests(unittest.TestCase):
     def test_400_million_tokens_have_nonzero_correct_value(self):
         # 2,000 short-context calls: 20M uncached + 2M output + 378M cached.
         record = reports.Record("Codex", NOW, "s", "p", "gpt-6.1-sol", reports.Tokens(10000, 1000, 189000))
-        report = reports.Report([record] * 2000, {"Codex": (NOW - 100, "Month to date")}, NOW, period="month")
+        report = reports.Report([record] * 2000, {"Codex": reports.period_bounds("month", NOW)}, NOW, period="month")
         self.assertEqual(sum(r.tokens.total for r in report.records), 400_000_000)
         # 20 * $2 + 2 * $10 + 378 * $0.10 = $97.80; monthly fee $20.
         self.assertAlmostEqual(sum(reports.estimate(r) for r in report.records), 97.8)
         self.assertIn("$97.8000", reports.render_text_report(report))
         self.assertIn("$97.8000", reports.render_report(report))
-        self.assertIn("Estimated savings so far: $77.80", "\n".join(reports.plan_comparison(report)))
+        self.assertIn("Estimated API value minus monthly fee: +$77.80", "\n".join(reports.plan_comparison(report)))
 
     def test_all_unpriced_tokens_never_show_zero_or_false_plan_savings(self):
         record = reports.Record("Codex", NOW, "s", "p", "no-published-rate", reports.Tokens(cached=400_000_000))
-        report = reports.Report([record], {"Codex": (NOW - 100, "Month to date")}, NOW, period="month")
+        report = reports.Report([record], {"Codex": reports.period_bounds("month", NOW)}, NOW, period="month")
         for renderer in (reports.render_text_report, reports.render_report):
             rendered = renderer(report)
             self.assertIn("Unavailable (all usage unpriced)", rendered)
@@ -372,11 +372,11 @@ class ReportTests(unittest.TestCase):
         ]
         comparison = "\n".join(reports.plan_comparison(report))
         self.assertIn("Codex: Estimated API value $150.00 | Monthly plan $20.00", comparison)
-        self.assertIn("Estimated savings so far: $130.00", comparison)
-        self.assertIn("Below monthly fee by: $5.00", comparison)
+        self.assertIn("Estimated API value minus monthly fee: +$130.00", comparison)
+        self.assertIn("Estimated API value minus monthly fee: -$5.00", comparison)
         self.assertIn("Combined: API value $165.00 | Monthly plans $40.00", comparison)
-        self.assertIn("Estimated savings so far: $125.00", reports.render_text_report(report))
-        self.assertIn("Estimated savings so far: $125.00", reports.render_report(report))
+        self.assertIn("Estimated API value minus monthly fees: +$125.00", reports.render_text_report(report))
+        self.assertIn("Estimated API value minus monthly fees: +$125.00", reports.render_report(report))
 
     def test_comparison_respects_selected_providers_and_unknown_prices(self):
         report = reports.collect_report(period="month", providers=["Codex"], now=NOW, demo=True, plan_costs={"Codex": 10})

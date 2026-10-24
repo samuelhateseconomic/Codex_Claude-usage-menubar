@@ -387,7 +387,7 @@ The expected build artifact is `windows/dist/UsageTray.exe`; generated artifacts
 
 ## 10. Progress ledger and handoff template
 
-Current status in this isolated worktree: **S00–S03 complete; S04–S14 not_started**. S01–S03 have not been integrated into the separate original checkout. Earlier reviews, tests, pricing fixes, and documentation are baseline evidence; they do not automatically complete the broader session gates. Some tasks may already be satisfied when implementation begins; verify and record that evidence rather than repeating work unnecessarily.
+Current status in this isolated worktree: **S00–S04 complete; S05–S14 not_started**. S01–S04 have not been integrated into the separate original checkout. Earlier reviews, tests, pricing fixes, and documentation are baseline evidence; they do not automatically complete the broader session gates. Some tasks may already be satisfied when implementation begins; verify and record that evidence rather than repeating work unnecessarily.
 
 Create one entry per session and update it when work changes:
 
@@ -485,6 +485,20 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - Limits: no durable retained history, global filesystem transaction, large-history benchmark, live provider/user-history, interactive tray lifecycle, macOS, Figma or remote CI checks. Full-file scan memory/performance remains explicit. Source quality is not price coverage; exact money/tier/comparison policy remains S04. No merge, push or external publication.
 - Next ready: **S04 exact/versioned/explainable valuation**, preserving accepted events, structured issues and captured range context. Shared-checkout integration still requires combined validation of its separate concurrent work.
 
+### Session S04 — Exact, versioned, explainable valuation
+
+- Status: **complete** in the isolated refinement worktree. Scope: F3/F6; started clean at `b9495f0`. The user additionally authorized committing and pushing after completion; no merge into the separately developed original checkout is included.
+- Decisions: [S04 arithmetic/provenance/comparison policy](s04-exact-valuation.md) defines signed-64-bit token/count bounds, rate/fee bounds and scale, 80-digit local arithmetic, half-even quantization once per event to 12 USD fractional digits, exact aggregation, version hashes and immutable catalog snapshots. Retains existing rate amounts/2026-10-23 checked date without a fresh price-verification claim.
+- Implementation: pure `usage_valuation.py` supplies event valuations, coverage summaries and structured signed fee comparisons. Reports retain accepted events/context and use one valuation view per render; compatibility `estimate` remains a float projection unused by either renderer. Decimal JSON rates/CLI fees and one temporary USD 20/20 default source replace authoritative float paths.
+- Intentional corrections: missing optional cache-write rates stay unconfigured; a used missing category makes the event unpriced, while explicit zero stays priced. Tiered events lacking request context retain the existing per-event counter tier policy with an assumption flag; capacity, aggregate totals and effort never establish context. Legacy TTL qualifications survive report projection. Calendar-month range/filter validation and selected-provider completeness replace unconditional savings labels with signed qualified differences.
+- Files: `windows/usage_valuation.py`, `windows/usage_reports.py`, `windows/usage_tray.py`, `windows/tests/test_valuation.py`, `windows/tests/test_reports.py`, `windows/README.md`, `docs/s04-exact-valuation.md`, and this ledger.
+- Focused evidence: **27 S04 tests passed in 1.991 seconds**. The exact integration fixture yields **18.42 / 0.471 / 18.891 USD** and differences **-1.58 / -19.529 / -21.109 USD**. Tests cover rounding, large/bounded counts, bad input, caller Decimal context, all value states, missing/zero write prices, provenance, repricing invariance, context/TTL evidence, scope, unavailable providers, JSON/CLI and renderer authority.
+- Regression sequence: initial report tests exposed three expected savings/fake-month compatibility mismatches. First focused checks also caught one leftover float-helper call plus an independently corrected hand-transcribed large-number expectation; final focused results pass. Independent accounting probes print **200/200**, **200/200**, **250/250**, all true.
+- Full/build: `windows/build.ps1` passed **163 tests in 10.293 seconds** and rebuilt `UsageTray.exe` on project Python 3.14.5 with installed pinned dependencies, `PIP_NO_INDEX=1`, and workspace-local `windows/build/s04-temp`. No runtime dependency changes.
+- Packaged acceptance: **10 hidden offline cases passed**, using synthetic roots/rates and an empty `PYTHONTZPATH` to force bundled timezone fallback. Both text/HTML yield **2,905,000 / USD 18.8910**, Codex-only **2,840,000 / USD 18.4200**, Claude-only **65,000 / USD 0.4710**; fee differences display **-1.58 / -19.53 / -21.11** after rounding. Mixed unknown-model usage preserves **2,905,010** tokens and the same priced subtotal in both formats. All-unpriced remains unavailable, explicit zero rates produce complete/zero and **-40.00**, missing Claude write rates prevent a combined comparison, and demo remains **108,000 / USD 0.2658**. All cases exited 0; sentinels/transcript content and prior savings labels were absent.
+- Verification/handoff: source syntax, changed Markdown links/fences/whitespace, catalog amount compatibility and `git diff --check` passed. No S05 completion is claimed. Commit/push uses the existing isolated branch; it does not merge the separate main checkout.
+- Remaining limits / next dependency: no refreshed prices, real user histories/accounts, live providers, interactive lifecycle, macOS, Figma, remote CI, persistent settings, database or API. S05 is next after this gate: immutable shared headless query/summary service and exact group/query contracts, preserving the S04 authority. Shared-checkout integration requires its own combined validation.
+
 ## 11. Completion and reassessment
 
 - **Core complete:** S00–S09 gates pass; terminal functionality remains available; known accounting defects have regression coverage and correct outcomes.
@@ -492,4 +506,4 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - **Hub complete:** the explicitly scoped S11–S14 gates pass; plans/Figma alone do not count as runtime integration.
 - **Factor reassessment:** revisit F1–F10 using linked tests, runtime checks, and remaining limitations. Keep weights stable or explain a scope-driven change. Do not raise the score just to hit a target number.
 
-Recommended next implementation unit in this worktree: **S04**. S00–S03 are complete here; continue valuation before presentation or optional database expansion.
+Recommended next implementation unit in this worktree: **S05**. S00–S04 are complete here; extract the shared headless query/summary service before presentation or optional database expansion.

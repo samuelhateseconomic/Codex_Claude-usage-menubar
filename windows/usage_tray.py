@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 from datetime import datetime
 import json
-import math
 from pathlib import Path
 import threading
 import time
@@ -14,6 +13,7 @@ import subprocess
 import sys
 
 from usage_core import RateLimited, UsageError, demo_snapshot, fetch_claude, fetch_codex
+from usage_valuation import DEFAULT_PLAN_FEES, bounded_decimal
 from usage_time import DEFAULT_TIMEZONE
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from usage_reports import collect_report, load_prices, render_text_report, report_directory, save_report
@@ -149,7 +149,7 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
             for line in state.lines():
                 yield pystray.MenuItem(line, None, enabled=False)
             yield pystray.Menu.SEPARATOR
-        yield pystray.MenuItem("This month: API value & plan savings…", lambda icon, item: make_report("month"), enabled=lambda item: not report_lock.locked())
+        yield pystray.MenuItem("This month: API value & plan comparison…", lambda icon, item: make_report("month"), enabled=lambda item: not report_lock.locked())
         yield pystray.MenuItem("Current session estimated API value…", lambda icon, item: make_report("session"), enabled=lambda item: not report_lock.locked())
         yield pystray.MenuItem("Today's estimated API value…", lambda icon, item: make_report("today"), enabled=lambda item: not report_lock.locked())
         yield pystray.MenuItem("Last 7 days estimated API value…", lambda icon, item: make_report("week"), enabled=lambda item: not report_lock.locked())
@@ -216,17 +216,18 @@ def main():
     parser.add_argument("--output", type=Path, help="Report destination (used with --report)")
     parser.add_argument("--open-report", action="store_true", help="Open the report in a terminal (or browser for HTML)")
     parser.add_argument("--prices", type=Path, help="JSON file of exact-model USD prices per million tokens")
-    parser.add_argument("--codex-plan-usd", type=float, default=20.0, help="Codex monthly subscription price in USD (default: 20)")
-    parser.add_argument("--claude-plan-usd", type=float, default=20.0, help="Claude monthly subscription price in USD (default: 20)")
+    parser.add_argument("--codex-plan-usd", default=str(DEFAULT_PLAN_FEES["Codex"]), help="Codex monthly subscription price in USD (default: 20)")
+    parser.add_argument("--claude-plan-usd", default=str(DEFAULT_PLAN_FEES["Claude"]), help="Claude monthly subscription price in USD (default: 20)")
     parser.add_argument("--timezone", default=DEFAULT_TIMEZONE, help="IANA timezone for report boundaries and dates (default: America/Los_Angeles)")
     args = parser.parse_args()
     try:
         ZoneInfo(args.timezone)
     except (ZoneInfoNotFoundError, ValueError):
         parser.error("Unknown report timezone; use an IANA name such as America/Los_Angeles or UTC.")
-    plan_costs = {"Codex": args.codex_plan_usd, "Claude": args.claude_plan_usd}
-    if any(not math.isfinite(value) or value < 0 for value in plan_costs.values()):
-        parser.error("Monthly plan prices must be finite, nonnegative USD amounts")
+    try:
+        plan_costs = {"Codex": bounded_decimal(args.codex_plan_usd), "Claude": bounded_decimal(args.claude_plan_usd)}
+    except ValueError:
+        parser.error("Monthly plan prices must be finite, nonnegative USD amounts up to 1000000000 with at most 12 decimal places")
     if args.once and args.report:
         parser.error("--once and --report cannot be used together")
     if (args.output or args.open_report) and not args.report:
