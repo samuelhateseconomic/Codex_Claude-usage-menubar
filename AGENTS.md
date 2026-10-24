@@ -42,7 +42,9 @@
 - Use `windows/usage_privacy.py` for display-only projections and `windows/usage_diagnostics.py` for allowlisted explicit operation exports. Full report paths/IDs require `--include-metadata`; never serialize the internal query graph as redacted diagnostics. See [the S08 contract](docs/s08-privacy-diagnostics.md).
 - Treat source metadata as untrusted text: escape HTML and neutralize terminal control sequences while preserving internal identities. Keep errors/diagnostics sanitized and actionable.
 - Preserve credential redirect protections; do not write or refresh credentials as an incidental workaround.
-- Database/API/frontend are optional sessions, not existing features. Follow the integration contract for transactions, exact numeric contracts, frozen queries, job status, migrations, and loopback access controls.
+- Use `windows/usage_index.py` for explicitly requested local persistence; its SQLite/codec modules own migrations, metadata projections and publication. Preserve retained-source states, exact stored valuations, JSON configuration authority and offline shared-service queries. Do not create a competing schema or make queries initiate imports/polling. See [S11](docs/s11-local-index.md).
+- Use the S12 v1 query/HTTP/runtime/job modules and [contract](docs/s12-local-api.md) for production local API work. Keep exact numeric strings, frozen publication contexts/cursors, approved-root-only mutations, owner-controlled settings and authenticated reads/mutations. The reviewed dashboard still needs S13 adaptation; never route failed real queries to the preview.
+- The optional local index and explicit v1 service are implemented; real-data dashboard integration remains separate. Follow the integration contract for transactions, exact numeric contracts, frozen queries, job status, migrations, and loopback access controls.
 - Do not silently substitute demo data for failed real connections. Keep real/demo scopes separate. Never infer missing quota history or running-conversation status.
 
 ## Verification and handoff

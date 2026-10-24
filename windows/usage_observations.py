@@ -17,6 +17,7 @@ from usage_records import Record
 
 
 PARSER_VERSION = "observations-v1"
+PARSER_CACHE_VERSION = PARSER_VERSION + ":project-context-2"
 FieldState = Literal["valid", "missing", "invalid"]
 
 
@@ -326,8 +327,9 @@ def extract_claude(entries: Iterable[tuple[int, dict]], source_id: str,
     result = []
     for line, entry in entries:
         source = SourceRef(source_id, line, generation)
-        if project is None:
-            project = _text(entry.get("cwd"))
+        recorded_project = _text(entry.get("cwd"))
+        if recorded_project is not None:
+            project = recorded_project
         message = object_value(entry.get("message"))
         if entry.get("type") == "user":
             # Inspect only block types to distinguish tool results; retain no content.
@@ -353,6 +355,7 @@ def extract_claude(entries: Iterable[tuple[int, dict]], source_id: str,
         effort, effort_source = explicit_effort or turn_effort or ("unknown", "not recorded")
         issues = _issues(conversation, state) + _text_issue(entry, "sessionId", "conversation_id", required=True)
         issues += _text_issue(entry, "requestId", "request_id")
+        issues += _text_issue(entry, "cwd", "project")
         issues += _text_issue(message, "id", "message_id", required=True)
         issues += _text_issue(message, "model", "model", required=True)
         result.append(Observation(

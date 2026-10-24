@@ -253,6 +253,15 @@ class HubService:
 
 
 def create_server(service, port=8765):
+    if getattr(service, 'contract_version', None) == 'usage-hub-v1':
+        from usage_api_http import handler_class, LocalSessions
+        class LocalServer(ThreadingHTTPServer):
+            def handle_error(self, request, client_address):
+                pass  # Never print untrusted query/header/provider payloads.
+        server = LocalServer(('127.0.0.1', port), handler_class(service))
+        server.sessions = LocalSessions()
+        server.daemon_threads = True
+        return server
     token = secrets.token_urlsafe(32)
     files = {"/": ("index.html", "text/html; charset=utf-8"), "/app.js": ("app.js", "text/javascript; charset=utf-8"),
              "/style.css": ("style.css", "text/css; charset=utf-8"),

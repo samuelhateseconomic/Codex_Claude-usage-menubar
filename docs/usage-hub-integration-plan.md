@@ -295,6 +295,8 @@ The exact canonical sequence algorithm requires a focused implementation design 
 
 Use `/api/v1` for the proposed local API. Python remains responsible for collection/accounting. Framework and database engine remain implementation decisions.
 
+Implementation checkpoint, October 24: [S12](s12-local-api.md) implements the explicit production local service against S11 SQLite, with [OpenAPI](api/usage-hub-v1.openapi.json), [response schema](api/usage-hub-v1.schema.json) and [synthetic response fixtures](api/usage-hub-v1.fixtures.json). Those files pin the implemented first-release shapes/session-resume addition; the reviewed dashboard still requires S13 adaptation. The original proposal below retains semantic ownership and historical planning context.
+
 ### Shared query input
 
 The client owns one serializable query state:

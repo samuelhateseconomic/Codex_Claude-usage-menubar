@@ -1,0 +1,3289 @@
+{
+  "overview": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "29c42df23d6b464ea0e6a7c1c78234ee",
+    "kind": "overview",
+    "data": {
+      "scope": "local_unmatched_accounts",
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "20000",
+          "output_tokens": "1850000",
+          "cache_read_tokens": "1030000",
+          "cache_write_5m_tokens": "5000",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "2905000",
+          "reasoning_tokens": "1260000"
+        },
+        "reasoning": {
+          "known_records": 1,
+          "unknown_records": 1
+        },
+        "record_count": 2,
+        "conversation_count": 2,
+        "project_count": 1,
+        "value": {
+          "state": "complete",
+          "amount_usd": "18.891000000000",
+          "priced_records": 2,
+          "unpriced_records": 0,
+          "priced_tokens": "2905000",
+          "unpriced_tokens": "0",
+          "assumed_records": 1,
+          "assumptions": [
+            "legacy_cache_ttl_assumed"
+          ]
+        }
+      },
+      "freshness": "current",
+      "coverage": [
+        {
+          "provider": "claude",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "legacy_cache_ttl_assumed": 1
+          }
+        },
+        {
+          "provider": "codex",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "initial_zero_baseline_assumed": 1
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "provider": "claude",
+          "available": true,
+          "reason": null,
+          "pricing_state": "complete",
+          "value_usd": "0.471000000000",
+          "fee_usd": "20.00",
+          "difference_usd": "-19.529000000000",
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "legacy_cache_ttl_assumed",
+            "local_unmatched_accounts"
+          ]
+        },
+        {
+          "provider": "codex",
+          "available": true,
+          "reason": null,
+          "pricing_state": "complete",
+          "value_usd": "18.420000000000",
+          "fee_usd": "20.00",
+          "difference_usd": "-1.580000000000",
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "local_unmatched_accounts"
+          ]
+        }
+      ],
+      "combined_comparison": {
+        "provider": "combined",
+        "available": true,
+        "reason": null,
+        "pricing_state": "complete",
+        "value_usd": "18.891000000000",
+        "fee_usd": "40.00",
+        "difference_usd": "-21.109000000000",
+        "qualifications": [
+          "accounting_issues_present",
+          "api_equivalent_estimate",
+          "full_month_fee",
+          "ingestion_complete",
+          "legacy_cache_ttl_assumed",
+          "local_unmatched_accounts"
+        ]
+      },
+      "days": [
+        {
+          "day": "2026-10-23",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "20000",
+              "output_tokens": "1850000",
+              "cache_read_tokens": "1030000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2905000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 1
+            },
+            "record_count": 2,
+            "conversation_count": 2,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.891000000000",
+              "priced_records": 2,
+              "unpriced_records": 0,
+              "priced_tokens": "2905000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        }
+      ],
+      "providers": [
+        {
+          "provider": "claude",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        },
+        {
+          "provider": "codex",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "models": [
+        {
+          "provider": "codex",
+          "model": "fixture-model",
+          "effort": "high",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        },
+        {
+          "provider": "claude",
+          "model": "fixture-claude",
+          "effort": "unknown",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        }
+      ],
+      "top_projects": [
+        {
+          "id": "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247",
+          "label": "C:/fixture/project",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "20000",
+              "output_tokens": "1850000",
+              "cache_read_tokens": "1030000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2905000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 1
+            },
+            "record_count": 2,
+            "conversation_count": 2,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.891000000000",
+              "priced_records": 2,
+              "unpriced_records": 0,
+              "priced_tokens": "2905000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-claude",
+            "fixture-model"
+          ],
+          "efforts": [
+            "high",
+            "unknown"
+          ]
+        }
+      ],
+      "recent_conversations": [
+        {
+          "id": "conversation-v1:e255b0a077a32263a57ef96b32b253088c58628186dcea3cd9061bd7fc74f144",
+          "label": "same-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-model"
+          ],
+          "efforts": [
+            "high"
+          ]
+        },
+        {
+          "id": "conversation-v1:06e0d60ec342fb78857e904ef8d138e7bb53d5bb4db5287a337f50eafd69aec9",
+          "label": "claude-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:00.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-claude"
+          ],
+          "efforts": [
+            "unknown"
+          ]
+        }
+      ]
+    },
+    "query_context_id": "VEBZXo9f7YX8sWHFH6JB8JNnBDtXhuvs",
+    "usage_revision": "2",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "conversations": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "70bc2551f11d4734a583680f75446c22",
+    "kind": "list",
+    "data": {
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "20000",
+          "output_tokens": "1850000",
+          "cache_read_tokens": "1030000",
+          "cache_write_5m_tokens": "5000",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "2905000",
+          "reasoning_tokens": "1260000"
+        },
+        "reasoning": {
+          "known_records": 1,
+          "unknown_records": 1
+        },
+        "record_count": 2,
+        "conversation_count": 2,
+        "project_count": 1,
+        "value": {
+          "state": "complete",
+          "amount_usd": "18.891000000000",
+          "priced_records": 2,
+          "unpriced_records": 0,
+          "priced_tokens": "2905000",
+          "unpriced_tokens": "0",
+          "assumed_records": 1,
+          "assumptions": [
+            "legacy_cache_ttl_assumed"
+          ]
+        }
+      },
+      "items": [
+        {
+          "id": "conversation-v1:e255b0a077a32263a57ef96b32b253088c58628186dcea3cd9061bd7fc74f144",
+          "label": "same-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-model"
+          ],
+          "efforts": [
+            "high"
+          ]
+        },
+        {
+          "id": "conversation-v1:06e0d60ec342fb78857e904ef8d138e7bb53d5bb4db5287a337f50eafd69aec9",
+          "label": "claude-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:00.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-claude"
+          ],
+          "efforts": [
+            "unknown"
+          ]
+        }
+      ],
+      "pagination": {
+        "page_size": 50,
+        "sort": "value_desc",
+        "next_cursor": null,
+        "matched_count": 2
+      }
+    },
+    "query_context_id": "VEBZXo9f7YX8sWHFH6JB8JNnBDtXhuvs",
+    "usage_revision": "2",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "projects": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "aad3a3e2c57f4b1f884f58262b872349",
+    "kind": "list",
+    "data": {
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "20000",
+          "output_tokens": "1850000",
+          "cache_read_tokens": "1030000",
+          "cache_write_5m_tokens": "5000",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "2905000",
+          "reasoning_tokens": "1260000"
+        },
+        "reasoning": {
+          "known_records": 1,
+          "unknown_records": 1
+        },
+        "record_count": 2,
+        "conversation_count": 2,
+        "project_count": 1,
+        "value": {
+          "state": "complete",
+          "amount_usd": "18.891000000000",
+          "priced_records": 2,
+          "unpriced_records": 0,
+          "priced_tokens": "2905000",
+          "unpriced_tokens": "0",
+          "assumed_records": 1,
+          "assumptions": [
+            "legacy_cache_ttl_assumed"
+          ]
+        }
+      },
+      "items": [
+        {
+          "id": "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247",
+          "label": "C:/fixture/project",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "20000",
+              "output_tokens": "1850000",
+              "cache_read_tokens": "1030000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2905000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 1
+            },
+            "record_count": 2,
+            "conversation_count": 2,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.891000000000",
+              "priced_records": 2,
+              "unpriced_records": 0,
+              "priced_tokens": "2905000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-claude",
+            "fixture-model"
+          ],
+          "efforts": [
+            "high",
+            "unknown"
+          ]
+        }
+      ],
+      "pagination": {
+        "page_size": 50,
+        "sort": "value_desc",
+        "next_cursor": null,
+        "matched_count": 1
+      }
+    },
+    "query_context_id": "VEBZXo9f7YX8sWHFH6JB8JNnBDtXhuvs",
+    "usage_revision": "2",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "facets": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "49f5582fe7984645b2f8d416c3ab6e0d",
+    "kind": "facets",
+    "data": {
+      "projects": [
+        {
+          "value": "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247",
+          "label": "C:/fixture/project",
+          "record_count": 2,
+          "selected": false
+        }
+      ],
+      "models": [
+        {
+          "value": "fixture-claude",
+          "label": "fixture-claude",
+          "record_count": 1,
+          "selected": false
+        },
+        {
+          "value": "fixture-model",
+          "label": "fixture-model",
+          "record_count": 1,
+          "selected": false
+        }
+      ],
+      "efforts": [
+        {
+          "value": "high",
+          "label": "high",
+          "record_count": 1,
+          "selected": false
+        },
+        {
+          "value": "unknown",
+          "label": "unknown",
+          "record_count": 1,
+          "selected": false
+        }
+      ]
+    },
+    "query_context_id": "VEBZXo9f7YX8sWHFH6JB8JNnBDtXhuvs",
+    "usage_revision": "2",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "conversation": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "92341b54adfe4021a470e4f04693029b",
+    "kind": "conversation",
+    "data": {
+      "id": "conversation-v1:e255b0a077a32263a57ef96b32b253088c58628186dcea3cd9061bd7fc74f144",
+      "label": "same-session",
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "10000",
+          "output_tokens": "1830000",
+          "cache_read_tokens": "1000000",
+          "cache_write_5m_tokens": "0",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "2840000",
+          "reasoning_tokens": "1260000"
+        },
+        "reasoning": {
+          "known_records": 1,
+          "unknown_records": 0
+        },
+        "record_count": 1,
+        "conversation_count": 1,
+        "project_count": 1,
+        "value": {
+          "state": "complete",
+          "amount_usd": "18.420000000000",
+          "priced_records": 1,
+          "unpriced_records": 0,
+          "priced_tokens": "2840000",
+          "unpriced_tokens": "0",
+          "assumed_records": 0,
+          "assumptions": []
+        }
+      },
+      "lifetime_first_at": "2026-10-23T20:00:10.000000Z",
+      "lifetime_last_at": "2026-10-23T20:00:10.000000Z",
+      "lifetime_scope": "all_retained_accepted_usage",
+      "project_ids": [
+        "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+      ],
+      "models": [
+        "fixture-model"
+      ],
+      "efforts": [
+        "high"
+      ]
+    },
+    "query_context_id": "VEBZXo9f7YX8sWHFH6JB8JNnBDtXhuvs",
+    "usage_revision": "2",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "events": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "cd0c4636cb1e4ad09015994ef65dd5a7",
+    "kind": "events",
+    "data": {
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "10000",
+          "output_tokens": "1830000",
+          "cache_read_tokens": "1000000",
+          "cache_write_5m_tokens": "0",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "2840000",
+          "reasoning_tokens": "1260000"
+        },
+        "reasoning": {
+          "known_records": 1,
+          "unknown_records": 0
+        },
+        "record_count": 1,
+        "conversation_count": 1,
+        "project_count": 1,
+        "value": {
+          "state": "complete",
+          "amount_usd": "18.420000000000",
+          "priced_records": 1,
+          "unpriced_records": 0,
+          "priced_tokens": "2840000",
+          "unpriced_tokens": "0",
+          "assumed_records": 0,
+          "assumptions": []
+        }
+      },
+      "items": [
+        {
+          "id": "1699ba8e951b15dbb05d52baa1bad631801b0e35ca60eb2119b4211d235e044b",
+          "occurred_at": "2026-10-23T20:00:10.000000Z",
+          "provider": "codex",
+          "project_id": "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247",
+          "model": "fixture-model",
+          "effort": "high",
+          "effort_source": "Codex turn_context.effort",
+          "tokens": {
+            "uncached_input_tokens": "10000",
+            "output_tokens": "1830000",
+            "cache_read_tokens": "1000000",
+            "cache_write_5m_tokens": "0",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2840000",
+            "reasoning_tokens": "1260000"
+          },
+          "value": {
+            "state": "priced",
+            "amount_usd": "18.420000000000",
+            "unpriced_reason": null,
+            "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+            "tier": "standard",
+            "assumptions": [],
+            "request_context_tokens": null,
+            "request_context_source": "not recorded",
+            "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+            "policy_version": "decimal12-event-tier-compat-v1"
+          }
+        }
+      ],
+      "pagination": {
+        "page_size": 50,
+        "sort": "events",
+        "next_cursor": null,
+        "matched_count": 1
+      }
+    },
+    "query_context_id": "VEBZXo9f7YX8sWHFH6JB8JNnBDtXhuvs",
+    "usage_revision": "2",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "status": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "120f540bfc0f4b9e886628b785105df6",
+    "kind": "status",
+    "data": {
+      "app_version": "0.11.0",
+      "build_id": "source-sha256:452e0a482e3cba402125afb3669ae5426a274ddebc4ef019dbe811246a2d73c0",
+      "ready": true,
+      "freshness": "current",
+      "usage_revision": "2",
+      "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+      "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+      "requested_configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+      "configuration_pending": false,
+      "configuration_state": "active",
+      "indexing": false,
+      "active_job_ids": [],
+      "source_scans": [
+        {
+          "provider": "claude",
+          "roots_read": 1,
+          "files_discovered": 1,
+          "files_read": 1
+        },
+        {
+          "provider": "codex",
+          "roots_read": 1,
+          "files_discovered": 1,
+          "files_read": 1
+        }
+      ],
+      "last_import_completed_at": "2026-10-24T20:47:55.534990Z",
+      "last_job": null,
+      "providers": [
+        {
+          "provider": "codex",
+          "scope": "active_cli_account",
+          "state": "unavailable",
+          "phase": "disabled",
+          "category": "not_configured",
+          "last_attempt_at": null,
+          "last_success_at": null,
+          "next_eligible_at": null,
+          "snapshot": null
+        },
+        {
+          "provider": "claude",
+          "scope": "active_cli_account",
+          "state": "unavailable",
+          "phase": "disabled",
+          "category": "not_configured",
+          "last_attempt_at": null,
+          "last_success_at": null,
+          "next_eligible_at": null,
+          "snapshot": null
+        }
+      ]
+    }
+  },
+  "settings": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "92d2d7c10614432987f87b64c15c1da3",
+    "kind": "settings",
+    "data": {
+      "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+      "settings": {
+        "schema_version": 1,
+        "plan_fees_usd": {
+          "Codex": "20.00",
+          "Claude": "20.00"
+        },
+        "timezone": "UTC",
+        "rate_catalog": "bundled",
+        "rate_overrides": {
+          "fixture-claude": {
+            "input": "4",
+            "output": "20",
+            "cached": "0.2",
+            "write5m": "5",
+            "write1h": "8"
+          },
+          "fixture-model": {
+            "input": "2",
+            "output": "10",
+            "cached": "0.1"
+          }
+        },
+        "report_format": "text",
+        "approved_roots": [
+          {
+            "id": "43a7e38dbc1f8506c5b4f5c01d421ce82514ff508eb1b7f3d594cb0b1f0a3b6f",
+            "provider": "codex",
+            "label": "codex [path:ec91ca49]",
+            "enabled": true
+          },
+          {
+            "id": "ca370935d1bb67c441a1765a6792b6ff26400983ccf6737416838dbdaa8346c1",
+            "provider": "claude",
+            "label": "claude [path:7714db1e]",
+            "enabled": true
+          }
+        ]
+      },
+      "bounds": {
+        "monthly_fee_max_usd": "1000000000",
+        "decimal_places": 12,
+        "search_characters": 200,
+        "page_size_max": 100
+      }
+    }
+  },
+  "limits": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "545091f5b43f4f7284cc1b2e5b42e4d1",
+    "kind": "limits",
+    "data": {
+      "providers": [
+        {
+          "provider": "codex",
+          "scope": "active_cli_account",
+          "state": "unavailable",
+          "phase": "disabled",
+          "category": "not_configured",
+          "last_attempt_at": null,
+          "last_success_at": null,
+          "next_eligible_at": null,
+          "snapshot": null
+        },
+        {
+          "provider": "claude",
+          "scope": "active_cli_account",
+          "state": "unavailable",
+          "phase": "disabled",
+          "category": "not_configured",
+          "last_attempt_at": null,
+          "last_success_at": null,
+          "next_eligible_at": null,
+          "snapshot": null
+        }
+      ]
+    }
+  },
+  "overview_codex": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "bccf4d2c330546d6b983d313434bc2c6",
+    "kind": "overview",
+    "data": {
+      "scope": "local_unmatched_accounts",
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "10000",
+          "output_tokens": "1830000",
+          "cache_read_tokens": "1000000",
+          "cache_write_5m_tokens": "0",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "2840000",
+          "reasoning_tokens": "1260000"
+        },
+        "reasoning": {
+          "known_records": 1,
+          "unknown_records": 0
+        },
+        "record_count": 1,
+        "conversation_count": 1,
+        "project_count": 1,
+        "value": {
+          "state": "complete",
+          "amount_usd": "18.420000000000",
+          "priced_records": 1,
+          "unpriced_records": 0,
+          "priced_tokens": "2840000",
+          "unpriced_tokens": "0",
+          "assumed_records": 0,
+          "assumptions": []
+        }
+      },
+      "freshness": "current",
+      "coverage": [
+        {
+          "provider": "codex",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "initial_zero_baseline_assumed": 1
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "provider": "codex",
+          "available": true,
+          "reason": null,
+          "pricing_state": "complete",
+          "value_usd": "18.420000000000",
+          "fee_usd": "20.00",
+          "difference_usd": "-1.580000000000",
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "local_unmatched_accounts"
+          ]
+        }
+      ],
+      "combined_comparison": {
+        "provider": "combined",
+        "available": true,
+        "reason": null,
+        "pricing_state": "complete",
+        "value_usd": "18.420000000000",
+        "fee_usd": "20.00",
+        "difference_usd": "-1.580000000000",
+        "qualifications": [
+          "accounting_issues_present",
+          "api_equivalent_estimate",
+          "full_month_fee",
+          "ingestion_complete",
+          "local_unmatched_accounts"
+        ]
+      },
+      "days": [
+        {
+          "day": "2026-10-23",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "providers": [
+        {
+          "provider": "codex",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "models": [
+        {
+          "provider": "codex",
+          "model": "fixture-model",
+          "effort": "high",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "top_projects": [
+        {
+          "id": "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247",
+          "label": "C:/fixture/project",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-model"
+          ],
+          "efforts": [
+            "high"
+          ]
+        }
+      ],
+      "recent_conversations": [
+        {
+          "id": "conversation-v1:e255b0a077a32263a57ef96b32b253088c58628186dcea3cd9061bd7fc74f144",
+          "label": "same-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-model"
+          ],
+          "efforts": [
+            "high"
+          ]
+        }
+      ]
+    },
+    "query_context_id": "-fyjhQn2C13vic7ja7Aq4cOq_ZGRQiMc",
+    "usage_revision": "2",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "codex"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "overview_claude": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "7e58647a428545bbadeef7375307b084",
+    "kind": "overview",
+    "data": {
+      "scope": "local_unmatched_accounts",
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "10000",
+          "output_tokens": "20000",
+          "cache_read_tokens": "30000",
+          "cache_write_5m_tokens": "5000",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "65000",
+          "reasoning_tokens": null
+        },
+        "reasoning": {
+          "known_records": 0,
+          "unknown_records": 1
+        },
+        "record_count": 1,
+        "conversation_count": 1,
+        "project_count": 1,
+        "value": {
+          "state": "complete",
+          "amount_usd": "0.471000000000",
+          "priced_records": 1,
+          "unpriced_records": 0,
+          "priced_tokens": "65000",
+          "unpriced_tokens": "0",
+          "assumed_records": 1,
+          "assumptions": [
+            "legacy_cache_ttl_assumed"
+          ]
+        }
+      },
+      "freshness": "current",
+      "coverage": [
+        {
+          "provider": "claude",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "legacy_cache_ttl_assumed": 1
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "provider": "claude",
+          "available": true,
+          "reason": null,
+          "pricing_state": "complete",
+          "value_usd": "0.471000000000",
+          "fee_usd": "20.00",
+          "difference_usd": "-19.529000000000",
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "legacy_cache_ttl_assumed",
+            "local_unmatched_accounts"
+          ]
+        }
+      ],
+      "combined_comparison": {
+        "provider": "combined",
+        "available": true,
+        "reason": null,
+        "pricing_state": "complete",
+        "value_usd": "0.471000000000",
+        "fee_usd": "20.00",
+        "difference_usd": "-19.529000000000",
+        "qualifications": [
+          "accounting_issues_present",
+          "api_equivalent_estimate",
+          "full_month_fee",
+          "ingestion_complete",
+          "legacy_cache_ttl_assumed",
+          "local_unmatched_accounts"
+        ]
+      },
+      "days": [
+        {
+          "day": "2026-10-23",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        }
+      ],
+      "providers": [
+        {
+          "provider": "claude",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        }
+      ],
+      "models": [
+        {
+          "provider": "claude",
+          "model": "fixture-claude",
+          "effort": "unknown",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        }
+      ],
+      "top_projects": [
+        {
+          "id": "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247",
+          "label": "C:/fixture/project",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:00.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-claude"
+          ],
+          "efforts": [
+            "unknown"
+          ]
+        }
+      ],
+      "recent_conversations": [
+        {
+          "id": "conversation-v1:06e0d60ec342fb78857e904ef8d138e7bb53d5bb4db5287a337f50eafd69aec9",
+          "label": "claude-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:00.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-claude"
+          ],
+          "efforts": [
+            "unknown"
+          ]
+        }
+      ]
+    },
+    "query_context_id": "99h8QCXbf9K07FIGZ7AcvUpTQL6IeKMw",
+    "usage_revision": "2",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "empty": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "60c7b6a144da447ab48cc9c0dbf4c78b",
+    "kind": "overview",
+    "data": {
+      "scope": "local_unmatched_accounts",
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "0",
+          "output_tokens": "0",
+          "cache_read_tokens": "0",
+          "cache_write_5m_tokens": "0",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "0",
+          "reasoning_tokens": null
+        },
+        "reasoning": {
+          "known_records": 0,
+          "unknown_records": 0
+        },
+        "record_count": 0,
+        "conversation_count": 0,
+        "project_count": 0,
+        "value": {
+          "state": "empty",
+          "amount_usd": null,
+          "priced_records": 0,
+          "unpriced_records": 0,
+          "priced_tokens": "0",
+          "unpriced_tokens": "0",
+          "assumed_records": 0,
+          "assumptions": []
+        }
+      },
+      "freshness": "current",
+      "coverage": [
+        {
+          "provider": "claude",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "legacy_cache_ttl_assumed": 1
+          }
+        },
+        {
+          "provider": "codex",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "initial_zero_baseline_assumed": 1
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "provider": "claude",
+          "available": false,
+          "reason": "filtered_query",
+          "pricing_state": "empty",
+          "value_usd": null,
+          "fee_usd": "20.00",
+          "difference_usd": null,
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "local_unmatched_accounts"
+          ]
+        },
+        {
+          "provider": "codex",
+          "available": false,
+          "reason": "filtered_query",
+          "pricing_state": "empty",
+          "value_usd": null,
+          "fee_usd": "20.00",
+          "difference_usd": null,
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "local_unmatched_accounts"
+          ]
+        }
+      ],
+      "combined_comparison": {
+        "provider": "combined",
+        "available": false,
+        "reason": "filtered_query",
+        "pricing_state": "empty",
+        "value_usd": null,
+        "fee_usd": null,
+        "difference_usd": null,
+        "qualifications": [
+          "accounting_issues_present",
+          "api_equivalent_estimate",
+          "full_month_fee",
+          "ingestion_complete",
+          "local_unmatched_accounts"
+        ]
+      },
+      "days": [],
+      "providers": [],
+      "models": [],
+      "top_projects": [],
+      "recent_conversations": []
+    },
+    "query_context_id": "SHtxSRRd71C1V02h2sU3kXJR-IyV4L4T",
+    "usage_revision": "2",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "nothing-matches",
+      "selected_day": null
+    }
+  },
+  "job_queued": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "3362f7d71ddd46bb97dce57f077dd53f",
+    "kind": "job",
+    "data": {
+      "id": "04e5943a9ed741c4b93e674059864365",
+      "kind": "import",
+      "status": "queued",
+      "phase": "queued",
+      "code": null,
+      "created_at": "2026-10-24T20:47:55.784456Z",
+      "started_at": null,
+      "completed_at": null,
+      "requested_configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+      "counts": {},
+      "resulting_versions": null
+    }
+  },
+  "job_succeeded": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "d7887e35d9584f6098fbf8d1e5607db3",
+    "kind": "job",
+    "data": {
+      "id": "04e5943a9ed741c4b93e674059864365",
+      "kind": "import",
+      "status": "succeeded",
+      "phase": "complete",
+      "code": null,
+      "created_at": "2026-10-24T20:47:55.784456Z",
+      "started_at": "2026-10-24T20:47:55.821588Z",
+      "completed_at": "2026-10-24T20:47:55.867077Z",
+      "requested_configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b",
+      "counts": {
+        "files_verified": 2,
+        "files_parsed": 0,
+        "files_reused": 2,
+        "retained_files": 0
+      },
+      "resulting_versions": {
+        "usage_revision": "2",
+        "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+        "configuration_version": "settings-v1:7e6059e7ad405e800a2ba6f114fbcb28dae29b4af57d3e69448a709f29bc6d2b"
+      }
+    }
+  },
+  "limits_refresh": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "a3df3dc327414f0ba05a1524bf53e779",
+    "kind": "limits_refresh",
+    "data": {
+      "providers": [
+        {
+          "provider": "codex",
+          "state": "unavailable",
+          "check_id": null,
+          "next_eligible_at": null
+        },
+        {
+          "provider": "claude",
+          "state": "unavailable",
+          "check_id": null,
+          "next_eligible_at": null
+        }
+      ]
+    }
+  },
+  "settings_saved": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "bc210a28495243c1b6cb8adcb2e7d48a",
+    "kind": "settings_saved",
+    "data": {
+      "configuration_version": "settings-v1:8eb95a02dabc5d275f2c3a50fd6ff3391996c7122504d4172f288bd2398a3bbd",
+      "settings": {
+        "schema_version": 1,
+        "plan_fees_usd": {
+          "Codex": "20",
+          "Claude": "20"
+        },
+        "timezone": "UTC",
+        "rate_catalog": "bundled",
+        "rate_overrides": {
+          "fixture-claude": {
+            "input": "4",
+            "output": "20",
+            "cached": "0.2",
+            "write5m": "5",
+            "write1h": "8"
+          },
+          "fixture-model": {
+            "input": "2",
+            "output": "10",
+            "cached": "0.1"
+          }
+        },
+        "report_format": "text",
+        "approved_roots": [
+          {
+            "id": "43a7e38dbc1f8506c5b4f5c01d421ce82514ff508eb1b7f3d594cb0b1f0a3b6f",
+            "provider": "codex",
+            "label": "codex [path:ec91ca49]",
+            "enabled": true
+          },
+          {
+            "id": "ca370935d1bb67c441a1765a6792b6ff26400983ccf6737416838dbdaa8346c1",
+            "provider": "claude",
+            "label": "claude [path:7714db1e]",
+            "enabled": true
+          }
+        ]
+      },
+      "jobs": [
+        {
+          "id": "f6b49d7c975e43efb18184ebedbf9451",
+          "kind": "reprice",
+          "status": "queued",
+          "phase": "queued",
+          "code": null,
+          "created_at": "2026-10-24T20:47:55.936482Z",
+          "started_at": null,
+          "completed_at": null,
+          "requested_configuration_version": "settings-v1:8eb95a02dabc5d275f2c3a50fd6ff3391996c7122504d4172f288bd2398a3bbd",
+          "counts": {},
+          "resulting_versions": null
+        }
+      ],
+      "pending": true
+    }
+  },
+  "partial": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "976d2b4360954909b6448a4c6607902d",
+    "kind": "overview",
+    "data": {
+      "scope": "local_unmatched_accounts",
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "20010",
+          "output_tokens": "1850000",
+          "cache_read_tokens": "1030000",
+          "cache_write_5m_tokens": "5000",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "2905010",
+          "reasoning_tokens": "1260000"
+        },
+        "reasoning": {
+          "known_records": 1,
+          "unknown_records": 2
+        },
+        "record_count": 3,
+        "conversation_count": 3,
+        "project_count": 1,
+        "value": {
+          "state": "partial",
+          "amount_usd": "18.891000000000",
+          "priced_records": 2,
+          "unpriced_records": 1,
+          "priced_tokens": "2905000",
+          "unpriced_tokens": "10",
+          "assumed_records": 1,
+          "assumptions": [
+            "legacy_cache_ttl_assumed"
+          ]
+        }
+      },
+      "freshness": "current",
+      "coverage": [
+        {
+          "provider": "claude",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "legacy_cache_ttl_assumed": 1
+          }
+        },
+        {
+          "provider": "codex",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "initial_zero_baseline_assumed": 2
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "provider": "claude",
+          "available": true,
+          "reason": null,
+          "pricing_state": "complete",
+          "value_usd": "0.471000000000",
+          "fee_usd": "20",
+          "difference_usd": "-19.529000000000",
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "legacy_cache_ttl_assumed",
+            "local_unmatched_accounts"
+          ]
+        },
+        {
+          "provider": "codex",
+          "available": true,
+          "reason": null,
+          "pricing_state": "partial",
+          "value_usd": "18.420000000000",
+          "fee_usd": "20",
+          "difference_usd": "-1.580000000000",
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "local_unmatched_accounts",
+            "priced_usage_only"
+          ]
+        }
+      ],
+      "combined_comparison": {
+        "provider": "combined",
+        "available": true,
+        "reason": null,
+        "pricing_state": "partial",
+        "value_usd": "18.891000000000",
+        "fee_usd": "40",
+        "difference_usd": "-21.109000000000",
+        "qualifications": [
+          "accounting_issues_present",
+          "api_equivalent_estimate",
+          "full_month_fee",
+          "ingestion_complete",
+          "legacy_cache_ttl_assumed",
+          "local_unmatched_accounts",
+          "priced_usage_only"
+        ]
+      },
+      "days": [
+        {
+          "day": "2026-10-23",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "20010",
+              "output_tokens": "1850000",
+              "cache_read_tokens": "1030000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2905010",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 2
+            },
+            "record_count": 3,
+            "conversation_count": 3,
+            "project_count": 1,
+            "value": {
+              "state": "partial",
+              "amount_usd": "18.891000000000",
+              "priced_records": 2,
+              "unpriced_records": 1,
+              "priced_tokens": "2905000",
+              "unpriced_tokens": "10",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        }
+      ],
+      "providers": [
+        {
+          "provider": "claude",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        },
+        {
+          "provider": "codex",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10010",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840010",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 1
+            },
+            "record_count": 2,
+            "conversation_count": 2,
+            "project_count": 1,
+            "value": {
+              "state": "partial",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 1,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "10",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "models": [
+        {
+          "provider": "codex",
+          "model": "fixture-model",
+          "effort": "high",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        },
+        {
+          "provider": "claude",
+          "model": "fixture-claude",
+          "effort": "unknown",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        },
+        {
+          "provider": "codex",
+          "model": "unpriced-model",
+          "effort": "high",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10",
+              "output_tokens": "0",
+              "cache_read_tokens": "0",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "10",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "unpriced",
+              "amount_usd": null,
+              "priced_records": 0,
+              "unpriced_records": 1,
+              "priced_tokens": "0",
+              "unpriced_tokens": "10",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "top_projects": [
+        {
+          "id": "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247",
+          "label": "C:/fixture/project",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "20010",
+              "output_tokens": "1850000",
+              "cache_read_tokens": "1030000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2905010",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 2
+            },
+            "record_count": 3,
+            "conversation_count": 3,
+            "project_count": 1,
+            "value": {
+              "state": "partial",
+              "amount_usd": "18.891000000000",
+              "priced_records": 2,
+              "unpriced_records": 1,
+              "priced_tokens": "2905000",
+              "unpriced_tokens": "10",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-claude",
+            "fixture-model",
+            "unpriced-model"
+          ],
+          "efforts": [
+            "high",
+            "unknown"
+          ]
+        }
+      ],
+      "recent_conversations": [
+        {
+          "id": "conversation-v1:4cc7e2ae47939b24347e5a77b5c681b606838e832fbd599b5e081bb21a8fadc1",
+          "label": "unpriced-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10",
+              "output_tokens": "0",
+              "cache_read_tokens": "0",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "10",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "unpriced",
+              "amount_usd": null,
+              "priced_records": 0,
+              "unpriced_records": 1,
+              "priced_tokens": "0",
+              "unpriced_tokens": "10",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "unpriced-model"
+          ],
+          "efforts": [
+            "high"
+          ]
+        },
+        {
+          "id": "conversation-v1:e255b0a077a32263a57ef96b32b253088c58628186dcea3cd9061bd7fc74f144",
+          "label": "same-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "18.420000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-model"
+          ],
+          "efforts": [
+            "high"
+          ]
+        },
+        {
+          "id": "conversation-v1:06e0d60ec342fb78857e904ef8d138e7bb53d5bb4db5287a337f50eafd69aec9",
+          "label": "claude-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.471000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:00.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-claude"
+          ],
+          "efforts": [
+            "unknown"
+          ]
+        }
+      ]
+    },
+    "query_context_id": "B3mhR5srePRKhGcY50ci55qYmind81bc",
+    "usage_revision": "3",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:8eb95a02dabc5d275f2c3a50fd6ff3391996c7122504d4172f288bd2398a3bbd",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "unpriced": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "f9c9cf0ec2064eada7af65c747b5ad81",
+    "kind": "overview",
+    "data": {
+      "scope": "local_unmatched_accounts",
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "10",
+          "output_tokens": "0",
+          "cache_read_tokens": "0",
+          "cache_write_5m_tokens": "0",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "10",
+          "reasoning_tokens": null
+        },
+        "reasoning": {
+          "known_records": 0,
+          "unknown_records": 1
+        },
+        "record_count": 1,
+        "conversation_count": 1,
+        "project_count": 1,
+        "value": {
+          "state": "unpriced",
+          "amount_usd": null,
+          "priced_records": 0,
+          "unpriced_records": 1,
+          "priced_tokens": "0",
+          "unpriced_tokens": "10",
+          "assumed_records": 0,
+          "assumptions": []
+        }
+      },
+      "freshness": "current",
+      "coverage": [
+        {
+          "provider": "claude",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "legacy_cache_ttl_assumed": 1
+          }
+        },
+        {
+          "provider": "codex",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "initial_zero_baseline_assumed": 2
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "provider": "claude",
+          "available": false,
+          "reason": "filtered_query",
+          "pricing_state": "empty",
+          "value_usd": null,
+          "fee_usd": "20",
+          "difference_usd": null,
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "local_unmatched_accounts"
+          ]
+        },
+        {
+          "provider": "codex",
+          "available": false,
+          "reason": "filtered_query",
+          "pricing_state": "unpriced",
+          "value_usd": null,
+          "fee_usd": "20",
+          "difference_usd": null,
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "local_unmatched_accounts"
+          ]
+        }
+      ],
+      "combined_comparison": {
+        "provider": "combined",
+        "available": false,
+        "reason": "filtered_query",
+        "pricing_state": "unpriced",
+        "value_usd": null,
+        "fee_usd": null,
+        "difference_usd": null,
+        "qualifications": [
+          "accounting_issues_present",
+          "api_equivalent_estimate",
+          "full_month_fee",
+          "ingestion_complete",
+          "local_unmatched_accounts"
+        ]
+      },
+      "days": [
+        {
+          "day": "2026-10-23",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10",
+              "output_tokens": "0",
+              "cache_read_tokens": "0",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "10",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "unpriced",
+              "amount_usd": null,
+              "priced_records": 0,
+              "unpriced_records": 1,
+              "priced_tokens": "0",
+              "unpriced_tokens": "10",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "providers": [
+        {
+          "provider": "codex",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10",
+              "output_tokens": "0",
+              "cache_read_tokens": "0",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "10",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "unpriced",
+              "amount_usd": null,
+              "priced_records": 0,
+              "unpriced_records": 1,
+              "priced_tokens": "0",
+              "unpriced_tokens": "10",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "models": [
+        {
+          "provider": "codex",
+          "model": "unpriced-model",
+          "effort": "high",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10",
+              "output_tokens": "0",
+              "cache_read_tokens": "0",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "10",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "unpriced",
+              "amount_usd": null,
+              "priced_records": 0,
+              "unpriced_records": 1,
+              "priced_tokens": "0",
+              "unpriced_tokens": "10",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "top_projects": [
+        {
+          "id": "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247",
+          "label": "C:/fixture/project",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10",
+              "output_tokens": "0",
+              "cache_read_tokens": "0",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "10",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "unpriced",
+              "amount_usd": null,
+              "priced_records": 0,
+              "unpriced_records": 1,
+              "priced_tokens": "0",
+              "unpriced_tokens": "10",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "unpriced-model"
+          ],
+          "efforts": [
+            "high"
+          ]
+        }
+      ],
+      "recent_conversations": [
+        {
+          "id": "conversation-v1:4cc7e2ae47939b24347e5a77b5c681b606838e832fbd599b5e081bb21a8fadc1",
+          "label": "unpriced-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10",
+              "output_tokens": "0",
+              "cache_read_tokens": "0",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "10",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "unpriced",
+              "amount_usd": null,
+              "priced_records": 0,
+              "unpriced_records": 1,
+              "priced_tokens": "0",
+              "unpriced_tokens": "10",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "unpriced-model"
+          ],
+          "efforts": [
+            "high"
+          ]
+        }
+      ]
+    },
+    "query_context_id": "0LdJiGSJr50p4cWf4f8eKci8VV6UXVv2",
+    "usage_revision": "3",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:8eb95a02dabc5d275f2c3a50fd6ff3391996c7122504d4172f288bd2398a3bbd",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [
+        "unpriced-model"
+      ],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "priced_zero": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:81d1e6706853cbbd1b8ffb9c278d5c2ecc04af9d3680ce699ec7461b52721f32",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "f7d4c81c64754f268ac3a361fde687a3",
+    "kind": "overview",
+    "data": {
+      "scope": "local_unmatched_accounts",
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "20000",
+          "output_tokens": "1850000",
+          "cache_read_tokens": "1030000",
+          "cache_write_5m_tokens": "5000",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "2905000",
+          "reasoning_tokens": "1260000"
+        },
+        "reasoning": {
+          "known_records": 1,
+          "unknown_records": 1
+        },
+        "record_count": 2,
+        "conversation_count": 2,
+        "project_count": 1,
+        "value": {
+          "state": "complete",
+          "amount_usd": "0.000000000000",
+          "priced_records": 2,
+          "unpriced_records": 0,
+          "priced_tokens": "2905000",
+          "unpriced_tokens": "0",
+          "assumed_records": 1,
+          "assumptions": [
+            "legacy_cache_ttl_assumed"
+          ]
+        }
+      },
+      "freshness": "current",
+      "coverage": [
+        {
+          "provider": "claude",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "legacy_cache_ttl_assumed": 1
+          }
+        },
+        {
+          "provider": "codex",
+          "state": "complete",
+          "ingestion_issues": {},
+          "accounting_issues": {
+            "initial_zero_baseline_assumed": 2
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "provider": "claude",
+          "available": false,
+          "reason": "filtered_query",
+          "pricing_state": "complete",
+          "value_usd": "0.000000000000",
+          "fee_usd": "20.00",
+          "difference_usd": null,
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "legacy_cache_ttl_assumed",
+            "local_unmatched_accounts"
+          ]
+        },
+        {
+          "provider": "codex",
+          "available": false,
+          "reason": "filtered_query",
+          "pricing_state": "complete",
+          "value_usd": "0.000000000000",
+          "fee_usd": "20.00",
+          "difference_usd": null,
+          "qualifications": [
+            "accounting_issues_present",
+            "api_equivalent_estimate",
+            "full_month_fee",
+            "ingestion_complete",
+            "local_unmatched_accounts"
+          ]
+        }
+      ],
+      "combined_comparison": {
+        "provider": "combined",
+        "available": false,
+        "reason": "filtered_query",
+        "pricing_state": "complete",
+        "value_usd": "0.000000000000",
+        "fee_usd": null,
+        "difference_usd": null,
+        "qualifications": [
+          "accounting_issues_present",
+          "api_equivalent_estimate",
+          "full_month_fee",
+          "ingestion_complete",
+          "legacy_cache_ttl_assumed",
+          "local_unmatched_accounts"
+        ]
+      },
+      "days": [
+        {
+          "day": "2026-10-23",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "20000",
+              "output_tokens": "1850000",
+              "cache_read_tokens": "1030000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2905000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 1
+            },
+            "record_count": 2,
+            "conversation_count": 2,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.000000000000",
+              "priced_records": 2,
+              "unpriced_records": 0,
+              "priced_tokens": "2905000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        }
+      ],
+      "providers": [
+        {
+          "provider": "claude",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.000000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        },
+        {
+          "provider": "codex",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.000000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "models": [
+        {
+          "provider": "claude",
+          "model": "fixture-claude",
+          "effort": "unknown",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.000000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          }
+        },
+        {
+          "provider": "codex",
+          "model": "fixture-model",
+          "effort": "high",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.000000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          }
+        }
+      ],
+      "top_projects": [
+        {
+          "id": "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247",
+          "label": "C:/fixture/project",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "20000",
+              "output_tokens": "1850000",
+              "cache_read_tokens": "1030000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2905000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 1
+            },
+            "record_count": 2,
+            "conversation_count": 2,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.000000000000",
+              "priced_records": 2,
+              "unpriced_records": 0,
+              "priced_tokens": "2905000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-claude",
+            "fixture-model"
+          ],
+          "efforts": [
+            "high",
+            "unknown"
+          ]
+        }
+      ],
+      "recent_conversations": [
+        {
+          "id": "conversation-v1:e255b0a077a32263a57ef96b32b253088c58628186dcea3cd9061bd7fc74f144",
+          "label": "same-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "reasoning": {
+              "known_records": 1,
+              "unknown_records": 0
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.000000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "2840000",
+              "unpriced_tokens": "0",
+              "assumed_records": 0,
+              "assumptions": []
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:10.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-model"
+          ],
+          "efforts": [
+            "high"
+          ]
+        },
+        {
+          "id": "conversation-v1:06e0d60ec342fb78857e904ef8d138e7bb53d5bb4db5287a337f50eafd69aec9",
+          "label": "claude-session",
+          "summary": {
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "20000",
+              "cache_read_tokens": "30000",
+              "cache_write_5m_tokens": "5000",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "65000",
+              "reasoning_tokens": null
+            },
+            "reasoning": {
+              "known_records": 0,
+              "unknown_records": 1
+            },
+            "record_count": 1,
+            "conversation_count": 1,
+            "project_count": 1,
+            "value": {
+              "state": "complete",
+              "amount_usd": "0.000000000000",
+              "priced_records": 1,
+              "unpriced_records": 0,
+              "priced_tokens": "65000",
+              "unpriced_tokens": "0",
+              "assumed_records": 1,
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ]
+            }
+          },
+          "last_activity_at": "2026-10-23T20:00:00.000000Z",
+          "project_ids": [
+            "project-v1:2e1eee9d36323a97092601f7e37983d4936ec9bac37a4527a27130006d0fc247"
+          ],
+          "models": [
+            "fixture-claude"
+          ],
+          "efforts": [
+            "unknown"
+          ]
+        }
+      ]
+    },
+    "query_context_id": "g0AYv1nq2oFAufFq9V9GozRgeK_sczlY",
+    "usage_revision": "3",
+    "pricing_version": "pricing-v1:fc42034d7b9d49e7d932111e721bb9785cd4d15231e51fd9bebf334000166207",
+    "configuration_version": "settings-v1:d6e580b8f56d48ae8d03779a50e23bfdfebcbb8eb8e6c698e7eecd153ed9ea03",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [
+        "fixture-claude",
+        "fixture-model"
+      ],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "invalid_input": {
+    "error": {
+      "code": "invalid_input",
+      "message": "Invalid or unsupported input; check the documented field bounds.",
+      "field_errors": {
+        "provider": "Invalid value."
+      }
+    },
+    "request_id": "synthetic-request"
+  }
+}

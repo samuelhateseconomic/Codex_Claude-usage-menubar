@@ -1,0 +1,2795 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Usage Hub local API",
+    "version": "1.0.0",
+    "description": "Explicit authenticated loopback API. UTC microsecond instants, integer-string tokens, decimal-string USD; no provider polling from reads."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:{port}/api/v1",
+      "variables": {
+        "port": {
+          "default": "8765"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/status": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/status"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/status"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ]
+      }
+    },
+    "/overview": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/overview"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/overview"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "codex",
+                  "claude"
+                ]
+              },
+              "maxItems": 2,
+              "minItems": 1
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "today",
+                "week",
+                "month"
+              ]
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "effort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "selected_day",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "value_desc",
+                "tokens_desc",
+                "last_activity_desc",
+                "events"
+              ]
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "base_query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/usage/conversations": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/list"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/list"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "codex",
+                  "claude"
+                ]
+              },
+              "maxItems": 2,
+              "minItems": 1
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "today",
+                "week",
+                "month"
+              ]
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "effort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "selected_day",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "value_desc",
+                "tokens_desc",
+                "last_activity_desc",
+                "events"
+              ]
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "base_query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/usage/projects": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/list"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/list"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "codex",
+                  "claude"
+                ]
+              },
+              "maxItems": 2,
+              "minItems": 1
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "today",
+                "week",
+                "month"
+              ]
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "effort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "selected_day",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "value_desc",
+                "tokens_desc",
+                "last_activity_desc",
+                "events"
+              ]
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "base_query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/usage/facets": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/facets"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/facets"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "codex",
+                  "claude"
+                ]
+              },
+              "maxItems": 2,
+              "minItems": 1
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "today",
+                "week",
+                "month"
+              ]
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "effort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "selected_day",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "value_desc",
+                "tokens_desc",
+                "last_activity_desc",
+                "events"
+              ]
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "base_query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/conversations/{id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/conversation"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/conversation"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "codex",
+                  "claude"
+                ]
+              },
+              "maxItems": 2,
+              "minItems": 1
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "today",
+                "week",
+                "month"
+              ]
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "effort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "selected_day",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "value_desc",
+                "tokens_desc",
+                "last_activity_desc",
+                "events"
+              ]
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "base_query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/conversations/{id}/events": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/events"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/events"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "codex",
+                  "claude"
+                ]
+              },
+              "maxItems": 2,
+              "minItems": 1
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "today",
+                "week",
+                "month"
+              ]
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "effort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "selected_day",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "value_desc",
+                "tokens_desc",
+                "last_activity_desc",
+                "events"
+              ]
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "base_query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/limits": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/limits"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/limits"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ]
+      }
+    },
+    "/settings": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/settings"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/settings"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ]
+      },
+      "patch": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/settings_saved"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/settings_saved"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": [],
+            "csrf": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "expected_configuration_version": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "changes": {
+                    "type": "object",
+                    "properties": {
+                      "timezone": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "plan_fees_usd": {
+                        "type": "object",
+                        "properties": {
+                          "Codex": {
+                            "anyOf": [
+                              {
+                                "$ref": "./usage-hub-v1.schema.json#/$defs/rate"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "Claude": {
+                            "anyOf": [
+                              {
+                                "$ref": "./usage-hub-v1.schema.json#/$defs/rate"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "Codex",
+                          "Claude"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "rate_overrides": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "$ref": "./usage-hub-v1.schema.json#/$defs/price"
+                        }
+                      },
+                      "report_format": {
+                        "type": "string",
+                        "enum": [
+                          "text",
+                          "html"
+                        ]
+                      },
+                      "enabled_root_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 128
+                        },
+                        "maxItems": 128
+                      }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "expected_configuration_version",
+                  "changes"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/job"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/job"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/index/refresh": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/job"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/job"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": [],
+            "csrf": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "root_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 128
+                    },
+                    "maxItems": 128
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/limits/refresh": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/limits_refresh"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/limits_refresh"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/limits_refresh"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": [],
+            "csrf": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "providers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "codex",
+                        "claude"
+                      ]
+                    },
+                    "maxItems": 2,
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "providers"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/session"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/session"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ]
+      }
+    },
+    "/session/bootstrap": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/session"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/session"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "launch_token": {
+                    "type": "string",
+                    "maxLength": 128
+                  }
+                },
+                "required": [
+                  "launch_token"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "localSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "usage_hub_v1"
+      },
+      "csrf": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Usage-CSRF"
+      }
+    }
+  }
+}
