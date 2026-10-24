@@ -266,8 +266,13 @@ def create_server(service, port=8765):
             self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
             if cookie:
                 self.send_header("Set-Cookie", f"usage_hub={token}; HttpOnly; SameSite=Strict; Path=/")
-            self.end_headers()
-            self.wfile.write(body)
+            try:
+                self.end_headers()
+                self.wfile.write(body)
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                # A superseded browser query may close the socket. There is no
+                # recipient for a second error response or raw traceback.
+                self.close_connection = True
 
         def permitted(self, api=False):
             origin = f"http://127.0.0.1:{self.server.server_port}"

@@ -170,6 +170,29 @@ class HubHTTPTests(unittest.TestCase):
         for path in ('/../usage_reports.py','/windows/usage_reports.py','/assets/../../AGENTS.md'):
             self.assertEqual(self.request(path)[0],404)
 
+    def test_disconnected_client_response_stops_without_another_reply(self):
+        # Deterministic socket-write failures at either the headers or body,
+        # matching an AbortController cancelling a superseded browser query.
+        for error in (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            for fail_at in (1, 2):
+                with self.subTest(error=error.__name__, fail_at=fail_at):
+                    class DisconnectedWriter:
+                        calls = 0
+
+                        def write(self, data):
+                            self.calls += 1
+                            if self.calls == fail_at:
+                                raise error("synthetic disconnected browser")
+                            return len(data)
+
+                    handler = object.__new__(self.server.RequestHandlerClass)
+                    handler.request_version = "HTTP/1.1"
+                    handler.requestline = "GET / HTTP/1.1"
+                    handler.wfile = DisconnectedWriter()
+                    handler.respond(200, {"synthetic": True})
+                    self.assertEqual(handler.wfile.calls, fail_at)
+                    self.assertTrue(handler.close_connection)
+
 
 if __name__=='__main__':
     unittest.main()

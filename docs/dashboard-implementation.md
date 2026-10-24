@@ -57,6 +57,10 @@ Before committing, the staged dashboard files were exported with the committed c
 
 ## Next integration steps
 
+Read the [dashboard resilience coverage inventory](dashboard-resilience-handoff.md) before further frontend work. It records completed exact money display and request-recovery changes, preserves the previous interaction baseline, and identifies checks still gated on core/API integration. Do not repeat the completed interaction review as new work without a relevant change.
+
+The [S05 integration review](s05-dashboard-integration-review.md) pins the completed core at `97b6070` and records the exact adapter replacements, remaining ID/query/storage facilities, S06 handoff boundaries, and independent interaction repairs. It supersedes the older S05-pending assumptions below without enabling real mode.
+
 1. Let the current core work finish its observation, reconciliation, source-quality/time, exact valuation, shared-summary, settings, reliability, and release gates. The overlap invariant is 200; the reset invariant is 250. Keep these as executable regressions owned by S02.
 2. Inspect the user's separately developed database location/schema before adding any storage or migrations. No such schema was found in this checkout; a location was requested during this work.
 3. Replace the preview adapter with the authoritative shared service and versioned index/API. Preserve integer/decimal strings, immutable query contexts, quality dimensions, provider scope, and configuration versioning from the integration contract.

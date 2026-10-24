@@ -40,11 +40,11 @@ Run the dashboard checks from the repository root:
 
 ```powershell
 .\windows\.venv\Scripts\python.exe -m unittest discover -s windows/tests -p test_hub.py -v
-node --test windows/dashboard/tests/format.test.mjs
+node --test windows/dashboard/tests/*.test.mjs
 .\windows\.venv\Scripts\python.exe windows/tests/packaged_dashboard_smoke.py --exe windows/dist/UsageTray.exe
 ```
 
-Node is needed only for the small formatter tests, not for running the dashboard. The HTTP tests need local loopback access. Packaging uses the normal `windows/build.ps1`, including dashboard assets and `tzdata`.
+Node is needed only for formatter and controlled handler/recovery tests, not for running the dashboard. The HTTP tests need local loopback access. Packaging uses the normal `windows/build.ps1`, including dashboard assets and `tzdata`. Before repeating interaction work, read the [completed coverage inventory and synthetic browser fault driver instructions](../docs/dashboard-resilience-handoff.md); ordinary navigation and request-failure evidence are recorded separately there.
 
 ## Diagnose and test
 

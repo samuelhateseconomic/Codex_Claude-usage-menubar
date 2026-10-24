@@ -8,7 +8,7 @@ The user confirmed that the project should remain local. The planned storage ada
 
 Discovery checked tracked and untracked source/schema filenames in this checkout, local branches/worktrees, nearby development folders, saved local project locations, and the UsageTray application-data directory. No Usage Hub schema, SQL migrations, database configuration, or existing application-data database was found in that bounded search. A neighboring project's migrations belong to a separate planner, not this usage ledger. They were not copied or adopted. No database contents, credentials, or real histories were opened. This is bounded discovery, not a claim that no database exists anywhere on the computer.
 
-The isolated refinement branch `codex/s01-observation-contracts` contains S01-S03 commits through `b9495f0`; S04 is active in that worktree. Those changes are not merged into this branch. Their ledger reports completed extraction/reconciliation/time gates there; this handoff does not rerun or certify them. Shared-checkout observation edits remain uncommitted and belong to that core work. Do not infer main-branch readiness from another worktree's gate evidence.
+The isolated refinement branch `codex/s01-observation-contracts` now contains S01-S07 commits through `461c3a3`; S08 privacy/diagnostic verification is next. Those changes are not merged into this branch. The [S05 dashboard review](s05-dashboard-integration-review.md) pins the completed query/valuation boundaries and records independent service-test evidence. Shared-checkout observation edits remain uncommitted and belong to that core work. Do not infer main-branch readiness from another worktree's gate evidence.
 
 Planned application-owned locations, to implement at S11 after S06 configuration ownership is established:
 
@@ -19,13 +19,21 @@ Planned application-owned locations, to implement at S11 after S06 configuration
 
 No database directory/file, migration, schema version, connection, dependency, or persistent setting was created in this preparation.
 
+### Automatic collection scope — October 24 clarification
+
+The user wants automatic account usage collection if supported, with local recorded usage as the fallback; ordinary ChatGPT conversations are excluded. Local recorded usage remains the authoritative source for detailed project/model accounting. Planned automatic local rescans belong to the existing runtime owner, not a separate Codex chat automation or hosted job.
+
+Optional account refresh is technically supported by the [official app-server protocol](https://learn.chatgpt.com/docs/app-server#7-token-usage-chatgpt): `account/usage/read` returns token-activity summaries and nullable daily buckets; `account/rateLimits/read` returns live limits. Installed `codex-cli 0.163.0` generated a non-experimental protocol schema containing `account/usage/read` during an offline compatibility check. This verifies the method declaration only: authenticated responses, field availability, product coverage, and exclusion of ordinary-chat activity have not been verified. Do not enable account token activity until that scope is established.
+
+When that adapter is implemented, reuse the existing runtime owner for bounded periodic refresh with cooldown/backoff and labeled last-successful state. Account snapshots remain separate from unmatched local records and are never added to local totals, used to invent per-project/model usage, or converted to actual subscription charges. Unsupported methods, unavailable fields, offline state, or authentication errors must leave local views usable without prompting for credentials as an incidental workaround. Account access is optional; no credential changes, account request, scheduler, or persistent background task was performed by this check. Implementation follows the S07 ownership and S11-S13 integration gates.
+
 ## 2. Inputs, owners, and outputs
 
 The intended path is approved roots → metadata observations → reconciled canonical events → exact event valuations → committed local index → shared query result → terminal/HTML/API → dashboard. Each arrow is a contract boundary; the database must not derive corrected events from already aggregated report totals.
 
 **S01-S03 collector boundary:** accepts approved JSONL sources and emits typed observations, provenance, accepted events, structured issues, and captured UTC ranges. Persist source generation and counter validity before normalization. The current `Record` projection alone cannot recover epochs, copied-source evidence, or request-context quality.
 
-**S04 valuation boundary:** accepts accepted events plus an immutable price policy and emits event value/state, applied rate, tier, assumptions, source/date, and computation/override versions. Repricing never changes canonical tokens. Final bounds and constructor names must come from the finished S04 implementation, not its active draft or the preview's temporary `usage_value.py`.
+**S04 valuation boundary:** accepts accepted events plus an immutable price policy and emits event value/state, applied rate, tier, assumptions, source/date, and computation/override versions. Repricing never changes canonical tokens. Use the completed S04 implementation pinned in the S05 review for bounds and constructors, not the preview's temporary `usage_value.py`.
 
 **S05 query boundary:** accepts dataset, captured range/timezone, normalized filters, versions, and ordering. It produces one authoritative summary, issues/coverage, chart buckets, groups, conversation list/detail, and comparisons. Database adapters return typed facts and exact values; they do not create a separate pricing/aggregation policy.
 
@@ -147,8 +155,8 @@ Before enabling a persistent path, demonstrate these scenarios against the actua
 
 ## 8. Handoff readiness and remaining decisions
 
-Preparation delivers the logical mapping, adapter discrepancies, local placement/configuration ownership, fixture inputs/expected outputs, and acceptance scenarios. Actual table names/DDL/migrations, final S04 precision/bounds/provenance adapters, S05 DTO schemas, S06 cross-store recovery, S07 ownership/retention, and indexed performance are pending their owning sessions.
+Preparation delivers the logical mapping, adapter discrepancies, local placement/configuration ownership, fixture inputs/expected outputs, and acceptance scenarios. S04 numeric bounds and S05 Python contracts are now implemented on the isolated branch and pinned in the S05 review. Actual table names/DDL/migrations, numeric storage adapters, API DTO serializers/schemas, cross-store configuration recovery, adaptation of completed S07 ownership/retention, and indexed performance remain pending their integration sessions.
 
 Validation used the project Python interpreter with an independent standard-library `json`/`Decimal`/`zoneinfo` check. JSON syntax and duplicate-key rejection, integer/decimal wire types, signed-64-bit fixture counts, category totals, reasoning subset/coverage, event-level half-even arithmetic, provider/full totals, full-fee differences, frozen UTC/local-day buckets, exact conversation ordering, unique IDs, and source-link references passed. Local Markdown links, balanced code fences, whitespace, and `git diff --check` passed. These checks validate the example's internal consistency; they do not validate SQL constraints, transactional recovery, a machine-readable API schema, or actual reconciliation. No application suite or build was rerun for documentation/fixture-only changes.
 
-Next ready work remains S04 in the isolated core worktree, then S05-S09 and integration validation of both branches. S11 can begin implementation only after those core gates pass. Do not merge the worktrees, connect real history, or mark S11-S14 complete because this mapping or its example arithmetic validates.
+Next core work is S08 against the completed S07 branch, then S09 and integration validation of both branches. S11 can begin implementation only after those core gates pass. Do not merge the worktrees, connect real history, or mark S11-S14 complete because this mapping or its example arithmetic validates.
