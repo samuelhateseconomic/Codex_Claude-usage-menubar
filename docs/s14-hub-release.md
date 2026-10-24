@@ -1,6 +1,6 @@
 # S14 packaged hub release record
 
-Status: implementation and local automated acceptance complete on the refinement branch, starting at `7e3e832`; hosted verification pending. Native/distribution sign-off is unrun, so the full S14 release gate remains open. Application **0.13.0**. This document separates executable checks, browser interaction, simulated native menus and unrun distribution checks. The [refinement plan](project-refinement-plan.md), [integration contract](usage-hub-integration-plan.md) and [S13 runtime handoff](s13-runtime-integration.md) own the supporting contracts.
+Status: implementation and local automated acceptance complete on the refinement branch, starting at `7e3e832`; hosted Python3.11–3.14 acceptance passed. Explicit user-facing dashboard launch is confirmed; remaining native menu/report-viewer/Quit and distribution sign-off are unrun, so the full S14 release gate remains open. Application **0.13.0**. This document separates executable checks, browser interaction, simulated native menus and unrun distribution checks. The [refinement plan](project-refinement-plan.md), [integration contract](usage-hub-integration-plan.md) and [S13 runtime handoff](s13-runtime-integration.md) own the supporting contracts.
 
 ## Delivered changes
 
@@ -71,3 +71,19 @@ No live provider/account login verification, new real-history scan, physically n
 The unsupported-index case now restores the verified backup to separate **new** index/settings paths before setting version99 and exercising failure plus exact terminal fallback. It never edits the deliberately terminated owner's DB/WAL. No I/O error is ignored, no general retry is added, and the actual app/crash/restart assertions stay intact. Two regressions verify that original index, backup and settings remain byte-identical, and that existing destination files are refused. Focused fixture suite: **4 / 0.876 seconds**, including the two existing real Windows sharing tests. Application source and the tested `c1801edd...` binary are unchanged by this harness correction. Final hosted revalidation follows.
 
 The new local fixture-isolation rerun measures Overview **1.324439 / 0.631449 / 0.629116 seconds**, Explore **0.153870 / 0.157759 / 0.148966**, all under target. Same executable/machine/fixture; retain the earlier cold **2.926127** observation as performance variability rather than discarding it. Initial hosted samples also all fell below two seconds on their four-CPU Windows runners; final CI artifact values are reported separately.
+
+
+## Final hosted acceptance and user launch
+
+[Final S14 matrix 40141823025](https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar/actions/runs/40141823025) at `098844f4707aee9fea26be3231b278167e6d14ec` completed **successfully in all four Windows jobs**. Inspected logs:
+
+- Python **3.11.9**: **378 tests / 57.330 seconds**.
+- Python **3.12.10**: **378 / 47.045 seconds**.
+- Python **3.13.16**: **378 / 55.757 seconds**.
+- Python **3.14.9**: **378 / 64.862 seconds**.
+
+Every job also passes **79 frontend tests**, **18 core executable checks**, both retained packaged real/demo launchers and the corrected full hub release harness, then uploads its executable and synthetic timing artifact. On these four-CPU runners, all 24 HTTP bundle samples met the initial two-second target: Overview **0.305824–0.698677 seconds**, Explore **0.073076–0.110037**. These do not erase the earlier local cold-start observation. Final expanded local suite after the harness correction: **378 / 130.135 seconds**. The application binary remains the previously verified `c1801edd...`; the follow-up only changes acceptance infrastructure and documentation.
+
+During manual launch, a Python `usage_tray.py` launcher was running, with no new `UsageTray.exe` or default API discovery. The separate original Desktop checkout still has its older real-dashboard gate. Opened the current build's folder in File Explorer and explicitly launched the verified executable with `--dashboard --dashboard-port 0`. Confirmed its new default local-service discovery and a **Usage Hub · Personal console — Comet** window, without reading/exporting personal histories or capability secrets. The user confirmed the dashboard appeared. This is an actual explicit browser-launch check, not native tray-menu/Quit playback. The user-facing offline application/browser are intentionally left running; all synthetic test helpers/tabs/fixtures were already closed.
+
+Final engineering state: implemented, committed/pushed, full local and hosted automated acceptance passed, explicit user-facing dashboard launch confirmed. **S14 remains `in_progress` only for remaining native/distribution release sign-off**. No further numbered implementation session is queued. Native tray action, report viewer and Quit/relaunch need their stated manual results; physical clean-machine/disconnection, signing/distribution and other platform certifications remain unclaimed. Original/main integration is still a separate requested action and its working edits are preserved.
