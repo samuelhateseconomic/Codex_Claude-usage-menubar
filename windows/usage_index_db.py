@@ -9,7 +9,7 @@ import uuid
 from usage_config import load_settings, settings_data
 from usage_index_codec import dumps
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 APPLICATION_ID = 0x55545259
 BUSY_MS = 250
 RECOVERY = 'Cannot open the usage index. Preserve it and restore a verified backup or explicitly rebuild to a separate file.'
@@ -20,6 +20,10 @@ class IndexErrorBase(ValueError):
 
 
 class IndexUnavailable(IndexErrorBase):
+    pass
+
+
+class IndexQueryBudget(IndexUnavailable):
     pass
 
 
@@ -60,6 +64,12 @@ MIGRATIONS = (
         'CREATE INDEX event_project_time ON events(dataset,project,occurred_us)',
         'CREATE INDEX event_model_effort_time ON events(dataset,model,effort,occurred_us)',
         'CREATE INDEX valuation_version ON valuations(dataset,pricing,event)',
+    ),
+    (
+        "CREATE TABLE jobs (id TEXT PRIMARY KEY, dataset TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('import','reprice')), request_key TEXT NOT NULL, configuration TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('queued','running','succeeded','failed','superseded')), phase TEXT NOT NULL, code TEXT, created TEXT NOT NULL, started TEXT, completed TEXT, counts TEXT NOT NULL, result TEXT, payload TEXT NOT NULL, FOREIGN KEY(dataset) REFERENCES datasets(id))",
+        "CREATE UNIQUE INDEX active_job_request ON jobs(dataset,request_key) WHERE status IN ('queued','running')",
+        'CREATE INDEX job_queue ON jobs(dataset,status,created,id)',
+        'CREATE TABLE provider_cache (provider TEXT PRIMARY KEY, payload TEXT NOT NULL)',
     ),
 )
 

@@ -440,7 +440,7 @@ class RecoveryAndConcurrencyGates(IndexFixture):
         self.assertTrue(list((path.parent/'index-backups').glob('*.sqlite3')))
         migrated=index.UsageIndex(path,config_path=self.config)
         with migrated.connection(True) as connection:
-            self.assertEqual(db.verify(connection),2)
+            self.assertEqual(db.verify(connection),db.SCHEMA_VERSION)
 
     def test_corrupt_settings_preserved_and_projection_change_during_import_aborts(self):
         self.write(events=[counter(100,10)])

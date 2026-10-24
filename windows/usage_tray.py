@@ -55,18 +55,22 @@ def open_report(path, format):
 
 
 def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None, timezone=DEFAULT_TIMEZONE, roots=None, settings_version=None,
-             dashboard=False, dashboard_port=8765):
+             dashboard=False, dashboard_port=8765, shared_runtime=None, report_query=None):
     try:
         import pystray
         from PIL import Image, ImageDraw
     except ImportError:
         raise SystemExit("Tray dependencies missing. Run: python -m pip install -r requirements.txt") from None
 
-    stop = threading.Event()
+    stop = shared_runtime.stop if shared_runtime is not None else threading.Event()
     changed = threading.Event()
     fetchers = {name: (lambda p=name: demo_snapshot(p)) if demo else (lambda f=fetch: f(cancel_event=stop))
                 for name, fetch in PROVIDERS.items() if selected == "both" or name.lower() == selected}
-    runtime = PollingRuntime(fetchers, stop=stop, changed=changed.set)
+    runtime = shared_runtime if shared_runtime is not None else PollingRuntime(fetchers, stop=stop, changed=changed.set)
+    if shared_runtime is not None:
+        for state in runtime.states:
+            previous = state.changed
+            state.changed = lambda previous=previous: (previous(), changed.set())
     states = runtime.states
     render_lock = threading.Lock()
     report_lock = threading.Lock()
@@ -117,8 +121,11 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
                 for state in states:
                     with state.lock:
                         snapshots[state.provider] = state.snapshot
-                report = query_usage(period, [s.provider for s in states], snapshots, prices=prices, demo=demo, plan_costs=plan_costs, timezone=timezone, roots=roots)
-                report = replace(report, settings_version=settings_version)
+                if report_query is not None:
+                    report = report_query(period, snapshots)
+                else:
+                    report = query_usage(period, [s.provider for s in states], snapshots, prices=prices, demo=demo, plan_costs=plan_costs, timezone=timezone, roots=roots)
+                    report = replace(report, settings_version=settings_version)
                 if stop.is_set():
                     return
                 phase = "save"
@@ -364,6 +371,7 @@ def main():
         return 0
     try:
         settings = load_settings(config_path)
+        loaded_version = settings.version
         saved_version = settings.version if config_path.exists() else None
         # Until the first explicit save, retain the legacy automatic price file.
         price_path = args.prices
@@ -381,7 +389,14 @@ def main():
         if terminal_options and settings.report_format != "text":
             parser.error("Terminal view options require --report-format text")
         if args.save_settings:
-            save_settings(settings, config_path)
+            try:
+                with RuntimeOwner():
+                    if load_settings(config_path).version != loaded_version:
+                        raise SettingsError("Settings changed before save. Reload and retry; no settings were replaced.")
+                    save_settings(settings, config_path)
+            except AlreadyRunning:
+                complete(3, "ownership", "already_running")
+                parser.exit(3, "An active Usage Tray/API owner controls settings. Use its settings API or quit it before saving from the CLI.\n")
             saved_version = settings.version
     except SettingsError as exc:
         if args.diagnostics:

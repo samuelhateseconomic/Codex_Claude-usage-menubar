@@ -16,14 +16,14 @@ import uuid
 from usage_config import (application_directory, settings_path, load_settings, settings_from_data,
                           settings_data, save_settings, PROVIDERS)
 from usage_ingestion import discover, verified_prefix, observations_from_prefix, ScanIssue, _id
-from usage_observations import PARSER_VERSION
+from usage_observations import PARSER_VERSION, PARSER_CACHE_VERSION
 from usage_reconciliation import reconcile_observations, RECONCILIATION_VERSION, AccountingIssue
 from usage_runtime import RuntimeOwner, AlreadyRunning
 from usage_service import build_usage_result, SourceQuality, UsageResult
 from usage_valuation import build_catalog, value_event, aggregate_values
 import usage_index_codec as codec
 from usage_index_db import (connect, initialize, transaction, backup, verify,
-                            IndexBusy, IndexRecoveryError, IndexUnavailable, RECOVERY)
+                            IndexBusy, IndexRecoveryError, IndexUnavailable, IndexQueryBudget, RECOVERY)
 
 
 def digest(*values):
@@ -65,6 +65,41 @@ class Publication:
     configuration_version: str
     freshness: str
     result: UsageResult
+
+
+@dataclass(frozen=True)
+class IndexSnapshot:
+    dataset_id: str
+    installation_id: str
+    mode: str
+    usage_revision: int
+    pricing_version: str
+    configuration_version: str
+    freshness: str
+    events: tuple
+    catalog: object
+    settings: object
+    valuations: tuple
+    sources: tuple
+    project_ids: tuple
+    projects: tuple
+    event_project_ids: tuple
+    conversation_ids: tuple
+    conversations: tuple
+
+    @property
+    def versions(self):
+        return (self.dataset_id, self.usage_revision, self.pricing_version, self.configuration_version)
+
+    def query(self, context):
+        if context.demo != (self.mode == 'demo'):
+            raise ValueError('Query mode must match the explicit dataset namespace.')
+        result = build_usage_result(self.events, context, self.catalog, dict(self.settings.plan_fees_usd),
+            self.sources, ('Local index: accepted unmatched-account histories; retained/partial sources are explicitly qualified.',),
+            valuations=dict(self.valuations), project_ids=dict(self.project_ids), filter_project_ids=dict(self.event_project_ids))
+        result = replace(result, settings_version=self.configuration_version)
+        return Publication(self.dataset_id, self.installation_id, self.mode, self.usage_revision,
+                           self.pricing_version, self.configuration_version, self.freshness, result)
 
 
 class UsageIndex:
@@ -112,7 +147,7 @@ class UsageIndex:
                     'freshness': row['freshness'], 'code': row['code'],
                     'last_run': None if last is None else {key: last[key] for key in ('id', 'kind', 'status', 'code', 'revision')}}
 
-    def import_settings(self, *, fault=None):
+    def import_settings(self, *, root_ids=None, fault=None, commit_hook=None):
         """Explicit import from validated configured roots; no real/demo fallback.
 
         Only changed verified prefixes are reparsed. Full retained evidence is
@@ -121,11 +156,11 @@ class UsageIndex:
         """
         if self.mode != 'real':
             raise ValueError('Configured-source imports are restricted to the real dataset; demo requires a separate explicit synthetic seed.')
-        return self._operate('import', fault=fault)
+        return self._operate('import', root_ids=root_ids, fault=fault, commit_hook=commit_hook)
 
-    def reprice(self, *, fault=None):
+    def reprice(self, *, fault=None, commit_hook=None):
         """Activate configured rates/fees without changing any canonical token facts."""
-        return self._operate('reprice', fault=fault)
+        return self._operate('reprice', fault=fault, commit_hook=commit_hook)
 
     def remove_retained(self, file_ids, *, fault=None):
         ids = tuple(dict.fromkeys(file_ids))
@@ -133,7 +168,7 @@ class UsageIndex:
             raise ValueError('Explicit retained-file IDs are required.')
         return self._operate('remove', remove_ids=ids, fault=fault)
 
-    def _operate(self, kind, *, remove_ids=(), fault=None):
+    def _operate(self, kind, *, remove_ids=(), root_ids=None, fault=None, commit_hook=None):
         run = uuid.uuid4().hex
         try:
             with RuntimeOwner(self.owner_path):
@@ -154,7 +189,11 @@ class UsageIndex:
                                 if active.log_roots != settings.log_roots:
                                     raise ValueError('Root configuration changed; import before activating the new configuration.')
                             if kind == 'import':
-                                counts = self._scan(connection, settings)
+                                if root_ids is not None and dataset['ready']:
+                                    active = settings_from_data(codec.loads(connection.execute('SELECT payload FROM configurations WHERE dataset=? AND version=?', (self.dataset_id, dataset['configuration'])).fetchone()[0]))
+                                    if active.log_roots != settings.log_roots:
+                                        raise ValueError('Root changes require a complete import before a partial refresh.')
+                                counts = self._scan(connection, settings, root_ids)
                                 self._fault(fault, 'parsed')
                                 events, issues = self._reconcile(connection)
                                 if not dataset['ready'] and not events and any(codec.loads(row[0])['affects_completeness'] for row in connection.execute("SELECT payload FROM issues WHERE dataset=? AND kind='scan'", (self.dataset_id,))):
@@ -179,7 +218,7 @@ class UsageIndex:
                             # JSON settings are authority. A racing external edit aborts publication.
                             if load_settings(self.config_path).version != settings.version:
                                 raise ValueError('Configuration changed during indexing; retry.')
-                            revision = self._publish(connection, run, settings, catalog, events, issues, kind, counts, fault)
+                            revision = self._publish(connection, run, settings, catalog, events, issues, kind, counts, fault, commit_hook)
                         return revision
                     except BaseException:
                         with transaction(connection, True):
@@ -196,19 +235,40 @@ class UsageIndex:
         if fault is not None:
             fault(stage)
 
-    def _scan(self, connection, settings):
+    def _scan(self, connection, settings, root_ids=None):
         dataset = self.dataset_id
         connection.execute('UPDATE roots SET enabled=0 WHERE dataset=?', (dataset,))
-        connection.execute("UPDATE files SET status='retained_disabled' WHERE dataset=? AND status!='removed'", (dataset,))
-        connection.execute("DELETE FROM issues WHERE dataset=? AND kind='scan'", (dataset,))
+        if root_ids is None:
+            connection.execute("UPDATE files SET status='retained_disabled' WHERE dataset=? AND status!='removed'", (dataset,))
+            connection.execute("DELETE FROM issues WHERE dataset=? AND kind='scan'", (dataset,))
+        else:
+            known = {digest(provider, _id(path)) for provider, roots in settings.roots().items() for path in roots}
+            if not isinstance(root_ids, list) or not root_ids or set(root_ids)-known:
+                raise ValueError('Only enabled approved root IDs can be refreshed.')
         counts = {'files_verified': 0, 'files_parsed': 0, 'files_reused': 0, 'retained_files': 0}
         for provider, roots in settings.roots().items():
-            root_ids = []
+            root_ids_and_paths = []
             for path in roots:
                 root_id = digest(provider, _id(path))
-                root_ids.append((root_id, Path(path)))
+                root_ids_and_paths.append((root_id, Path(path)))
                 connection.execute('INSERT INTO roots VALUES (?,?,?,?,1) ON CONFLICT(dataset,id) DO UPDATE SET enabled=1',
                                    (dataset, root_id, provider, str(Path(path).absolute())))
+            if root_ids is not None:
+                root_ids_for_provider = {identity for identity, path in root_ids_and_paths if identity in root_ids}
+                if not root_ids_for_provider:
+                    continue
+                selected_sources = {_id(path) for identity,path in root_ids_and_paths if identity in root_ids_for_provider}
+                touched = []
+                for file in connection.execute('SELECT id,path FROM files WHERE dataset=? AND provider=?', (dataset,provider)):
+                    linked = {r[0] for r in connection.execute('SELECT root FROM file_roots WHERE dataset=? AND file=?',(dataset,file['id']))}
+                    if linked & root_ids_for_provider:
+                        touched.append(file['id']);selected_sources.update((file['id'],_id(file['path'])))
+                for file_id in touched:
+                    connection.execute("UPDATE files SET status='retained_disabled' WHERE dataset=? AND id=? AND status!='removed'",(dataset,file_id))
+                for issue in connection.execute("SELECT id,payload FROM issues WHERE dataset=? AND provider=? AND kind='scan'",(dataset,provider)).fetchall():
+                    if codec.loads(issue['payload'])['source_id'] in selected_sources:
+                        connection.execute('DELETE FROM issues WHERE dataset=? AND id=?',(dataset,issue['id']))
+                roots = [path for identity,path in root_ids_and_paths if identity in root_ids_for_provider]
             paths, issues, roots_read = discover(roots)
             files_read = 0
             for path in paths:
@@ -222,7 +282,7 @@ class UsageIndex:
                 if data is not None:
                     counts['files_verified'] += 1
                     files_read += 1
-                if data is not None and previous is not None and generation == previous['generation'] and previous['parser'] == PARSER_VERSION:
+                if data is not None and previous is not None and generation == previous['generation'] and previous['parser'] == PARSER_CACHE_VERSION:
                     observations = None
                     file_issues.extend(scan_from(item) for item in codec.loads(previous['issues']))
                     counts['files_reused'] += 1
@@ -237,8 +297,8 @@ class UsageIndex:
                 status = 'retained_failed' if retain else 'failed' if data is None else 'partial' if unsafe else 'accepted'
                 if previous is None:
                     connection.execute('INSERT OR REPLACE INTO files VALUES (?,?,?,?,?,?,?,?,?)',
-                        (dataset, file_id, provider, str(path.resolve()), None, 0, PARSER_VERSION, status, '[]'))
-                for root_id, root in root_ids:
+                        (dataset, file_id, provider, str(path.resolve()), None, 0, PARSER_CACHE_VERSION, status, '[]'))
+                for root_id, root in root_ids_and_paths:
                     if path.absolute().is_relative_to(root.absolute()):
                         connection.execute('INSERT OR IGNORE INTO file_roots VALUES (?,?,?)', (dataset, file_id, root_id))
                 if not retain and data is not None:
@@ -249,7 +309,7 @@ class UsageIndex:
                             connection.execute('INSERT INTO observations VALUES (?,?,?,?,?,?)',
                                 (dataset, observation.source.observation_id, file_id, provider, observation.conversation_key, payload))
                     connection.execute('UPDATE files SET generation=?,size=?,parser=?,issues=? WHERE dataset=? AND id=?',
-                        (generation, len(data), PARSER_VERSION, codec.dumps([scan_data(issue) for issue in file_issues]), dataset, file_id))
+                        (generation, len(data), PARSER_CACHE_VERSION, codec.dumps([scan_data(issue) for issue in file_issues]), dataset, file_id))
                 connection.execute('UPDATE files SET status=? WHERE dataset=? AND id=?', (status, dataset, file_id))
                 issues.extend(file_issues)
                 del data  # Source bytes live only during extraction, never in database state.
@@ -262,7 +322,7 @@ class UsageIndex:
             connection.execute('INSERT OR REPLACE INTO provider_scans VALUES (?,?,?,?,?)', (dataset, provider, roots_read, len(paths), files_read))
             for index, issue in enumerate(issues):
                 payload = codec.dumps(scan_data(issue))
-                connection.execute('INSERT INTO issues VALUES (?,?,?,?,?,?)',
+                connection.execute('INSERT OR REPLACE INTO issues VALUES (?,?,?,?,?,?)',
                     (dataset, digest(provider, 'scan', index, payload), provider, 'scan', issue.code, payload))
         counts['retained_files'] = connection.execute("SELECT count(*) FROM files WHERE dataset=? AND status LIKE 'retained_%'", (dataset,)).fetchone()[0]
         return counts
@@ -288,7 +348,7 @@ class UsageIndex:
                     for row in connection.execute("SELECT payload FROM issues WHERE dataset=? AND kind='accounting' AND (? IS NULL OR provider=?) ORDER BY id", (self.dataset_id, provider, provider))
                     for data in (codec.loads(row[0]),))
 
-    def _publish(self, connection, run, settings, catalog, events, issues, kind, counts, fault):
+    def _publish(self, connection, run, settings, catalog, events, issues, kind, counts, fault, commit_hook=None):
         dataset = self.dataset_id
         values = tuple(value_event(event, catalog) for event in events)
         aggregate_values(values)  # Validate aggregate token/money bounds before any activation.
@@ -357,17 +417,20 @@ class UsageIndex:
             connection.execute('INSERT INTO revisions VALUES (?,?,?,?,?,?,?)',
                 (dataset, revision, run, fingerprint, catalog.version, settings.version, utc_now()))
         connection.execute("UPDATE runs SET status='succeeded',finished=?,revision=?,counts=? WHERE id=?", (utc_now(), revision, codec.dumps(counts), run))
+        if commit_hook is not None:
+            commit_hook(connection, {'usage_revision':str(revision),'pricing_version':catalog.version,'configuration_version':settings.version}, counts)
         self._fault(fault, 'before_commit')
         return revision
 
-    def query(self, context):
+    def read_snapshot(self, max_events=100000, max_bytes=64 * 1024 * 1024):
         """One consistent publication read, offline; never scans, polls or reprices."""
-        if context.demo != (self.mode == 'demo'):
-            raise ValueError('Query mode must match the explicit dataset namespace.')
         with self.connection(True) as connection, transaction(connection):
             dataset = self._dataset(connection)
             if not dataset['ready']:
                 raise IndexUnavailable('No committed usage publication; import explicitly first.')
+            work = connection.execute('SELECT count(*),coalesce(sum(length(payload)),0) FROM events WHERE dataset=?', (self.dataset_id,)).fetchone()
+            if work[0] > max_events or work[1] > max_bytes:
+                raise IndexQueryBudget('Committed query exceeds the supported event/metadata work budget.')
             events = self._events(connection)
             catalog = codec.catalog_from(codec.loads(connection.execute('SELECT payload FROM catalogs WHERE dataset=? AND version=?', (self.dataset_id, dataset['pricing'])).fetchone()[0]))
             settings = settings_from_data(codec.loads(connection.execute('SELECT payload FROM configurations WHERE dataset=? AND version=?', (self.dataset_id, dataset['configuration'])).fetchone()[0]))
@@ -379,7 +442,7 @@ class UsageIndex:
             if set(values) != set(by_id):
                 raise IndexRecoveryError('Incomplete committed valuation coverage; preserve the index and explicitly rebuild.')
             sources = []
-            for provider in context.providers:
+            for provider in PROVIDERS:
                 scans = tuple(scan_from(codec.loads(row[0])) for row in connection.execute("SELECT payload FROM issues WHERE dataset=? AND provider=? AND kind='scan' ORDER BY id", (self.dataset_id, provider)))
                 accounting = self._accounting(connection, provider)
                 files = connection.execute("SELECT status FROM files WHERE dataset=? AND provider=? AND status!='removed'", (self.dataset_id, provider)).fetchall()
@@ -395,12 +458,18 @@ class UsageIndex:
                 if dataset['freshness'] == 'stale' and dataset['code'] in ('operation_failed', 'interrupted'):
                     state = 'stale' if has_events else 'failed'
                 sources.append(SourceQuality(provider, state, scans, accounting, roots_read, discovered, files_read))
-            notices = ('Local index: accepted unmatched-account histories; retained/partial sources are explicitly qualified.',)
-            project_ids = {row['id']: row['project'] if row['kind'] != 'unknown' else None for row in connection.execute('SELECT e.id,e.project,p.kind FROM events e JOIN projects p ON p.dataset=e.dataset AND p.id=e.project WHERE e.dataset=?', (self.dataset_id,))}
-            result = build_usage_result(events, context, catalog, dict(settings.plan_fees_usd), sources, notices, valuations=values, project_ids=project_ids)
-            result = replace(result, settings_version=settings.version)
-            return Publication(self.dataset_id, dataset['installation'], self.mode, dataset['revision'],
-                               catalog.version, settings.version, dataset['freshness'], result)
+            project_ids = tuple((row['id'], row['project'] if row['kind'] != 'unknown' else None) for row in connection.execute('SELECT e.id,e.project,p.kind FROM events e JOIN projects p ON p.dataset=e.dataset AND p.id=e.project WHERE e.dataset=?', (self.dataset_id,)))
+            projects = tuple(tuple(row) for row in connection.execute('SELECT id,kind,label FROM projects WHERE dataset=? ORDER BY id', (self.dataset_id,)))
+            event_project_ids = tuple(tuple(row) for row in connection.execute('SELECT id,project FROM events WHERE dataset=?', (self.dataset_id,)))
+            conversation_ids = tuple(tuple(row) for row in connection.execute('SELECT id,conversation FROM events WHERE dataset=?', (self.dataset_id,)))
+            conversations = tuple(tuple(row) for row in connection.execute('SELECT id,provider,label FROM conversations WHERE dataset=? ORDER BY id', (self.dataset_id,)))
+            return IndexSnapshot(self.dataset_id, dataset['installation'], self.mode, dataset['revision'], catalog.version,
+                                 settings.version, dataset['freshness'], events, catalog, settings, tuple(values.items()),
+                                 tuple(sources), project_ids, projects, event_project_ids, conversation_ids, conversations)
+
+    def query(self, context):
+        """Offline query through one immutable committed snapshot."""
+        return self.read_snapshot().query(context)
 
     def backup(self, directory=None):
         try:

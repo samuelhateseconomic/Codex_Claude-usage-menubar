@@ -210,3 +210,6 @@ The audit prints allowlisted counts, bounded display-safe model labels, coverage
 
 
 The optional headless local index is documented in [S11](../docs/s11-local-index.md). It supports explicit metadata-only import, recoverable SQLite publication and offline shared-service queries. It is not yet connected to the tray/dashboard preview; production API and real-data dashboard integration follow S12/S13.
+
+
+The explicit production local API is documented in [S12](../docs/s12-local-api.md), with [OpenAPI](../docs/api/usage-hub-v1.openapi.json), [response schema](../docs/api/usage-hub-v1.schema.json) and [synthetic examples](../docs/api/usage-hub-v1.fixtures.json). Run `windows/usage_api_main.py` with the project interpreter; it uses the recoverable index and does not poll providers unless `--live-limits` is explicit. `--open` opens the authenticated service status page; the reviewed dashboard remains the labeled preview until S13.

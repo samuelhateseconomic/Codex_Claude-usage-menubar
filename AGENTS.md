@@ -43,7 +43,8 @@
 - Treat source metadata as untrusted text: escape HTML and neutralize terminal control sequences while preserving internal identities. Keep errors/diagnostics sanitized and actionable.
 - Preserve credential redirect protections; do not write or refresh credentials as an incidental workaround.
 - Use `windows/usage_index.py` for explicitly requested local persistence; its SQLite/codec modules own migrations, metadata projections and publication. Preserve retained-source states, exact stored valuations, JSON configuration authority and offline shared-service queries. Do not create a competing schema or make queries initiate imports/polling. See [S11](docs/s11-local-index.md).
-- The optional local index is implemented; the production API and real-data dashboard remain separate sessions. Follow the integration contract for transactions, exact numeric contracts, frozen queries, job status, migrations, and loopback access controls.
+- Use the S12 v1 query/HTTP/runtime/job modules and [contract](docs/s12-local-api.md) for production local API work. Keep exact numeric strings, frozen publication contexts/cursors, approved-root-only mutations, owner-controlled settings and authenticated reads/mutations. The reviewed dashboard still needs S13 adaptation; never route failed real queries to the preview.
+- The optional local index and explicit v1 service are implemented; real-data dashboard integration remains separate. Follow the integration contract for transactions, exact numeric contracts, frozen queries, job status, migrations, and loopback access controls.
 - Do not silently substitute demo data for failed real connections. Keep real/demo scopes separate. Never infer missing quota history or running-conversation status.
 
 ## Verification and handoff

@@ -45,9 +45,10 @@ class UsageFilters:
     conversation_ids: tuple[str, ...] = ()  # Opaque IDs returned by this service.
     search: str = ""
     selected_day: str | None = None
+    project_ids: tuple[str, ...] = ()  # Dataset-scoped normalized identities from the index.
 
     def __post_init__(self):
-        for name in ("projects", "models", "efforts", "conversation_ids"):
+        for name in ("projects", "models", "efforts", "conversation_ids", "project_ids"):
             values = getattr(self, name)
             if isinstance(values, str) or any(not isinstance(v, str) for v in values):
                 raise ValueError("Metadata filters require strings.")
@@ -65,10 +66,11 @@ class UsageFilters:
 
     @property
     def active(self):
-        return bool(self.projects or self.models or self.efforts or self.conversations or self.conversation_ids or self.search or self.selected_day)
+        return bool(self.projects or self.project_ids or self.models or self.efforts or self.conversations or self.conversation_ids or self.search or self.selected_day)
 
-    def matches(self, record, timezone, conversation_id):
+    def matches(self, record, timezone, conversation_id, project_id=None):
         return (not self.projects or record.project in self.projects) and (
+            not self.project_ids or project_id in self.project_ids) and (
             not self.models or record.model in self.models) and (
             not self.efforts or record.effort in self.efforts) and (
             not self.conversations or (record.provider, record.session) in self.conversations) and (
@@ -234,7 +236,7 @@ def summarize_values(values, conversation_ids=None):
                         len({r.project for r in records}))
 
 
-def _summarize_details(details, project_ids=None):
+def summarize_details(details, project_ids=None):
     details = tuple(details)
     summary = summarize_values((d.valuation for d in details), (d.conversation_id for d in details))
     if project_ids is not None:
@@ -261,7 +263,7 @@ def _group_key(dimension, detail, timezone):
 
 
 def build_usage_result(entries, context, catalog=None, fees=None, sources=(), notices=(),
-                       calendar_compatible=True, valuations=None, project_ids=None):
+                       calendar_compatible=True, valuations=None, project_ids=None, filter_project_ids=None):
     """Pure query over accepted events (or explicit legacy Record projections).
 
     Reconciliation precedes this seam. Duplicate canonical IDs are rejected;
@@ -284,7 +286,9 @@ def build_usage_result(entries, context, catalog=None, fees=None, sources=(), no
             canonical_ids.add(event.event_id)
         if record.provider not in ranges or not ranges[record.provider].contains(record.timestamp):
             continue
-        if not context.filters.matches(record, context.timezone, _conversation_id(entry)):
+        if not context.filters.matches(record, context.timezone, _conversation_id(entry),
+                                       (filter_project_ids if filter_project_ids is not None else project_ids).get(event.event_id)
+                                       if (filter_project_ids is not None or project_ids is not None) and event else None):
             continue
         # Compatibility fingerprint is an occurrence ID, never cross-copy event identity.
         identity = event.event_id if event else "legacy:" + _digest([
@@ -318,7 +322,7 @@ def build_usage_result(entries, context, catalog=None, fees=None, sources=(), no
             buckets[_group_key(dimension, detail, context.timezone)].append(detail)
         rows = tuple(sorted((UsageGroup("group-v1:" + _digest([dimension, key]),
                                (members[0].record.provider, members[0].record.session) if dimension == "conversation" else key,
-                               _summarize_details(members, project_ids), tuple(d.detail_id for d in members),
+                               summarize_details(members, project_ids), tuple(d.detail_id for d in members),
                                max(d.record.timestamp for d in members))
                      for key, members in buckets.items()), key=lambda g: (g.key, g.group_id)))
         groups.append((dimension, rows))
@@ -330,7 +334,7 @@ def build_usage_result(entries, context, catalog=None, fees=None, sources=(), no
         r.start == resolve_range("month", context.captured_at, timezone=context.timezone).start for _, r in context.ranges)
     comparisons, combined = compare_plans((d.valuation for d in details),
         ComparisonScope(context.providers, context.period, calendar, context.is_filtered), fees, qualifications)
-    return UsageResult(context, context.captured_at, _summarize_details(details, project_ids),
+    return UsageResult(context, context.captured_at, summarize_details(details, project_ids),
                        tuple(details), tuple(groups), sources, tuple(sorted(set(notices))), catalog, comparisons, combined,
                        tuple(sorted({d.record.model for d in details})),
                        tuple(sorted({d.record.model for d in details if d.valuation.state == "unpriced"})),

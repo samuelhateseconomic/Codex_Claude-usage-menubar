@@ -1,0 +1,2379 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "usage-hub-v1.schema.json",
+  "title": "Usage Hub v1 responses",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/overview"
+    },
+    {
+      "$ref": "#/$defs/list"
+    },
+    {
+      "$ref": "#/$defs/facets"
+    },
+    {
+      "$ref": "#/$defs/conversation"
+    },
+    {
+      "$ref": "#/$defs/events"
+    },
+    {
+      "$ref": "#/$defs/status"
+    },
+    {
+      "$ref": "#/$defs/settings"
+    },
+    {
+      "$ref": "#/$defs/settings_saved"
+    },
+    {
+      "$ref": "#/$defs/limits"
+    },
+    {
+      "$ref": "#/$defs/job"
+    },
+    {
+      "$ref": "#/$defs/limits_refresh"
+    },
+    {
+      "$ref": "#/$defs/session"
+    },
+    {
+      "$ref": "#/$defs/error"
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "integer_string": {
+      "type": "string",
+      "pattern": "(0|[1-9][0-9]{0,18})",
+      "maxLength": 19
+    },
+    "money": {
+      "type": "string",
+      "pattern": "-?(0|[1-9][0-9]{0,23})(\\.[0-9]{1,12})?",
+      "maxLength": 38
+    },
+    "rate": {
+      "type": "string",
+      "pattern": "((0|[1-9][0-9]{0,8})(\\.[0-9]{1,12})?|1000000000(\\.0{1,12})?)",
+      "maxLength": 23
+    },
+    "instant": {
+      "type": "string",
+      "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{6}Z",
+      "maxLength": 27
+    },
+    "day": {
+      "type": "string",
+      "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}",
+      "maxLength": 10
+    },
+    "tokens": {
+      "type": "object",
+      "properties": {
+        "uncached_input_tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "output_tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "cache_read_tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "cache_write_5m_tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "cache_write_1h_tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "total_tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "reasoning_tokens": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/integer_string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "uncached_input_tokens",
+        "output_tokens",
+        "cache_read_tokens",
+        "cache_write_5m_tokens",
+        "cache_write_1h_tokens",
+        "total_tokens",
+        "reasoning_tokens"
+      ],
+      "additionalProperties": false
+    },
+    "value": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "empty",
+            "unpriced",
+            "partial",
+            "complete"
+          ]
+        },
+        "amount_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "priced_records": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "unpriced_records": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "priced_tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "unpriced_tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "assumed_records": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "state",
+        "amount_usd",
+        "priced_records",
+        "unpriced_records",
+        "priced_tokens",
+        "unpriced_tokens",
+        "assumed_records",
+        "assumptions"
+      ],
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "$ref": "#/$defs/tokens"
+        },
+        "reasoning": {
+          "type": "object",
+          "properties": {
+            "known_records": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "unknown_records": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            }
+          },
+          "required": [
+            "known_records",
+            "unknown_records"
+          ],
+          "additionalProperties": false
+        },
+        "record_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "conversation_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "project_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "value": {
+          "$ref": "#/$defs/value"
+        }
+      },
+      "required": [
+        "tokens",
+        "reasoning",
+        "record_count",
+        "conversation_count",
+        "project_count",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "comparison": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "codex",
+            "claude",
+            "combined"
+          ]
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pricing_state": {
+          "type": "string",
+          "enum": [
+            "empty",
+            "unpriced",
+            "partial",
+            "complete"
+          ]
+        },
+        "value_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fee_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "difference_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualifications": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "provider",
+        "available",
+        "reason",
+        "pricing_state",
+        "value_usd",
+        "fee_usd",
+        "difference_usd",
+        "qualifications"
+      ],
+      "additionalProperties": false
+    },
+    "row": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 32767
+        },
+        "summary": {
+          "$ref": "#/$defs/summary"
+        },
+        "last_activity_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "project_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "maxItems": 1000
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "maxItems": 1000
+        },
+        "efforts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "summary",
+        "last_activity_at",
+        "project_ids",
+        "models",
+        "efforts"
+      ],
+      "additionalProperties": false
+    },
+    "pagination": {
+      "type": "object",
+      "properties": {
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "sort": {
+          "type": "string",
+          "enum": [
+            "value_desc",
+            "tokens_desc",
+            "last_activity_desc",
+            "events"
+          ]
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "matched_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        }
+      },
+      "required": [
+        "page_size",
+        "sort",
+        "next_cursor",
+        "matched_count"
+      ],
+      "additionalProperties": false
+    },
+    "range": {
+      "type": "object",
+      "properties": {
+        "preset": {
+          "type": "string",
+          "enum": [
+            "today",
+            "week",
+            "month"
+          ]
+        },
+        "timezone": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "start_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "end_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "effective_start_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "effective_end_at": {
+          "$ref": "#/$defs/instant"
+        }
+      },
+      "required": [
+        "preset",
+        "timezone",
+        "start_at",
+        "end_at",
+        "effective_start_at",
+        "effective_end_at"
+      ],
+      "additionalProperties": false
+    },
+    "filters": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "codex",
+              "claude"
+            ]
+          },
+          "maxItems": 2,
+          "minItems": 1
+        },
+        "project_id": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "maxItems": 64
+        },
+        "model": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "maxItems": 64
+        },
+        "effort": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "maxItems": 64
+        },
+        "q": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "selected_day": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/day"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "project_id",
+        "model",
+        "effort",
+        "q",
+        "selected_day"
+      ],
+      "additionalProperties": false
+    },
+    "issue_counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 1000000
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "codex",
+            "claude"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "stale",
+            "failed",
+            "partial",
+            "complete",
+            "empty",
+            "demo"
+          ]
+        },
+        "ingestion_issues": {
+          "$ref": "#/$defs/issue_counts"
+        },
+        "accounting_issues": {
+          "$ref": "#/$defs/issue_counts"
+        }
+      },
+      "required": [
+        "provider",
+        "state",
+        "ingestion_issues",
+        "accounting_issues"
+      ],
+      "additionalProperties": false
+    },
+    "event_value": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "priced",
+            "unpriced"
+          ]
+        },
+        "amount_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unpriced_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rate_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tier": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "maxItems": 100
+        },
+        "request_context_tokens": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/integer_string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "request_context_source": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "pricing_version": {
+          "$ref": "#/$defs/id"
+        },
+        "policy_version": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "state",
+        "amount_usd",
+        "unpriced_reason",
+        "rate_id",
+        "tier",
+        "assumptions",
+        "request_context_tokens",
+        "request_context_source",
+        "pricing_version",
+        "policy_version"
+      ],
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "provider": {
+          "type": "string",
+          "enum": [
+            "codex",
+            "claude"
+          ]
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "model": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "effort": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "effort_source": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "tokens": {
+          "$ref": "#/$defs/tokens"
+        },
+        "value": {
+          "$ref": "#/$defs/event_value"
+        }
+      },
+      "required": [
+        "id",
+        "occurred_at",
+        "provider",
+        "project_id",
+        "model",
+        "effort",
+        "effort_source",
+        "tokens",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "facet": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 32767
+        },
+        "record_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "selected": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "value",
+        "label",
+        "record_count",
+        "selected"
+      ],
+      "additionalProperties": false
+    },
+    "window": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "maxLength": 32767
+        },
+        "used_percent": {
+          "type": "number"
+        },
+        "remaining_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "resets_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "duration_minutes": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "label",
+        "used_percent",
+        "remaining_percent",
+        "resets_at",
+        "duration_minutes"
+      ],
+      "additionalProperties": false
+    },
+    "provider": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "codex",
+            "claude"
+          ]
+        },
+        "scope": {
+          "const": "active_cli_account"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "available",
+            "stale",
+            "unavailable"
+          ]
+        },
+        "phase": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "last_attempt_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last_success_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "next_eligible_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "snapshot": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "windows": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/window"
+                  },
+                  "maxItems": 1000
+                },
+                "blocked": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "windows",
+                "blocked"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "scope",
+        "state",
+        "phase",
+        "category",
+        "last_attempt_at",
+        "last_success_at",
+        "next_eligible_at",
+        "snapshot"
+      ],
+      "additionalProperties": false
+    },
+    "versions": {
+      "type": "object",
+      "properties": {
+        "usage_revision": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "pricing_version": {
+          "$ref": "#/$defs/id"
+        },
+        "configuration_version": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "usage_revision",
+        "pricing_version",
+        "configuration_version"
+      ],
+      "additionalProperties": false
+    },
+    "job_record": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "import",
+            "reprice"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "superseded"
+          ]
+        },
+        "phase": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "code": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "started_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "completed_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requested_configuration_version": {
+          "$ref": "#/$defs/id"
+        },
+        "counts": {
+          "$ref": "#/$defs/issue_counts"
+        },
+        "resulting_versions": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/versions"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "status",
+        "phase",
+        "code",
+        "created_at",
+        "started_at",
+        "completed_at",
+        "requested_configuration_version",
+        "counts",
+        "resulting_versions"
+      ],
+      "additionalProperties": false
+    },
+    "price": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "$ref": "#/$defs/rate"
+        },
+        "output": {
+          "$ref": "#/$defs/rate"
+        },
+        "cached": {
+          "$ref": "#/$defs/rate"
+        },
+        "write5m": {
+          "$ref": "#/$defs/rate"
+        },
+        "write1h": {
+          "$ref": "#/$defs/rate"
+        }
+      },
+      "required": [
+        "input",
+        "output",
+        "cached"
+      ],
+      "additionalProperties": false
+    },
+    "editable_settings": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "plan_fees_usd": {
+          "type": "object",
+          "properties": {
+            "Codex": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/rate"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "Claude": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/rate"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "Codex",
+            "Claude"
+          ],
+          "additionalProperties": false
+        },
+        "timezone": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "rate_catalog": {
+          "const": "bundled"
+        },
+        "rate_overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/price"
+          }
+        },
+        "report_format": {
+          "type": "string",
+          "enum": [
+            "text",
+            "html"
+          ]
+        },
+        "approved_roots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "codex",
+                  "claude"
+                ]
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 32767
+              },
+              "enabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "provider",
+              "label",
+              "enabled"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 1024
+        }
+      },
+      "required": [
+        "schema_version",
+        "plan_fees_usd",
+        "timezone",
+        "rate_catalog",
+        "rate_overrides",
+        "report_format",
+        "approved_roots"
+      ],
+      "additionalProperties": false
+    },
+    "error_detail": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "field_errors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "retry_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/instant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "overview": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "overview"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "scope": {
+              "type": "string",
+              "enum": [
+                "local_unmatched_accounts",
+                "demo"
+              ]
+            },
+            "summary": {
+              "$ref": "#/$defs/summary"
+            },
+            "freshness": {
+              "type": "string",
+              "enum": [
+                "current",
+                "stale",
+                "unavailable"
+              ]
+            },
+            "coverage": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/coverage"
+              },
+              "maxItems": 2
+            },
+            "comparisons": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/comparison"
+              },
+              "maxItems": 2
+            },
+            "combined_comparison": {
+              "$ref": "#/$defs/comparison"
+            },
+            "days": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "day": {
+                    "$ref": "#/$defs/day"
+                  },
+                  "summary": {
+                    "$ref": "#/$defs/summary"
+                  }
+                },
+                "required": [
+                  "day",
+                  "summary"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 32
+            },
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "codex",
+                      "claude"
+                    ]
+                  },
+                  "summary": {
+                    "$ref": "#/$defs/summary"
+                  }
+                },
+                "required": [
+                  "provider",
+                  "summary"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 2
+            },
+            "models": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "codex",
+                      "claude"
+                    ]
+                  },
+                  "model": {
+                    "type": "string",
+                    "maxLength": 1024
+                  },
+                  "effort": {
+                    "type": "string",
+                    "maxLength": 80
+                  },
+                  "summary": {
+                    "$ref": "#/$defs/summary"
+                  }
+                },
+                "required": [
+                  "provider",
+                  "model",
+                  "effort",
+                  "summary"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 1000
+            },
+            "top_projects": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/row"
+              },
+              "maxItems": 10
+            },
+            "recent_conversations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/row"
+              },
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "scope",
+            "summary",
+            "freshness",
+            "coverage",
+            "comparisons",
+            "combined_comparison",
+            "days",
+            "providers",
+            "models",
+            "top_projects",
+            "recent_conversations"
+          ],
+          "additionalProperties": false
+        },
+        "query_context_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "usage_revision": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "pricing_version": {
+          "$ref": "#/$defs/id"
+        },
+        "configuration_version": {
+          "$ref": "#/$defs/id"
+        },
+        "range": {
+          "$ref": "#/$defs/range"
+        },
+        "applied_filters": {
+          "$ref": "#/$defs/filters"
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data",
+        "query_context_id",
+        "usage_revision",
+        "pricing_version",
+        "configuration_version",
+        "range",
+        "applied_filters"
+      ],
+      "additionalProperties": false
+    },
+    "list": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "list"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "summary": {
+              "$ref": "#/$defs/summary"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/row"
+              },
+              "maxItems": 100
+            },
+            "pagination": {
+              "$ref": "#/$defs/pagination"
+            }
+          },
+          "required": [
+            "summary",
+            "items",
+            "pagination"
+          ],
+          "additionalProperties": false
+        },
+        "query_context_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "usage_revision": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "pricing_version": {
+          "$ref": "#/$defs/id"
+        },
+        "configuration_version": {
+          "$ref": "#/$defs/id"
+        },
+        "range": {
+          "$ref": "#/$defs/range"
+        },
+        "applied_filters": {
+          "$ref": "#/$defs/filters"
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data",
+        "query_context_id",
+        "usage_revision",
+        "pricing_version",
+        "configuration_version",
+        "range",
+        "applied_filters"
+      ],
+      "additionalProperties": false
+    },
+    "facets": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "facets"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "projects": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/facet"
+              },
+              "maxItems": 1000
+            },
+            "models": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/facet"
+              },
+              "maxItems": 1000
+            },
+            "efforts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/facet"
+              },
+              "maxItems": 1000
+            }
+          },
+          "required": [
+            "projects",
+            "models",
+            "efforts"
+          ],
+          "additionalProperties": false
+        },
+        "query_context_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "usage_revision": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "pricing_version": {
+          "$ref": "#/$defs/id"
+        },
+        "configuration_version": {
+          "$ref": "#/$defs/id"
+        },
+        "range": {
+          "$ref": "#/$defs/range"
+        },
+        "applied_filters": {
+          "$ref": "#/$defs/filters"
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data",
+        "query_context_id",
+        "usage_revision",
+        "pricing_version",
+        "configuration_version",
+        "range",
+        "applied_filters"
+      ],
+      "additionalProperties": false
+    },
+    "conversation": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "conversation"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "label": {
+              "type": "string",
+              "maxLength": 32767
+            },
+            "summary": {
+              "$ref": "#/$defs/summary"
+            },
+            "lifetime_first_at": {
+              "$ref": "#/$defs/instant"
+            },
+            "lifetime_last_at": {
+              "$ref": "#/$defs/instant"
+            },
+            "lifetime_scope": {
+              "const": "all_retained_accepted_usage"
+            },
+            "project_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/id"
+              },
+              "maxItems": 1000
+            },
+            "models": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 1000
+            },
+            "efforts": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "maxItems": 1000
+            }
+          },
+          "required": [
+            "id",
+            "label",
+            "summary",
+            "lifetime_first_at",
+            "lifetime_last_at",
+            "lifetime_scope",
+            "project_ids",
+            "models",
+            "efforts"
+          ],
+          "additionalProperties": false
+        },
+        "query_context_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "usage_revision": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "pricing_version": {
+          "$ref": "#/$defs/id"
+        },
+        "configuration_version": {
+          "$ref": "#/$defs/id"
+        },
+        "range": {
+          "$ref": "#/$defs/range"
+        },
+        "applied_filters": {
+          "$ref": "#/$defs/filters"
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data",
+        "query_context_id",
+        "usage_revision",
+        "pricing_version",
+        "configuration_version",
+        "range",
+        "applied_filters"
+      ],
+      "additionalProperties": false
+    },
+    "events": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "events"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "summary": {
+              "$ref": "#/$defs/summary"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/event"
+              },
+              "maxItems": 100
+            },
+            "pagination": {
+              "$ref": "#/$defs/pagination"
+            }
+          },
+          "required": [
+            "summary",
+            "items",
+            "pagination"
+          ],
+          "additionalProperties": false
+        },
+        "query_context_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "usage_revision": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "pricing_version": {
+          "$ref": "#/$defs/id"
+        },
+        "configuration_version": {
+          "$ref": "#/$defs/id"
+        },
+        "range": {
+          "$ref": "#/$defs/range"
+        },
+        "applied_filters": {
+          "$ref": "#/$defs/filters"
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data",
+        "query_context_id",
+        "usage_revision",
+        "pricing_version",
+        "configuration_version",
+        "range",
+        "applied_filters"
+      ],
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "status"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "app_version": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "build_id": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "ready": {
+              "type": "boolean"
+            },
+            "freshness": {
+              "type": "string",
+              "enum": [
+                "current",
+                "stale",
+                "unavailable"
+              ]
+            },
+            "usage_revision": {
+              "$ref": "#/$defs/integer_string"
+            },
+            "pricing_version": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "configuration_version": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "requested_configuration_version": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "configuration_pending": {
+              "type": "boolean"
+            },
+            "configuration_state": {
+              "type": "string",
+              "enum": [
+                "active",
+                "pending",
+                "invalid"
+              ]
+            },
+            "indexing": {
+              "type": "boolean"
+            },
+            "active_job_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/id"
+              },
+              "maxItems": 32
+            },
+            "source_scans": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "codex",
+                      "claude"
+                    ]
+                  },
+                  "roots_read": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "files_discovered": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "files_read": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  }
+                },
+                "required": [
+                  "provider",
+                  "roots_read",
+                  "files_discovered",
+                  "files_read"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 2
+            },
+            "last_import_completed_at": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/instant"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "last_job": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/job_record"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "providers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/provider"
+              },
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "app_version",
+            "build_id",
+            "ready",
+            "freshness",
+            "usage_revision",
+            "pricing_version",
+            "configuration_version",
+            "requested_configuration_version",
+            "configuration_pending",
+            "configuration_state",
+            "indexing",
+            "active_job_ids",
+            "source_scans",
+            "last_import_completed_at",
+            "last_job",
+            "providers"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "settings"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "configuration_version": {
+              "$ref": "#/$defs/id"
+            },
+            "settings": {
+              "$ref": "#/$defs/editable_settings"
+            },
+            "bounds": {
+              "type": "object",
+              "properties": {
+                "monthly_fee_max_usd": {
+                  "$ref": "#/$defs/money"
+                },
+                "decimal_places": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                },
+                "search_characters": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                },
+                "page_size_max": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "monthly_fee_max_usd",
+                "decimal_places",
+                "search_characters",
+                "page_size_max"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "configuration_version",
+            "settings",
+            "bounds"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "settings_saved": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "settings_saved"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "configuration_version": {
+              "$ref": "#/$defs/id"
+            },
+            "settings": {
+              "$ref": "#/$defs/editable_settings"
+            },
+            "jobs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/job_record"
+              },
+              "maxItems": 32
+            },
+            "pending": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "configuration_version",
+            "settings",
+            "jobs",
+            "pending"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "limits"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "providers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/provider"
+              },
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "providers"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "job": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "job"
+        },
+        "data": {
+          "$ref": "#/$defs/job_record"
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "limits_refresh": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "limits_refresh"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "codex",
+                      "claude"
+                    ]
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "accepted",
+                      "in_progress",
+                      "cooldown",
+                      "unavailable"
+                    ]
+                  },
+                  "check_id": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/id"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "next_eligible_at": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/instant"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "provider",
+                  "state",
+                  "check_id",
+                  "next_eligible_at"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "providers"
+          ],
+          "additionalProperties": false
+        },
+        "error": {
+          "$ref": "#/$defs/error_detail"
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "session": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "session"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "csrf_token": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "expires_in_seconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            }
+          },
+          "required": [
+            "csrf_token",
+            "expires_in_seconds"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "$ref": "#/$defs/error_detail"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "error",
+        "request_id"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
