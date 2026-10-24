@@ -225,7 +225,10 @@ class ChildCleanupTests(unittest.TestCase):
                 cwd=Path(core.__file__).parent,creationflags=subprocess.CREATE_NO_WINDOW)
             handles=[]
             try:
-                wait_for(marker.exists)
+                # Cold interpreter/AV startup is not the process cleanup deadline.
+                # Stop early on fixture exit; retain the separate 3s kill assertions.
+                wait_for(lambda: marker.exists() or parent.poll() is not None, timeout=10)
+                self.assertTrue(marker.exists(), "RPC fixture exited before readiness")
                 pids=json.loads(marker.read_text())
                 handles=[kernel.OpenProcess(0x100001,False,pid) for pid in pids.values()]
                 self.assertTrue(all(handles))

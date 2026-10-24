@@ -4,7 +4,7 @@ A Windows system-tray companion showing subscription usage remaining, reset time
 
 ## Run on Windows
 
-Requires Windows 10/11, Python 3.11+ with pip, and your providers' CLIs. No administrator access is needed.
+Requires Windows 10/11, Python 3.11–3.14 with pip, and your providers' CLIs. No administrator access is needed.
 
 1. Install the [Codex CLI](https://github.com/openai/codex), for example `npm install -g @openai/codex` with Node.js installed, and run `codex login` with your ChatGPT account. API-key accounts do not provide these subscription limits.
 2. Install [Claude Code](https://code.claude.com/docs/en/setup), start `claude`, and use `/login` with your Claude subscription. Launch Claude Code periodically so it can renew its login.
@@ -142,14 +142,28 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 .\dist\UsageTray.exe
 ```
 
-The script installs pinned dependencies, runs tests, and bundles Python into `dist\UsageTray.exe`. Codex/Claude CLIs remain separate prerequisites. The executable is unsigned; signing and distribution are separate release steps. No startup registration is changed automatically. To launch at login, optionally place a shortcut to your built executable in the folder opened by `Win+R` → `shell:startup`.
+The script installs pinned dependencies, runs the full suite, bundles Python and local named-timezone data into `dist\UsageTray.exe`, then runs 14 bounded offline executable checks. A failed smoke check fails the build. Existing `.venv` environments are reused; a missing environment uses the `python` selected on PATH (including `actions/setup-python` in CI). Codex/Claude CLIs remain separate prerequisites. The executable is unsigned; signing and distribution are separate release steps. No startup registration is changed automatically. To launch at login, optionally place a shortcut to your built executable in the folder opened by `Win+R` → `shell:startup`.
 
-Alternatively, push the changes to GitHub and run **Actions → Build Windows Usage Tray → Run workflow**. The workflow uses a Windows runner, runs the tests, and uploads an artifact named `UsageTray-Windows` containing the executable. It also runs when changes to `windows/` are pushed or proposed in a pull request. The workflow has been added but has not been run from this Linux development environment.
+Alternatively, push the changes to GitHub and run **Actions → Build Windows Usage Tray → Run workflow**. The workflow has Windows jobs for Python 3.11, 3.12, 3.13 and 3.14; each tests, builds and smoke-tests its own executable and uploads `UsageTray-Windows-Python-<version>`. It also runs when changes to `windows/` are pushed or proposed in a pull request. A configured matrix is not evidence that remote jobs passed; see the [Windows release record](../docs/s09-windows-release.md) for actual results and limits.
 
-Windows packaging and native tray behavior must be checked on Windows. A Linux test run validates adapters and protocol behavior, not a Windows executable. Before distribution, run the app on Windows with both real accounts, check remaining percentages against each provider's usage page, confirm reset times, test expired/missing logins, and quit/relaunch it.
+Native tray/menu and terminal-viewer interaction remain separate from hidden executable acceptance. A Linux test run validates adapters and protocol behavior, not a Windows executable. Before distribution, run the app on Windows with both real accounts, check remaining percentages against each provider's usage page, confirm reset times, test expired/missing logins, and quit/relaunch it.
 
 ### Current-model price coverage
 
 The bundled rates include GPT-6.1 Sol (input $2, output $10, cached input $0.10 per million tokens; higher context tier above 272,000 input tokens) and Claude Opus 5.5 (input $4, output $20, cache reads $0.20, 5-minute cache writes $5, 1-hour cache writes $8 per million tokens). Sources: https://developers.openai.com/api/docs/models/gpt-6.1-sol and https://platform.claude.com/docs/en/models/opus-5-5/overview, checked October 23, 2026.
 
 Models without a configured public API rate, including `codex-auto-review`, retain their token counts and appear as **unpriced**, never as a zero-dollar API estimate. Partial comparisons show only the priced subtotal minus the plan fee. Text reports list the rates used and their sources. Standard API-equivalent estimates exclude service-tier premiums.
+
+### Repeat release checks
+
+From this `windows` folder, after building:
+
+```powershell
+.\.venv\Scripts\python.exe tools/release_smoke.py --exe dist/UsageTray.exe
+# Explicit read-only check of real environment-default histories; no provider polling.
+.\.venv\Scripts\python.exe tools/local_history_audit.py --read-local-history
+# Explicit terminal report launch from the packaged app.
+.\dist\UsageTray.exe --report month --open-report
+```
+
+The audit prints allowlisted counts, bounded display-safe model labels, coverage states, structured issue counts, inventory bytes and measured scan/query time. It checks exact category/value reconciliation through provider, conversation and all other groupings. It does not export paths, transcript text, identifiers, arbitrary notices or raw errors. Its inventory is measured separately from the query, so active writes can change file counts/bytes between them. A passing reconciliation check can accompany failed/partial source coverage; inspect the provider states. It deliberately uses environment-default roots and bundled rates, without loading saved configuration. This is a developer release check, not account verification or an alternative report/diagnostic format. See the [S09 record](../docs/s09-windows-release.md).
