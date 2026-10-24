@@ -1,0 +1,14 @@
+{
+  "gpt-5.2-codex": {
+    "input": 1.75,
+    "output": 14,
+    "cached": 0.175
+  },
+  "claude-sonnet-4-6": {
+    "input": 3,
+    "output": 15,
+    "cached": 0.3,
+    "write5m": 3.75,
+    "write1h": 6
+  }
+}

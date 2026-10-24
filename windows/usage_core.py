@@ -30,6 +30,7 @@ class Window:
     label: str
     used: float
     resets_at: float | None = None
+    duration_minutes: float | None = None
 
     @property
     def remaining(self) -> float:
@@ -86,7 +87,7 @@ def parse_codex(payload: dict) -> Snapshot:
             duration = {300: "5h", 10080: "weekly"}.get(minutes)
             if duration is None:
                 duration = f"{minutes:g}m" if minutes and minutes > 0 else key
-            windows.append(Window(f"{name} {duration}", used, number(window.get("resetsAt"))))
+            windows.append(Window(f"{name} {duration}", used, number(window.get("resetsAt")), minutes))
     if not windows:
         raise UsageError("No Codex limits returned. Use a ChatGPT subscription login, not an API key.")
     note = ""
@@ -114,7 +115,7 @@ def parse_claude(payload: dict) -> Snapshot:
                     reset = parsed.timestamp()
             except (ValueError, OverflowError):
                 pass
-        windows.append(Window(label, used, reset))
+        windows.append(Window(label, used, reset, 300 if key == "five_hour" else 10080))
     if not windows:
         raise UsageError("Claude returned no supported usage windows.")
     return Snapshot("Claude", windows)

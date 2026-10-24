@@ -75,4 +75,4 @@ open /Applications/ClaudeUsageBar.app
 
 ## Windows companion: Codex + Claude
 
-The [Windows Usage Tray](windows/README.md) shows remaining Codex and Claude subscription limits in the Windows system tray. It reuses your existing CLI sign-ins and includes a Windows executable build script. The original macOS app above is unchanged.
+The [Windows Usage Tray](windows/README.md) shows remaining Codex and Claude subscription limits in the Windows system tray, with local session, daily, and weekly reports of token usage and estimated API-equivalent cost. It reuses your existing CLI sign-ins and includes a Windows executable build script. The original macOS app above is unchanged.

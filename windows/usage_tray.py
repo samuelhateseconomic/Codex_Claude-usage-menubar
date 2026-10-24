@@ -4,14 +4,24 @@ from __future__ import annotations
 import argparse
 from datetime import datetime
 import json
+from pathlib import Path
 import threading
 import time
 import webbrowser
+import os
 
 from usage_core import RateLimited, UsageError, demo_snapshot, fetch_claude, fetch_codex
+from usage_reports import collect_report, load_prices, report_directory, save_report
 
 
 PROVIDERS = {"Codex": fetch_codex, "Claude": fetch_claude}
+
+
+def open_local(path):
+    if os.name == "nt":
+        os.startfile(str(path))
+    else:
+        webbrowser.open(path.as_uri())
 
 
 class ProviderState:
@@ -64,7 +74,7 @@ class ProviderState:
             return lines
 
 
-def run_tray(demo=False, selected="both"):
+def run_tray(demo=False, selected="both", prices=None):
     try:
         import pystray
         from PIL import Image, ImageDraw
@@ -76,6 +86,41 @@ def run_tray(demo=False, selected="both"):
     stop = threading.Event()
     wake = threading.Event()
     render_lock = threading.Lock()
+    report_lock = threading.Lock()
+    report_status = [""]
+
+    def make_report(period):
+        if not report_lock.acquire(blocking=False):
+            return
+
+        def generate():
+            try:
+                report_status[0] = "Building local usage report…"
+                icon.update_menu()
+                snapshots = {}
+                for state in states:
+                    with state.lock:
+                        snapshots[state.provider] = state.snapshot
+                report = collect_report(period, [s.provider for s in states], snapshots, prices=prices, demo=demo)
+                path = save_report(report)
+                report_status[0] = "Report saved — select a report to refresh it"
+                open_local(path)
+            except Exception:
+                report_status[0] = "Report failed — check local log and report-folder permissions"
+            finally:
+                report_lock.release()
+                icon.update_menu()
+
+        threading.Thread(target=generate, daemon=True).start()
+
+    def open_reports(icon, item):
+        try:
+            directory = report_directory()
+            directory.mkdir(parents=True, exist_ok=True)
+            open_local(directory.resolve())
+        except OSError:
+            report_status[0] = "Cannot open the report folder — check folder permissions"
+            icon.update_menu()
 
     def menu_items():
         if demo:
@@ -84,6 +129,13 @@ def run_tray(demo=False, selected="both"):
             for line in state.lines():
                 yield pystray.MenuItem(line, None, enabled=False)
             yield pystray.Menu.SEPARATOR
+        yield pystray.MenuItem("Current session token & cost report…", lambda icon, item: make_report("session"), enabled=lambda item: not report_lock.locked())
+        yield pystray.MenuItem("Today's token & cost report…", lambda icon, item: make_report("today"), enabled=lambda item: not report_lock.locked())
+        yield pystray.MenuItem("Last 7 days token & cost report…", lambda icon, item: make_report("week"), enabled=lambda item: not report_lock.locked())
+        yield pystray.MenuItem("Open saved reports folder…", open_reports)
+        if report_status[0]:
+            yield pystray.MenuItem(report_status[0], None, enabled=False)
+        yield pystray.Menu.SEPARATOR
         yield pystray.MenuItem("Refresh (five-minute minimum)", lambda icon, item: wake.set())
         yield pystray.MenuItem("Codex usage page", lambda icon, item: webbrowser.open("https://chatgpt.com/codex/settings/usage"))
         yield pystray.MenuItem("Claude usage page", lambda icon, item: webbrowser.open("https://claude.ai/settings/usage"))
@@ -138,7 +190,34 @@ def main():
     parser.add_argument("--provider", choices=("both", "codex", "claude"), default="both")
     parser.add_argument("--demo", action="store_true", help="Use clearly labeled sample data without reading credentials")
     parser.add_argument("--once", action="store_true", help="Print one usage snapshot as JSON, without a tray")
+    parser.add_argument("--report", choices=("session", "today", "week"), help="Generate an HTML token/cost report from local CLI logs; no sign-in request")
+    parser.add_argument("--output", type=Path, help="HTML report destination (used with --report)")
+    parser.add_argument("--open-report", action="store_true", help="Open the generated report in a browser")
+    parser.add_argument("--prices", type=Path, help="JSON file of exact-model USD prices per million tokens")
     args = parser.parse_args()
+    if args.once and args.report:
+        parser.error("--once and --report cannot be used together")
+    if (args.output or args.open_report) and not args.report:
+        parser.error("--output and --open-report require --report")
+    price_path = args.prices
+    if price_path is None:
+        candidate = Path(os.environ.get("LOCALAPPDATA") or Path.home() / ".local" / "share") / "UsageTray" / "prices.json"
+        if candidate.is_file():
+            price_path = candidate
+    try:
+        prices = load_prices(price_path)
+    except (OSError, ValueError):
+        parser.error("Cannot load prices. Check the file and the pricing format in windows/README.md.")
+    if args.report:
+        providers = [p for p in PROVIDERS if args.provider in ("both", p.lower())]
+        try:
+            path = save_report(collect_report(args.report, providers, prices=prices, demo=args.demo), args.output)
+        except (OSError, ValueError):
+            parser.exit(1, "Cannot create the report. Check local log and output-folder permissions.\n")
+        print(str(path))
+        if args.open_report:
+            open_local(path)
+        return 0
     if args.once:
         results = []
         failed = False
@@ -154,7 +233,7 @@ def main():
                 results.append({"provider": name, "error": message})
         print(json.dumps(results, indent=2, ensure_ascii=False))
         return 1 if failed else 0
-    run_tray(args.demo, args.provider)
+    run_tray(args.demo, args.provider, prices)
     return 0
 
 
