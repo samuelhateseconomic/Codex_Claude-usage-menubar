@@ -156,7 +156,9 @@ with RuntimeOwner(sys.argv[1]):
             owner_tree=owned.ChildTree()
             child=owner_tree.start([sys.executable,"-c",code,str(lock),str(ready)],cwd=Path(runtime.__file__).parent)
             try:
-                wait_for(ready.exists)
+                # Match S09's cold-start allowance; ownership/cleanup deadlines are unchanged.
+                wait_for(lambda: ready.exists() or child.poll() is not None, timeout=10)
+                self.assertTrue(ready.exists(), "Owner fixture exited before readiness")
                 with self.assertRaises(runtime.AlreadyRunning):
                     with runtime.RuntimeOwner(lock): pass
                 env=dict(os.environ,LOCALAPPDATA=folder)

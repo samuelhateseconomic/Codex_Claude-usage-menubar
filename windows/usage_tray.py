@@ -54,7 +54,8 @@ def open_report(path, format):
         print(path.read_text(encoding="utf-8"))
 
 
-def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None, timezone=DEFAULT_TIMEZONE, roots=None, settings_version=None):
+def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None, timezone=DEFAULT_TIMEZONE, roots=None, settings_version=None,
+             dashboard=False, dashboard_port=8765):
     try:
         import pystray
         from PIL import Image, ImageDraw
@@ -71,6 +72,37 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
     report_lock = threading.Lock()
     report_status = [""]
     report_threads = []
+    dashboard_lock = threading.Lock()
+    dashboard_owner = []
+    dashboard_threads = []
+
+    def open_dashboard(icon=None, item=None):
+        if not demo or stop.is_set() or not dashboard_lock.acquire(blocking=False):
+            return
+        def open_preview():
+            try:
+                if stop.is_set():
+                    return
+                if not dashboard_owner:
+                    from dashboard_main import start_preview
+                    dashboard_owner.append(start_preview(port=dashboard_port, prices=prices,
+                        fees=plan_costs, timezone=timezone, selected=selected, open_browser=False))
+                if not stop.is_set():
+                    webbrowser.open(dashboard_owner[0][2])
+            except Exception:
+                report_status[0] = "Dashboard unavailable - check the local port and timezone dependency"
+            finally:
+                if stop.is_set() and dashboard_owner:
+                    server, thread, _ = dashboard_owner.pop()
+                    server.shutdown()
+                    server.server_close()
+                    thread.join(timeout=2)
+                dashboard_lock.release()
+                changed.set()
+        worker = threading.Thread(target=open_preview, daemon=True, name="usage-dashboard-open")
+        dashboard_threads[:] = [t for t in dashboard_threads if t.is_alive()]
+        dashboard_threads.append(worker)
+        worker.start()
 
     def make_report(period):
         if not report_lock.acquire(blocking=False):
@@ -122,6 +154,8 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
     def menu_items():
         if demo:
             yield pystray.MenuItem("DEMO — sample usage", None, enabled=False)
+        if demo:
+            yield pystray.MenuItem("Open dashboard demo preview...", open_dashboard)
         for state in states:
             for line in state.lines():
                 yield pystray.MenuItem(line, None, enabled=False)
@@ -180,6 +214,8 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
         tray_icon.visible = True
         renderer.start()
         runtime.start()
+        if dashboard:
+            open_dashboard(tray_icon)
 
     try:
         icon.run(setup=setup)
@@ -191,6 +227,17 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
             renderer.join(timeout=2)
         for worker in report_threads:
             worker.join(timeout=1)
+        for worker in dashboard_threads:
+            worker.join(timeout=2)
+        if dashboard_lock.acquire(timeout=2):
+            try:
+                if dashboard_owner:
+                    server, thread, _ = dashboard_owner.pop()
+                    server.shutdown()
+                    server.server_close()
+                    thread.join(timeout=2)
+            finally:
+                dashboard_lock.release()
 
 
 def version_info(prices=None):
@@ -207,6 +254,9 @@ def main():
     parser.add_argument("--provider", choices=("both", "codex", "claude"), default="both")
     parser.add_argument("--demo", action="store_true", help="Use clearly labeled sample data without reading credentials")
     parser.add_argument("--once", action="store_true", help="Print one usage snapshot as JSON, without a tray")
+    parser.add_argument("--dashboard", action="store_true", help="Open the explicit demo dashboard preview (requires --demo)")
+    parser.add_argument("--dashboard-port", type=int, default=8765, help="Loopback dashboard port (default: 8765)")
+    parser.add_argument("--no-browser", action="store_true", help="Serve the dashboard without opening a browser")
     parser.add_argument("--report", choices=("session", "today", "week", "month"), help="Estimate API-equivalent value from local tokens; month also compares plan fees")
     parser.add_argument("--report-format", choices=("text", "html"), default=None, help="Report display format (saved preference or terminal text)")
     parser.add_argument("--output", type=Path, help="Destination for --report or JSON --version/--diagnostics/--show-settings")
@@ -225,6 +275,17 @@ def main():
     parser.add_argument("--codex-root", action="append", type=Path, help="Absolute Codex log directory; repeat to replace that provider's root list")
     parser.add_argument("--claude-root", action="append", type=Path, help="Absolute Claude log directory; repeat to replace that provider's root list")
     args = parser.parse_args()
+    if args.dashboard:
+        if not args.demo:
+            parser.error("Real-data dashboard integration awaits the core gates; use --dashboard --demo for the reviewed preview.")
+        if any((args.once, args.report, args.output, args.open_report, args.version, args.diagnostics,
+                args.show_settings, args.save_settings, args.include_metadata, args.diagnostic_output,
+                args.report_format, args.codex_root, args.claude_root)):
+            parser.error("--dashboard cannot be combined with report, export, settings commands or source-root options")
+        if not 0 <= args.dashboard_port <= 65535:
+            parser.error("--dashboard-port must be between 0 and 65535")
+    elif args.no_browser or args.dashboard_port != 8765:
+        parser.error("--no-browser and --dashboard-port require --dashboard")
     if args.once and args.report:
         parser.error("--once and --report cannot be used together")
     if args.open_report and not args.report:
@@ -330,6 +391,13 @@ def main():
     plan_costs = dict(settings.plan_fees_usd)
     roots = settings.roots()
     args.timezone, args.report_format = settings.timezone, settings.report_format
+    if args.dashboard and (sys.stdout is not None or args.no_browser):
+        from dashboard_main import run_preview
+        try:
+            return run_preview(port=args.dashboard_port, prices=prices, fees=plan_costs,
+                timezone=args.timezone, selected=args.provider, open_browser=not args.no_browser)
+        except Exception:
+            parser.exit(1, "Cannot start the dashboard. Check the port, packaged assets and timezone dependency.\n")
     if args.report:
         providers = [p for p in PROVIDERS if args.provider in ("both", p.lower())]
         phase = "query"
@@ -398,7 +466,8 @@ def run_live(args, prices, plan_costs, roots, settings_version, complete=None):
         code = 1 if failed else 0
         return complete(code, "poll", "provider_error" if failed else "success", providers=categories) if complete else code
     run_tray(args.demo, args.provider, prices, args.report_format, plan_costs, args.timezone,
-             roots=roots, settings_version=settings_version)
+             roots=roots, settings_version=settings_version,
+             dashboard=args.dashboard, dashboard_port=args.dashboard_port)
     return 0
 
 

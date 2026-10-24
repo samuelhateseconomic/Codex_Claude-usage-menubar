@@ -1,0 +1,155 @@
+{
+  "fixture_version": "database-alignment-1",
+  "purpose": "Synthetic post-reconciliation mapping inputs and expected projections; not a database seed or complete API schema",
+  "dataset": {
+    "dataset_id": "fixture-demo-local",
+    "mode": "demo",
+    "installation_id": "fixture-installation"
+  },
+  "versions": {
+    "usage_revision": "fixture-revision-1",
+    "pricing_version": "fixture-prices-1",
+    "configuration_version": "fixture-config-1",
+    "policy_version": "fixture-decimal12-half-even",
+    "parser_version": "fixture-parser-1",
+    "reconciliation_version": "fixture-reconciliation-1"
+  },
+  "projects": [
+    {"project_id": "fixture-project", "identity_kind": "path", "display_path": "C:/synthetic/usage-project"}
+  ],
+  "source_links": [
+    {"event_id": "fixture-event-codex", "source_ref": "fixture-source-codex-generation-1-line-3"},
+    {"event_id": "fixture-event-claude", "source_ref": "fixture-source-claude-generation-1-line-2"}
+  ],
+  "rates_per_million_usd": {
+    "fixture-codex-model": {
+      "rate_id": "fixture-rate-codex",
+      "uncached_input_tokens": "2",
+      "output_tokens": "10",
+      "cache_read_tokens": "0.1",
+      "cache_write_5m_tokens": "0",
+      "cache_write_1h_tokens": "0",
+      "threshold": null
+    },
+    "fixture-claude-model": {
+      "rate_id": "fixture-rate-claude",
+      "uncached_input_tokens": "4",
+      "output_tokens": "20",
+      "cache_read_tokens": "0.2",
+      "cache_write_5m_tokens": "5",
+      "cache_write_1h_tokens": "8",
+      "threshold": null
+    }
+  },
+  "events": [
+    {
+      "event_id": "fixture-event-codex",
+      "provider": "codex",
+      "conversation_id": "fixture-conversation-codex",
+      "provider_conversation_id": "fixture-provider-codex",
+      "project_id": "fixture-project",
+      "occurred_at": "2026-10-23T12:00:00Z",
+      "model": "fixture-codex-model",
+      "effort": "high",
+      "effort_source": "fixture explicit metadata",
+      "turn_id": null,
+      "source_kind": "codex_cumulative_delta",
+      "epoch_anchor": "fixture-codex-epoch-1",
+      "event_anchor": "fixture-codex-accepted-increment-1",
+      "request_context_tokens": null,
+      "request_context_source": "not recorded",
+      "tokens": {
+        "uncached_input_tokens": "10000",
+        "output_tokens": "1830000",
+        "cache_read_tokens": "1000000",
+        "cache_write_5m_tokens": "0",
+        "cache_write_1h_tokens": "0",
+        "reasoning_tokens": "1260000",
+        "total_tokens": "2840000"
+      },
+      "valuation": {
+        "state": "priced",
+        "amount_usd": "18.420000000000",
+        "rate_id": "fixture-rate-codex",
+        "tier": "standard",
+        "assumptions": []
+      }
+    },
+    {
+      "event_id": "fixture-event-claude",
+      "provider": "claude",
+      "conversation_id": "fixture-conversation-claude",
+      "provider_conversation_id": "fixture-provider-claude",
+      "project_id": "fixture-project",
+      "occurred_at": "2026-10-23T13:00:00Z",
+      "model": "fixture-claude-model",
+      "effort": "high",
+      "effort_source": "fixture explicit metadata",
+      "turn_id": null,
+      "source_kind": "claude_message",
+      "epoch_anchor": "fixture-claude-message-domain",
+      "event_anchor": "fixture-claude-message-1-request-1",
+      "request_context_tokens": null,
+      "request_context_source": "not recorded",
+      "tokens": {
+        "uncached_input_tokens": "10000",
+        "output_tokens": "20000",
+        "cache_read_tokens": "30000",
+        "cache_write_5m_tokens": "5000",
+        "cache_write_1h_tokens": "0",
+        "reasoning_tokens": null,
+        "total_tokens": "65000"
+      },
+      "valuation": {
+        "state": "priced",
+        "amount_usd": "0.471000000000",
+        "rate_id": "fixture-rate-claude",
+        "tier": "standard",
+        "assumptions": []
+      }
+    }
+  ],
+  "base_query": {
+    "dataset_id": "fixture-demo-local",
+    "providers": ["codex", "claude"],
+    "range": {
+      "preset": "month",
+      "start_at": "2026-10-01T07:00:00Z",
+      "end_at": "2026-10-23T14:00:00Z",
+      "timezone": "America/Los_Angeles"
+    },
+    "project_ids": [],
+    "models": [],
+    "efforts": [],
+    "search": "",
+    "selected_day": null,
+    "sort": "value_desc"
+  },
+  "monthly_fees_usd": {"codex": "20.00", "claude": "20.00"},
+  "expected_projection": {
+    "scope": "all_local_accounts_unmatched",
+    "tokens": {
+      "uncached_input_tokens": "20000",
+      "output_tokens": "1850000",
+      "cache_read_tokens": "1030000",
+      "cache_write_5m_tokens": "5000",
+      "cache_write_1h_tokens": "0",
+      "total_tokens": "2905000"
+    },
+    "reasoning": {"known_tokens": "1260000", "recorded_event_count": 1, "coverage": "partial"},
+    "event_count": 2,
+    "conversation_count": 2,
+    "known_project_count": 1,
+    "unknown_project_event_count": 0,
+    "value": {"state": "complete", "amount_usd": "18.891000000000"},
+    "providers": {
+      "codex": {"total_tokens": "2840000", "amount_usd": "18.420000000000", "difference_usd": "-1.580000000000"},
+      "claude": {"total_tokens": "65000", "amount_usd": "0.471000000000", "difference_usd": "-19.529000000000"}
+    },
+    "comparison": {"eligible": true, "full_monthly_fees_usd": "40.00", "difference_usd": "-21.109000000000"},
+    "local_day_buckets": [
+      {"day": "2026-10-23", "total_tokens": "2905000", "amount_usd": "18.891000000000"}
+    ],
+    "conversation_order_value_desc": ["fixture-conversation-codex", "fixture-conversation-claude"]
+  }
+}

@@ -701,6 +701,8 @@ Documentation checks also parsed all three JSON examples, verified token sums an
 
 ## 13. Database developer handoff
 
+The [local database mapping handoff](usage-hub-database-handoff.md) records October 24 discovery, the user's local-first direction, logical storage responsibilities, exact numeric/transaction rules, preview-to-v1 differences, and a [synthetic alignment fixture](fixtures/usage-hub-database-alignment.json). It is preparation for S11, not a physical schema, migration, or implemented API.
+
 Before committing migrations, record these decisions:
 
 1. Engine and placement: local index or remote service; existing schema/migration path.

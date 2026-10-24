@@ -11,7 +11,7 @@ if ($LASTEXITCODE -ne 0) { throw "Dependency installation failed." }
 & .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 if ($LASTEXITCODE -ne 0) { throw "Tests failed." }
 $buildWorkspace = Join-Path $PSScriptRoot ("build\release-" + [guid]::NewGuid().ToString("N"))
-& .\.venv\Scripts\python.exe -m PyInstaller --noconfirm --clean --onefile --windowed --workpath $buildWorkspace --collect-all tzdata --name UsageTray usage_tray.py
+& .\.venv\Scripts\python.exe -m PyInstaller --noconfirm --clean --onefile --windowed --workpath $buildWorkspace --add-data "dashboard;dashboard" --collect-all tzdata --name UsageTray usage_tray.py
 if ($LASTEXITCODE -ne 0) { throw "Packaging failed." }
 & .\.venv\Scripts\python.exe tools/release_smoke.py --exe dist/UsageTray.exe
 if ($LASTEXITCODE -ne 0) { throw "Packaged release smoke checks failed." }

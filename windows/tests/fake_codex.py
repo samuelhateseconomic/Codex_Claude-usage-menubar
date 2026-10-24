@@ -11,7 +11,11 @@ initialized = False
 if mode == "descendant":
     child = subprocess.Popen([sys.executable, "-c", "import time;time.sleep(60)"],
         creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
-    Path(sys.argv[2]).write_text(json.dumps({"parent":os.getpid(),"child":child.pid}), encoding="utf-8")
+    # Readers use existence as the ready signal; publish complete JSON atomically.
+    marker = Path(sys.argv[2])
+    temporary = marker.with_suffix(".tmp")
+    temporary.write_text(json.dumps({"parent":os.getpid(),"child":child.pid}), encoding="utf-8")
+    temporary.replace(marker)
 for line in sys.stdin:
     message = json.loads(line)
     method = message.get("method")

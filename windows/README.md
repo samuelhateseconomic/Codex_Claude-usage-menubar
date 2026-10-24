@@ -26,6 +26,32 @@ One tray or real `--once` process owns the local application-data `runtime.lock`
 
 To use only one provider, add `--provider codex` or `--provider claude`. A missing provider login does not stop the other provider.
 
+## Local dashboard development preview
+
+The integrated preview uses the refined core's valuation, summary and fee policies, and the effective saved settings/temporary fee and timezone overrides. Settings remains read-only in the browser. Unknown fees display Unavailable; zero fees remain USD 0.00. Dashboard launch rejects report/export/settings commands and source-root options instead of ignoring them. S08's reduced report metadata and opt-in full report exports remain unchanged. The dashboard's intentional conversation detail view preserves exact metadata identities while showing controls as visible escapes. See the [integration evidence and remaining release gates](../docs/branch-integration-plan.md).
+
+The reviewed Figma dashboard now runs locally with explicit sample data. From the repository root:
+
+```powershell
+.\windows\.venv\Scripts\python.exe windows/usage_tray.py --dashboard --demo
+```
+
+This opens the browser at `http://127.0.0.1:8765/`. Stop the source-mode server with Ctrl+C. Use `--no-browser` to serve without opening a tab, or `--dashboard-port 8766` if the default port is occupied. A demo tray also has **Open dashboard demo preview...**; Quit stops its owned dashboard server. The packaged `UsageTray.exe --dashboard --demo` keeps a tray owner so you can quit it normally.
+
+The preview supports Codex/Claude/Both, month/today/week, text search, project/model/effort filters, daily token/value charts with labeled axes, conversation details, preserved Back state, two-page sample results, and keyboard shortcuts. It uses local bundled UI assets, Geist fonts, and named timezone data; no frontend build server or CDN is required. Settings are explicitly read-only, and Limits uses sample readings in demo mode.
+
+**Real-data dashboard launch is gated:** `--dashboard` currently requires `--demo`. Core accounting/shared-service gates and the existing database handoff must be completed before enabling real history. The preview neither replaces the terminal nor silently falls back to demo data. Existing real terminal reports and provider limits retain their current behavior and known refinement limitations. See the [implementation handoff](../docs/dashboard-implementation.md).
+
+Run the dashboard checks from the repository root:
+
+```powershell
+.\windows\.venv\Scripts\python.exe -m unittest discover -s windows/tests -p test_hub.py -v
+node --test windows/dashboard/tests/*.test.mjs
+.\windows\.venv\Scripts\python.exe windows/tests/packaged_dashboard_smoke.py --exe windows/dist/UsageTray.exe
+```
+
+Node is needed only for formatter and controlled handler/recovery tests, not for running the dashboard. The HTTP tests need local loopback access. Packaging uses the normal `windows/build.ps1`, including dashboard assets and `tzdata`. Before repeating interaction work, read the [completed coverage inventory and synthetic browser fault driver instructions](../docs/dashboard-resilience-handoff.md); ordinary navigation and request-failure evidence are recorded separately there.
+
 ## Diagnose and test
 
 ```powershell
