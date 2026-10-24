@@ -13,6 +13,9 @@ import re
 import tempfile
 import time
 
+from usage_records import Record, Tokens
+from usage_observations import extract_claude, extract_codex, recorded_effort, timestamp
+
 
 # Standard USD per million tokens. No subscription price or quota conversion.
 # Snapshot of LiteLLM's public price registry, checked 2026-10-23 Pacific.
@@ -56,36 +59,6 @@ PRICES = {
     "claude-sonnet-4-5": Price(3, 15, 0.3, 3.75, 6),
     "claude-haiku-4-5": Price(1, 5, 0.1, 1.25, 2),
 }
-
-
-@dataclass(frozen=True)
-class Tokens:
-    input: int = 0  # Uncached input only, for both providers.
-    output: int = 0  # Includes reasoning; reasoning is never added twice.
-    cached: int = 0
-    write5m: int = 0
-    write1h: int = 0
-
-    @property
-    def total(self):
-        return self.input + self.output + self.cached + self.write5m + self.write1h
-
-    def __add__(self, other):
-        return Tokens(*(a + b for a, b in zip(asdict(self).values(), asdict(other).values())))
-
-
-@dataclass(frozen=True)
-class Record:
-    provider: str
-    timestamp: float
-    session: str
-    project: str
-    model: str
-    tokens: Tokens
-    effort: str = "unknown"
-    effort_source: str = "not recorded"
-    turn_id: str | None = None
-    reasoning_tokens: int | None = None  # A subset of output, never an extra charge.
 
 
 def price_for(model: str, overrides: dict | None = None) -> Price | None:
@@ -141,36 +114,12 @@ def load_prices(path: Path | None) -> dict:
     return prices
 
 
-def timestamp(value) -> float | None:
-    if not isinstance(value, str):
-        return None
-    try:
-        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
-        return dt.timestamp() if dt.tzinfo is not None else None
-    except (ValueError, OverflowError, OSError):
-        return None
-
-
 def count(value) -> int:
     return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else 0
 
 
 def object_value(value) -> dict:
     return value if isinstance(value, dict) else {}
-
-
-def recorded_effort(*sources: tuple[str, dict]) -> tuple[str, str] | None:
-    """Only read explicit metadata; never infer effort from budgets or text."""
-    for name, data in sources:
-        for key in ("effort", "reasoning_effort", "reasoningEffort", "effortValue", "effortLevel"):
-            if key not in data:
-                continue
-            value = data[key]
-            if isinstance(value, str) and value.strip() and len(value) <= 80 and not any(ord(c) < 32 for c in value):
-                # Preserve wire values: xhigh, max, and ultra are distinct.
-                return value.strip(), f"{name}.{key}"
-            return "unknown", f"{name}.{key} (unavailable)"
-    return None
 
 
 def reasoning_count(usage: dict, output: int) -> int | None:
@@ -203,11 +152,12 @@ def log_files(roots: list[Path], notices: list[str], since: float | None = None)
             notices.append(f"Some folders could not be read under {root}.")
 
 
-def lines(path: Path, notices: list[str]):
+def source_lines(path: Path, notices: list[str]):
+    """Yield physical positions plus parsed objects without retaining source text."""
     invalid = False
     try:
         with path.open(encoding="utf-8-sig", errors="replace") as stream:
-            for line in stream:
+            for position, line in enumerate(stream, 1):
                 if not line.strip():
                     continue
                 try:
@@ -216,11 +166,36 @@ def lines(path: Path, notices: list[str]):
                     invalid = True
                     continue
                 if isinstance(data, dict):
-                    yield data
+                    yield position, data
     except OSError:
         notices.append(f"A log file could not be read: {path.name}")
     if invalid:
         notices.append(f"Malformed or incomplete records skipped in {path.name}.")
+
+
+def lines(path: Path, notices: list[str]):
+    # Preserve the legacy reader interface until S02 switches acceptance policy.
+    for _, data in source_lines(path, notices):
+        yield data
+
+
+def read_observations(provider: str, roots: list[Path], notices: list[str], since: float | None = None):
+    """Scan metadata evidence for the pure S02 reconciliation seam.
+
+    Legacy report readers remain active in S01. File generation/recovery and
+    authoritative backfill discovery are S03 work; generation is unknown here.
+    """
+    if provider not in ("Codex", "Claude"):
+        raise ValueError("Unsupported observation provider")
+    observations = []
+    for path in log_files(roots, notices, since):
+        entries = source_lines(path, notices)
+        source_id = str(path.resolve())
+        if provider == "Codex":
+            observations.extend(extract_codex(entries, source_id))
+        else:
+            observations.extend(extract_claude(entries, source_id, path.parent.name))
+    return observations
 
 
 def read_claude(roots: list[Path], notices: list[str], since: float | None = None) -> list[Record]:

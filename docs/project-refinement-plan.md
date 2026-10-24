@@ -387,7 +387,7 @@ The expected build artifact is `windows/dist/UsageTray.exe`; generated artifacts
 
 ## 10. Progress ledger and handoff template
 
-Current status: **S00 complete; S01–S14 not_started**. Earlier reviews, tests, pricing fixes, and documentation are baseline evidence; they do not automatically complete the broader session gates. Some tasks may already be satisfied when implementation begins; verify and record that evidence rather than repeating work unnecessarily.
+Current status in this isolated worktree: **S00 and S01 complete; S02–S14 not_started**. S01 has not been integrated into the concurrently changing original checkout. Earlier reviews, tests, pricing fixes, and documentation are baseline evidence; they do not automatically complete the broader session gates. Some tasks may already be satisfied when implementation begins; verify and record that evidence rather than repeating work unnecessarily.
 
 Create one entry per session and update it when work changes:
 
@@ -442,6 +442,19 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - Limitations: both accounting defects remain open; no real-log/account, macOS, CI, price-verification, or interactive lifecycle checks were run. S00 completion does not raise runtime maturity scores.
 - Next ready: **S01 observation/canonical-event contracts**. S02 requires that seam and regression assertions before fixing deltas. No unresolved S00 decision blocks S01.
 
+### Session S01 — Observation and canonical-event contracts
+
+- Status: **complete in the isolated S01 worktree**. Scope: F2/F4 metadata evidence, compatible shared records, canonical acceptance contract, and independent reconciliation input; no accounting correction or UI expansion.
+- Starting commit: `854ac73` after committing S00 and existing workflow documentation. Concurrent changes later modified the same shared reader and introduced a different observation/reconciliation contract. Those edits were preserved. S01 was reconstructed against the committed base in an isolated snapshot, then continued in the managed `s01-observation-contracts` worktree.
+- Decisions/rationale: [S01 contract and mapping policy](s01-observation-contracts.md) separates unknown/invalid/zero counters, source-local observations from global events, provider IDs from weak source surrogates, and context capacity from request evidence. Canonical IDs include reconciled epoch/event anchors, not copy provenance. Concrete reconciliation is still S02 work.
+- Files changed: `windows/usage_records.py`, `windows/usage_observations.py`, `windows/usage_reports.py`, `windows/tests/test_observations.py`, `docs/s01-observation-contracts.md`, and this ledger. Existing `Record`/`Tokens` import names and reader acceptance remain compatible in this worktree. The temporary parallel extraction seam avoids prematurely replacing the known-buggy reader with an unverified algorithm.
+- Checks: first shared-checkout focused run passed 13/14 with one import error caused by the competing `reconcile_codex` change; it is not reported as a passing run. Isolated snapshot then passed 14 focused/71 full tests. After final contract additions, managed worktree passed **16 focused** tests and **73 full tests in 6.293 seconds** via the build script.
+- Packaging: `powershell -NoProfile -ExecutionPolicy Bypass -File windows/build.ps1` succeeded with `PIP_NO_INDEX=1` and the existing project environment reused through an ignored junction. Fresh executable's hidden offline `--report month --demo --output ...` check exited 0 and verified DEMO, 108,000 tokens, USD 0.2658, and month comparison.
+- Probe outcomes: truncated-first overlap still **300 vs expected 200**; complete-first **200 vs 200**; reset still **200 vs expected 250**. No S02 accounting gate is claimed complete. Documentation links/fences/whitespace and `git diff --check` passed.
+- Acceptance evidence: pure extraction/grouping imports without GUI/providers/pricing; both providers retain source/ID/context/counter evidence; privacy sentinels are absent from projected serialization; source physical positions survive malformed/blank lines; accepted IDs ignore copy provenance and distinguish epochs; legacy token/metadata fixtures remain passing.
+- Limits: original mixed checkout is not validated or integrated by these checks. Verified file generations/recovery, partial-scan quality, exact valuation, and request-context tier policy remain later sessions. No real-log/live-account, interactive lifecycle, macOS, Figma, or CI check was run.
+- Next ready: **S02** against this worktree's seam. Shared-checkout integration requires resolving the competing contract and rerunning its combined gates; preserve all concurrent changes meanwhile.
+
 ## 11. Completion and reassessment
 
 - **Core complete:** S00–S09 gates pass; terminal functionality remains available; known accounting defects have regression coverage and correct outcomes.
@@ -449,4 +462,4 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - **Hub complete:** the explicitly scoped S11–S14 gates pass; plans/Figma alone do not count as runtime integration.
 - **Factor reassessment:** revisit F1–F10 using linked tests, runtime checks, and remaining limitations. Keep weights stable or explain a scope-driven change. Do not raise the score just to hit a target number.
 
-Recommended next implementation unit: **S01, followed by S02**. S00 is complete; do not start by restyling the report or creating a database around the current reconciliation defects.
+Recommended next implementation unit in this worktree: **S02**. S00/S01 are complete here; do not start by restyling the report or creating a database around the current reconciliation defects.
