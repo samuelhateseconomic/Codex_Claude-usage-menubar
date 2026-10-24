@@ -1,6 +1,6 @@
 # S09 — Windows core release validation
 
-Release candidate: **0.9.0** on `codex/s01-observation-contracts`, after S00–S08. Status: validation in progress. Main/original-checkout integration and distribution are separate actions.
+Release candidate: **0.9.0** on `codex/s01-observation-contracts`, after S00–S08. Status: **core release gate complete**. Main/original-checkout integration and distribution are separate actions.
 
 ## Changes and release scope
 
@@ -38,11 +38,24 @@ It checks category sums, reasoning as an output subset, exact valued-detail/tota
 
 ## Validation evidence
 
-Final local full suite: **247 tests passed in 47.157 seconds** on Windows 11 / project Python 3.14.5. The final package has built successfully; the automatic executable smoke gate is still running. An earlier 0.9.0 build passed all 14 executable checks. A repeated full suite missed a 3-second crash-fixture startup marker; the fixture now allows up to 10 seconds or detects early parent exit, while retaining its 3-second process-cleanup assertions. Focused 19 runtime tests passed in 7.769 seconds after that adjustment. Remote matrix execution and final scoped native-process observations remain pending.
+Final local full suite: **247 tests passed in 47.157 seconds** on Windows 11 / project Python 3.14.5. The final package built successfully and passed all **14 automatic executable smoke checks**. Executable SHA-256: `51809bc976408f569c022e5e96991003c43cafb0c4df15cbc0c2ceb7bde30a3c`. A repeated full suite missed a 3-second crash-fixture startup marker; the fixture now allows up to 10 seconds or detects early parent exit, while retaining its 3-second process-cleanup assertions. Focused 19 runtime tests passed in 7.769 seconds after that adjustment. The initial four-runtime CI run reached all suites and exposed an inherited test spelling comparison between short `RUNNER~1` TEMP paths and resolved long paths. The test now verifies file identity using `samefile`; **35 report tests passed in 8.135 seconds**. No application/packaged code changed for that test fix. The final local post-correction full suite passed **247 tests in 67.494 seconds**; the correction changed only a test assertion and documentation, so the previously verified production executable remains applicable.
 
 A corrected read-only history run measured **153 files / 199,834,592 observed bytes**, **3,698 in-range records / 48 conversations** in **5.236890 seconds** on Windows 11 AMD64 / Python 3.14.5 / 22 logical CPUs / America/Los_Angeles. All nine consistency checks passed. Available model keys were `gpt-6.1-sol`, `claude-opus-5-5` (priced) and `codex-auto-review` (unpriced). Codex source quality is partial, with an absent root and invalid counter metadata; reset/counter exclusions and tier assumptions remain explicit. Claude source quality is complete for available files. Histories changed between scans; these are single-sample counts, not a stable benchmark. No raw history or audit output is committed. See the [session ledger](project-refinement-plan.md#10-progress-ledger-and-handoff-template) for separate issue counts and exact command outcomes.
 
-Inspected mandatory accounting probes remain **200/200**, **200/200**, **250/250**, all matching expected values. The Windows computer-use inventory exposes no taskbar/tray surface here; native menu interaction is unverified, and terminal UI automation is excluded by the installed computer-use skill. Process-level launch/lifecycle evidence is recorded separately when available.
+Inspected mandatory accounting probes remain **200/200**, **200/200**, **250/250**, all matching expected values. The Windows computer-use inventory exposes no taskbar/tray surface here; native menu interaction is unverified, and terminal UI automation is excluded by the installed computer-use skill. Three scoped actual-executable process checks passed: two demo tray launches acquired ownership, remained alive and released the lock after fixture-owned teardown, allowing restart; explicit demo text reporting created an owned PowerShell process and the correct saved report using a path with spaces, an apostrophe and brackets. These checks observed only owned Job Object PIDs/process images and file content. No UI Automation, menu invocation or terminal input was used. The viewer and tray test processes were closed only within their fixture-owned jobs. This is process-level evidence, not native interaction/playback.
+
+## Remote Windows evidence
+
+[GitHub Actions run 40121222830](https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar/actions/runs/40121222830), source/tool revision `50f5ab57dfd2026f14b5cb6a7e7658fc1c30563d`, passed all four jobs. Logs verify the actual packaged Python versions, all 247 source tests, successful PyInstaller builds, all 14 executable checks and artifact upload for each runtime:
+
+- Python **3.11.9**: suite **11.817 seconds**, artifact `UsageTray-Windows-Python-3.11`.
+- Python **3.12.10**: suite **14.123 seconds**, artifact `UsageTray-Windows-Python-3.12`.
+- Python **3.13.16**: suite **14.163 seconds**, artifact `UsageTray-Windows-Python-3.13`.
+- Python **3.14.9**: suite **13.119 seconds**, artifact `UsageTray-Windows-Python-3.14`.
+
+The hosted Windows image reports OS build 26100; fresh per-job virtual environments and the empty-host-timezone smoke setting verify local tzdata fallback across the supported runtime range. Artifact names/availability were inspected; no artifact download or end-user installation is claimed. The local Windows 11 build above uses Python 3.14.5 and has its own executable fingerprint; distinct builds can have different hashes. Existing optional pystray GTK and hosted-action Node notices are nonblocking. Final evidence updates are documentation-only; they do not change the tested application/tool tree.
+
+Core release acceptance is complete on the isolated branch, with the limitations below. S10 remains the next requested-only terminal expression/interaction session. No later hub gate is implied.
 
 ## Release and operation limits
 
