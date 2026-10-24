@@ -1,10 +1,21 @@
 """Local protocol fixture: never reads credentials or contacts a provider."""
 import json
+import os
+from pathlib import Path
+import subprocess
 import sys
 import time
 
 mode = sys.argv[1] if len(sys.argv) > 1 else "ok"
 initialized = False
+if mode == "descendant":
+    child = subprocess.Popen([sys.executable, "-c", "import time;time.sleep(60)"],
+        creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+    # Readers use existence as the ready signal; publish complete JSON atomically.
+    marker = Path(sys.argv[2])
+    temporary = marker.with_suffix(".tmp")
+    temporary.write_text(json.dumps({"parent":os.getpid(),"child":child.pid}), encoding="utf-8")
+    temporary.replace(marker)
 for line in sys.stdin:
     message = json.loads(line)
     method = message.get("method")
@@ -13,7 +24,7 @@ for line in sys.stdin:
         continue
     if method is None:
         continue
-    if mode == "timeout":
+    if mode in ("timeout", "descendant"):
         time.sleep(60)
     if mode == "exit":
         break

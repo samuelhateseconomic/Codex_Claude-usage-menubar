@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "plan_fees_usd": {
+    "Codex": "20.00",
+    "Claude": "20.00"
+  },
+  "log_roots": {
+    "Codex": null,
+    "Claude": null
+  },
+  "timezone": "America/Los_Angeles",
+  "rate_catalog": "bundled",
+  "rate_overrides": {},
+  "report_format": "text"
+}

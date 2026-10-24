@@ -21,6 +21,15 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from usage_reports import (Record, Tokens, Price, PRICE_DATE, default_roots,
                            read_claude, read_codex)
 from usage_value import summarize_records
+from usage_valuation import (DEFAULT_PLAN_FEES, bounded_decimal, build_catalog,
+                             compare_plans, ComparisonScope, value_event)
+
+
+def decimal_text(value):
+    if value is None:
+        return None
+    text = format(value, "f")
+    return text.rstrip("0").rstrip(".") if "." in text else text
 
 PROVIDERS = ("Codex", "Claude")
 TOKEN_FIELDS = {"input": "uncached_input_tokens", "output": "output_tokens", "cached": "cache_read_tokens",
@@ -39,7 +48,7 @@ def summary_dto(records, prices):
     return {"tokens": tokens, "record_count": summary.record_count,
             "reasoning_tokens": None if summary.reasoning_tokens is None else str(summary.reasoning_tokens),
             "reasoning_records": summary.reasoning_records,
-            "value": {"state": summary.state, "amount_usd": None if summary.amount is None else format(summary.amount, "f"),
+            "value": {"state": summary.state, "amount_usd": decimal_text(summary.amount),
                       "unpriced_records": summary.unpriced_records, "unpriced_tokens": str(summary.unpriced_tokens)}}
 
 
@@ -85,7 +94,9 @@ class HubService:
         self.prices = dict(prices or {})
         if demo:
             self.prices.update({"gpt-6.1-sol": Price(2, 10, .1), "claude-opus-5-5": Price(4, 20, .2, 5, 8)})
-        self.fees = {p: Decimal(str((fees or {}).get(p, 20))) for p in PROVIDERS}
+        configured_fees = DEFAULT_PLAN_FEES if fees is None else fees
+        self.fees = {p: bounded_decimal(configured_fees[p]) if configured_fees.get(p) is not None else None
+                     for p in PROVIDERS}
         try:
             self.zone = ZoneInfo(timezone)
         except ZoneInfoNotFoundError:
@@ -190,12 +201,12 @@ class HubService:
         comparisons = []
         comparable = period == "month" and not any(params.get(k) for k in ("project", "model", "effort", "q", "day"))
         if comparable:
-            for selected_provider in PROVIDERS if provider == "both" else (provider.title(),):
-                items = [r for r in selected if r.provider == selected_provider]
-                value = summarize_records(items, self.prices)
-                fee = self.fees[selected_provider]
-                comparisons.append({"provider": selected_provider, "fee_usd": str(fee), "state": value.state,
-            "difference_usd": None if value.amount is None else format(value.amount - fee, "f")})
+            catalog = build_catalog(self.prices)
+            scope = ComparisonScope(PROVIDERS if provider == "both" else (provider.title(),), period, True)
+            results, _ = compare_plans((value_event(record, catalog) for record in selected), scope, self.fees)
+            comparisons = [{"provider": value.provider, "fee_usd": decimal_text(value.fee_usd),
+                            "state": value.pricing_state, "difference_usd": decimal_text(value.difference_usd)}
+                           for value in results]
         normalized = {key: params[key] for key in sorted(params) if key not in ("conversation", "page", "revision") and params[key]}
         context_id = hashlib.sha256(json.dumps([dataset.revision, start, dataset.captured_at, normalized], sort_keys=True).encode()).hexdigest()[:32]
         def contribution(item):
@@ -219,7 +230,7 @@ class HubService:
             "projects": project_groups, "models": model_groups,
             "conversations": conversations[(page-1)*6:page*6], "page": page,
             "page_count": max(1, (len(conversations)+5)//6), "detail": detail,
-            "settings": {"fees_usd": {p: str(self.fees[p]) for p in PROVIDERS}, "timezone": str(self.zone),
+            "settings": {"fees_usd": {p: decimal_text(self.fees[p]) for p in PROVIDERS}, "timezone": str(self.zone),
                 "editable": False, "roots": {} if self.demo else {p: [str(root) for root in self.roots.get(p, [])] for p in PROVIDERS}},
             "limits": self.limits()}
 

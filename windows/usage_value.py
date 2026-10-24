@@ -1,24 +1,17 @@
 """Exact shared valuation adapter for the dashboard preview.
 
-No parser, provider polling, or GUI imports. Core service adoption remains gated.
+Uses authoritative core valuation and summaries; no provider polling or GUI imports.
 """
 from dataclasses import dataclass
-from decimal import Decimal, localcontext
-from usage_reports import Record, Tokens, price_for
+from decimal import Decimal
+from usage_records import Record, Tokens
+from usage_service import summarize_values
+from usage_valuation import build_catalog, value_event
+
 
 def estimate_exact(record: Record, overrides: dict | None = None) -> Decimal | None:
-    price = price_for(record.model, overrides)
-    if price is None:
-        return None
-    tokens = record.tokens
-    inp, out, cached = price.input, price.output, price.cached
-    if price.threshold and tokens.input + tokens.cached > price.threshold and price.high:
-        inp, out, cached = price.high
-    with localcontext() as context:
-        context.prec = 80
-        return sum((Decimal(count) * Decimal(str(rate)) for count, rate in (
-            (tokens.input, inp), (tokens.output, out), (tokens.cached, cached),
-            (tokens.write5m, price.write5m), (tokens.write1h, price.write1h))), Decimal(0)) / Decimal(1_000_000)
+    """Compatibility projection of the authoritative event valuation."""
+    return value_event(record, build_catalog(overrides)).amount_usd
 
 
 @dataclass(frozen=True)
@@ -34,26 +27,14 @@ class UsageSummary:
 
 
 def summarize_records(records, prices=None) -> UsageSummary:
-    """One headless arithmetic path for preview summaries and drill-downs.
+    """Project the shared headless summary into the existing demo DTO shape.
 
-    S04/S05 must consolidate this seam with terminal/HTML valuation before
-    enabling the real-data dashboard. Legacy reporting is unchanged here.
+    No pricing, token, reasoning or coverage arithmetic belongs in this adapter.
+    The real-data query/index/API contract remains a separate gated session.
     """
-    records = list(records)
-    tokens, known, unknown, unpriced_tokens, reasoning = Tokens(), [], 0, 0, []
-    for record in records:
-        tokens += record.tokens
-        value = estimate_exact(record, prices)
-        if value is None:
-            unknown += 1
-            unpriced_tokens += record.tokens.total
-        else:
-            known.append(value)
-        if record.reasoning_tokens is not None:
-            reasoning.append(record.reasoning_tokens)
-    state = "empty" if not records else "unpriced" if not known else "partial" if unknown else "complete"
-    with localcontext() as context:
-        context.prec = 80
-        amount = sum(known, Decimal(0)) if known else None
-    return UsageSummary(tokens, amount, state, len(records), unknown, unpriced_tokens,
-                        sum(reasoning) if reasoning else None, len(reasoning))
+    catalog = build_catalog(prices)
+    summary = summarize_values(value_event(record, catalog) for record in records)
+    value, reasoning = summary.value, summary.reasoning
+    return UsageSummary(value.tokens, value.amount_usd, value.state, summary.record_count,
+                        value.unpriced_records, value.unpriced_tokens,
+                        reasoning.known_tokens, reasoning.known_records)

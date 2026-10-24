@@ -38,7 +38,8 @@ def log_entries(provider):
          "requestId": "fixture-request", "cwd": "C:/synthetic-project", **private,
          "message": {"id": "fixture-message", "model": "claude-sonnet-4-6",
                      "content": [{"text": SECRET, "thinking": SECRET}],
-                     "usage": {"input_tokens": 100, "output_tokens": 20}}},
+                     "usage": {"input_tokens": 100, "output_tokens": 20, "cache_read_input_tokens": 0,
+                               "cache_creation_input_tokens": 0}}},
     ]
 
 
@@ -54,7 +55,7 @@ def read_fixture(provider, entries):
 
 def report_for(records, notices=()):
     return reports.Report(records, {p: (NOW - 3600, "Synthetic fixture")
-                                   for p in sorted({r.provider for r in records})}, NOW, list(notices))
+                                   for p in ("Codex", "Claude")}, NOW, list(notices))
 
 
 def public_outputs(records, notices=()):

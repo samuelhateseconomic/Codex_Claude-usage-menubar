@@ -26,15 +26,19 @@
 - Unknown models stay unpriced. Empty, all-unpriced, partially priced, and legitimately zero-priced results are distinct.
 - Estimate accepted events before aggregation. Preserve request-context evidence or label tier assumptions; aggregate counters do not prove one request's context.
 - Use exact decimal money/rates in the refined shared service with documented bounds/rounding. Repricing cannot change canonical token facts. All renderers consume one authoritative summary.
+- Use `windows/usage_service.py` for selection, ordering, grouping and immutable `UsageResult` summaries; renderers only format that result. Preserve full canonical conversation identity for groups/drilldowns; display labels and legacy occurrence IDs are not global identities. See [the S05 contract](docs/s05-headless-query-service.md).
+- Use `windows/usage_config.py` for validated settings and atomic writes. CLI overrides are temporary unless `--save-settings` is explicit; preserve malformed files and the documented legacy price migration. Direct headless queries use explicit inputs, without silently loading user settings. See [the S06 contract](docs/s06-persistent-configuration.md).
 - Persist one fee configuration source, initially Codex USD 20/month and Claude USD 20/month. Compare full fees only for unfiltered calendar-month-to-date, optionally by provider; show signed differences and qualifications, not actual bills or realized savings.
 - Capture one range/timezone context. The refined service uses UTC `[start, end)` with named local-day/month boundaries; migrate legacy inclusive-end behavior explicitly. Follow frozen revision/query-context rules on the hub track.
 
 ## Reliability, privacy, and integration
 
+- Keep polling, per-provider wake/eligibility and ownership in `windows/usage_runtime.py`; preserve scoped child containment in `windows/usage_process.py`. Automatic report retention is restricted to the reserved Generated folder; never extend it to histories, legacy reports or explicit exports. See [the S07 contract](docs/s07-runtime-recovery.md).
 - Keep provider refreshes independent, enforce cooldown/backoff, and preserve labeled last-successful state. Offline usage queries must not require provider polling or GUI imports.
 - Handle append/truncation/replacement explicitly. Failed reads must not silently replace accepted history with empty data. Retain a coherent last committed dataset when persistence exists.
 - One runtime owner schedules provider checks and database writes when clients/processes share a service. Do not persist monotonic deadlines as UTC timestamps.
 - Extract allowlisted metadata only. Never persist/export/log prompts, responses, credentials, raw provider payloads, or raw source lines. Parsing source bytes does not imply permission to retain content.
+- Use `windows/usage_privacy.py` for display-only projections and `windows/usage_diagnostics.py` for allowlisted explicit operation exports. Full report paths/IDs require `--include-metadata`; never serialize the internal query graph as redacted diagnostics. See [the S08 contract](docs/s08-privacy-diagnostics.md).
 - Treat source metadata as untrusted text: escape HTML and neutralize terminal control sequences while preserving internal identities. Keep errors/diagnostics sanitized and actionable.
 - Preserve credential redirect protections; do not write or refresh credentials as an incidental workaround.
 - Database/API/frontend are optional sessions, not existing features. Follow the integration contract for transactions, exact numeric contracts, frozen queries, job status, migrations, and loopback access controls.

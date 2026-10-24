@@ -6,10 +6,10 @@ import sys
 from usage_hub import HubService, create_server
 
 
-def start_preview(*, port=8765, prices=None, fees=None, selected="both", open_browser=True):
+def start_preview(*, port=8765, prices=None, fees=None, selected="both", timezone="America/Los_Angeles", open_browser=True):
     # Keep real-history integration gated while S01-S09 are being refined in
     # parallel. Demo is an explicit choice, never a failed-connection fallback.
-    service = HubService(demo=True, prices=prices, fees=fees)
+    service = HubService(demo=True, roots={}, prices=prices, fees=fees, timezone=timezone)
     service.refresh()
     server = create_server(service, port)
     thread = threading.Thread(target=server.serve_forever, name="usage-dashboard", daemon=True)
@@ -22,8 +22,8 @@ def start_preview(*, port=8765, prices=None, fees=None, selected="both", open_br
     return server, thread, url
 
 
-def run_preview(*, port=8765, prices=None, fees=None, selected="both", open_browser=True):
-    server, thread, url = start_preview(port=port, prices=prices, fees=fees, selected=selected, open_browser=open_browser)
+def run_preview(*, port=8765, prices=None, fees=None, selected="both", timezone="America/Los_Angeles", open_browser=True):
+    server, thread, url = start_preview(port=port, prices=prices, fees=fees, selected=selected, timezone=timezone, open_browser=open_browser)
     try:
         if sys.stdout is not None:
             print(f"Usage Hub demo preview: {url}", flush=True)
