@@ -13,6 +13,8 @@ import re
 import tempfile
 import time
 
+from usage_ingestion import discover, parsed_entries, scan_observations, verified_prefix
+from usage_time import DEFAULT_TIMEZONE, RangeContext, local_datetime, resolve_range
 from usage_records import Record, Tokens
 from usage_reconciliation import reconcile_observations
 from usage_observations import extract_claude, extract_codex, recorded_effort, timestamp
@@ -133,70 +135,29 @@ def reasoning_count(usage: dict, output: int) -> int | None:
 
 
 def log_files(roots: list[Path], notices: list[str], since: float | None = None):
-    for root in roots:
-        if not root.is_dir():
-            notices.append(f"Log folder not found: {root}")
-            continue
-        errors = []
-        for directory, _, files in os.walk(root, followlinks=False, onerror=errors.append):
-            for name in sorted(files):
-                path = Path(directory) / name
-                if path.suffix == ".jsonl" and not path.is_symlink():
-                    try:
-                        if since is not None and path.stat().st_mtime < since:
-                            continue
-                    except OSError:
-                        notices.append(f"A log file could not be inspected: {path.name}")
-                        continue
-                    yield path
-        if errors:
-            notices.append(f"Some folders could not be read under {root}.")
+    # since is retained for API compatibility, never used as an mtime filter.
+    paths, issues, _ = discover(roots)
+    notices.extend(issue.message for issue in issues)
+    yield from paths
 
 
 def source_lines(path: Path, notices: list[str]):
-    """Yield physical positions plus parsed objects without retaining source text."""
-    invalid = False
-    try:
-        with path.open(encoding="utf-8-sig", errors="replace") as stream:
-            for position, line in enumerate(stream, 1):
-                if not line.strip():
-                    continue
-                try:
-                    data = json.loads(line)
-                except ValueError:
-                    invalid = True
-                    continue
-                if isinstance(data, dict):
-                    yield position, data
-    except OSError:
-        notices.append(f"A log file could not be read: {path.name}")
-    if invalid:
-        notices.append(f"Malformed or incomplete records skipped in {path.name}.")
+    """Compatible parsed-line interface over one verified file prefix."""
+    data, _, issues = verified_prefix(path)
+    if data is not None:
+        yield from parsed_entries(data, path, issues)
+    notices.extend(issue.message for issue in issues)
 
 
 def lines(path: Path, notices: list[str]):
-    # Preserve the parsed-line compatibility interface.
     for _, data in source_lines(path, notices):
         yield data
 
 
 def read_observations(provider: str, roots: list[Path], notices: list[str], since: float | None = None):
-    """Scan metadata evidence for the pure S02 reconciliation seam.
-
-    File generation/recovery and
-    authoritative backfill discovery are S03 work; generation is unknown here.
-    """
-    if provider not in ("Codex", "Claude"):
-        raise ValueError("Unsupported observation provider")
-    observations = []
-    for path in log_files(roots, notices, since):
-        entries = source_lines(path, notices)
-        source_id = str(path.resolve())
-        if provider == "Codex":
-            observations.extend(extract_codex(entries, source_id))
-        else:
-            observations.extend(extract_claude(entries, source_id, path.parent.name))
-    return observations
+    result = scan_observations(provider, roots)
+    notices.extend(issue.message for issue in result.issues)
+    return list(result.observations)
 
 
 def read_claude(roots: list[Path], notices: list[str], since: float | None = None) -> list[Record]:
@@ -219,18 +180,10 @@ def default_roots() -> dict[str, list[Path]]:
     return {"Codex": [codex / "sessions", codex / "archived_sessions"], "Claude": [claude / "projects"]}
 
 
-def period_bounds(period: str, now: float, snapshot=None) -> tuple[float, str]:
-    if period == "month":
-        return datetime.fromtimestamp(now).replace(day=1, hour=0, minute=0, second=0, microsecond=0).timestamp(), "Month to date (local time)"
-    if period == "today":
-        return datetime.fromtimestamp(now).replace(hour=0, minute=0, second=0, microsecond=0).timestamp(), "Today (local time)"
-    if period == "week":
-        return now - 7 * 86400, "Last 7 days"
-    if snapshot:
-        for window in snapshot.windows:
-            if window.duration_minutes == 300 and window.resets_at and now < window.resets_at <= now + 5 * 3600:
-                return window.resets_at - 5 * 3600, "Current 5-hour quota session (provider reset time)"
-    return now - 5 * 3600, "Last 5 hours (current quota-session boundary unavailable)"
+def period_bounds(period: str, now: float, snapshot=None, timezone=DEFAULT_TIMEZONE) -> tuple[float, str]:
+    """Compatibility projection; resolve_range exposes the full half-open context."""
+    context = resolve_range(period, now, snapshot, timezone)
+    return context.start, context.label
 
 
 @dataclass
@@ -243,15 +196,34 @@ class Report:
     demo: bool = False
     period: str = "session"
     plan_costs: dict = field(default_factory=lambda: {"Codex": 20.0, "Claude": 20.0})
+    timezone: str = DEFAULT_TIMEZONE
+    ranges: dict[str, RangeContext] = field(default_factory=dict)
+    scans: dict = field(default_factory=dict)
+    accounting_issues: dict = field(default_factory=dict)
+
+    def __post_init__(self):
+        if not self.ranges:
+            self.ranges = {p: RangeContext(start, self.end, self.timezone, label)
+                           for p, (start, label) in self.periods.items()}
+
+    @property
+    def source_states(self):
+        return {provider: scan.state for provider, scan in self.scans.items()}
+
+    @property
+    def issue_counts(self):
+        return {provider: scan.issue_counts for provider, scan in self.scans.items()}
+
 
 
 def collect_report(period="session", providers=("Codex", "Claude"), snapshots=None,
-                   roots=None, now=None, prices=None, demo=False, plan_costs=None) -> Report:
+                   roots=None, now=None, prices=None, demo=False, plan_costs=None, timezone=DEFAULT_TIMEZONE) -> Report:
     now = time.time() if now is None else now
     roots = default_roots() if roots is None else roots
     snapshots = snapshots or {}
-    periods = {p: period_bounds(period, now, snapshots.get(p)) for p in providers}
-    records, notices = [], []
+    ranges = {p: resolve_range(period, now, snapshots.get(p), timezone) for p in providers}
+    periods = {p: (context.start, context.label) for p, context in ranges.items()}
+    records, notices, scans, accounting = [], [], {}, {}
     for provider in providers:
         if demo:
             candidates = [Record(provider, now - 60 * (3 - i), "demo-conversation", "Demo project",
@@ -260,13 +232,22 @@ def collect_report(period="session", providers=("Codex", "Claude"), snapshots=No
                                  f"demo-turn-{i + 1}", 300 * (i + 1) if provider == "Codex" else None)
                           for i, effort in enumerate(("medium", "high", "ultra"))]
         else:
-            reader = read_codex if provider == "Codex" else read_claude
-            candidates = reader(roots.get(provider, []), notices, periods[provider][0])
-        records.extend(r for r in candidates if periods[provider][0] <= r.timestamp <= now)
+            scan = scan_observations(provider, roots.get(provider, []))
+            scans[provider] = scan
+            result = reconcile_observations(scan.observations)
+            accounting[provider] = result.issues
+            notices.extend(issue.message for issue in scan.issues)
+            notices.extend(issue.message for issue in result.issues)
+            notices.append(f"{provider} source scan: {scan.state}. This describes available local files, not account-wide coverage.")
+            if scan.issue_counts:
+                notices.append(provider + " ingestion issues: " + ", ".join(f"{code}={count}" for code, count in scan.issue_counts.items()))
+            candidates = [event.record for event in result.events]
+        records.extend(r for r in candidates if ranges[provider].contains(r.timestamp))
     if not records:
         notices.append("No local token records found in this period. This does not establish zero account usage.")
     return Report(sorted(records, key=lambda r: r.timestamp), periods, now, sorted(set(notices)), prices or {}, demo,
-                  period, {"Codex": 20.0, "Claude": 20.0} if plan_costs is None else dict(plan_costs))
+                  period, {"Codex": 20.0, "Claude": 20.0} if plan_costs is None else dict(plan_costs),
+                  timezone, ranges, scans, accounting)
 
 
 def plan_comparison(report: Report) -> list[str]:
@@ -313,7 +294,7 @@ def render_report(report: Report) -> str:
         return escape(str(value), quote=True)
 
     def date(value):
-        return datetime.fromtimestamp(value).strftime("%Y-%m-%d %H:%M:%S")
+        return local_datetime(value, report.timezone).strftime("%Y-%m-%d %H:%M:%S %z")
 
     def summarize(records):
         tokens = Tokens()
@@ -348,7 +329,7 @@ def render_report(report: Report) -> str:
         return f"<h2>{text(title)}</h2><div class='scroll'><table><thead><tr>" + "".join(f"<th>{text(h)}</th>" for h in headers) + "</tr></thead><tbody>" + ("".join(rows) or "<tr><td colspan='9'>No local records in this period</td></tr>") + "</tbody></table></div>"
 
     def history():
-        headers = ["Local time", "Provider", "Model", "Effort", "Effort source", "Conversation", "Turn ID", "Uncached input", "Cache read", "Cache write 5m", "Cache write 1h", "Output incl. reasoning", "Reasoning (subset)", "Total tokens", "Est. API value (USD)"]
+        headers = [f"Time ({report.timezone})", "Provider", "Model", "Effort", "Effort source", "Conversation", "Turn ID", "Uncached input", "Cache read", "Cache write 5m", "Cache write 1h", "Output incl. reasoning", "Reasoning (subset)", "Total tokens", "Est. API value (USD)"]
         rows = []
         for record in report.records:
             tokens = record.tokens
@@ -362,7 +343,7 @@ def render_report(report: Report) -> str:
         return f"<h2>Turn and usage-event history</h2><p>Each row is a recorded usage increment or completed Claude message. A turn can contain several rows. Effort is taken from that turn or message's recorded metadata; missing values stay unknown.</p><details><summary>Show {len(rows):,} usage records</summary><div class='scroll'><table><thead><tr>" + "".join(f"<th>{text(h)}</th>" for h in headers) + "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div></details>"
 
     totals, money, unknown = summarize(report.records)
-    boundaries = "".join(f"<li><b>{text(p)}</b>: {text(date(start))} to {text(date(report.end))} — {text(label)}</li>" for p, (start, label) in report.periods.items())
+    boundaries = "".join(f"<li><b>{text(p)}</b>: {text(date(start))} to {text(date(report.end))} (end exclusive) — {text(label)}</li>" for p, (start, label) in report.periods.items())
     notices = list(report.notices)
     missing_effort = [r for r in report.records if r.effort == "unknown"]
     if missing_effort:
@@ -388,7 +369,7 @@ def render_report(report: Report) -> str:
         + table("Model", lambda r: f"{r.provider} / {r.model}")
         + table("Project", lambda r: f"{r.provider} / {r.project}")
         + table("Conversation", lambda r: f"{r.provider} / {r.session}")
-        + table("Day (local time)", lambda r: date(r.timestamp)[:10])
+        + table(f"Day ({report.timezone})", lambda r: date(r.timestamp)[:10])
         + history()
     )
     demo = "<p class='notice'>DEMO — sample data; no local logs or accounts were accessed.</p>" if report.demo else ""
@@ -430,7 +411,7 @@ def render_text_report(report: Report) -> str:
         lines.append("DEMO - sample data; no local logs or accounts accessed.")
     for provider, (start, label) in report.periods.items():
         lines.append(f"{provider}: {label}")
-        lines.append(f"  {datetime.fromtimestamp(start):%Y-%m-%d %H:%M} to {datetime.fromtimestamp(report.end):%Y-%m-%d %H:%M}")
+        lines.append(f"  {local_datetime(start, report.timezone):%Y-%m-%d %H:%M %z} to {local_datetime(report.end, report.timezone):%Y-%m-%d %H:%M %z} ({report.timezone}; end exclusive)")
     lines += ["", "TOTAL"] + summary(report.records)
     comparison = plan_comparison(report)
     if comparison:
@@ -440,7 +421,7 @@ def render_text_report(report: Report) -> str:
         ("MODEL + EFFORT", lambda r: f"{r.provider} / {r.model} / {r.effort}"),
         ("PROJECT", lambda r: f"{r.provider} / {r.project}"),
         ("CONVERSATION", lambda r: f"{r.provider} / {r.session}"),
-        ("DAY", lambda r: datetime.fromtimestamp(r.timestamp).strftime("%Y-%m-%d")),
+        ("DAY", lambda r: local_datetime(r.timestamp, report.timezone).strftime("%Y-%m-%d")),
     ]:
         groups = defaultdict(list)
         for record in report.records:

@@ -185,11 +185,13 @@ class ObservationTests(unittest.TestCase):
             header, context = codex_header()
             # This fixture tests line provenance and ordinary projection, not
             # a fork without inherited baseline (now correctly excluded).
+            # Malformed metadata follows usage: S03 conservatively defers the
+            # suffix after corruption rather than inventing missing context.
             del header["payload"]["forked_from_thread_id"]
             path = root / "fixture.jsonl"
-            path.write_text("\n" + json.dumps(header) + "\nmalformed\n" + json.dumps(context) + "\n"
+            path.write_text("\n" + json.dumps(header) + "\n\n" + json.dumps(context) + "\n"
                             + json.dumps(codex_usage({"input_tokens": 100, "output_tokens": 20,
-                                                     "cached_input_tokens": 30})) + "\n", encoding="utf-8")
+                                                     "cached_input_tokens": 30})) + "\nmalformed\n", encoding="utf-8")
             notices = []
             observation, = reports.read_observations("Codex", [root], notices)
             self.assertEqual(observation.source.line, 5)

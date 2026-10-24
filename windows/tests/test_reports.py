@@ -282,7 +282,7 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(len(report.records), 1)
         self.assertEqual(reports.period_bounds("week", NOW)[0], NOW - 604800)
         start, _ = reports.period_bounds("today", NOW)
-        self.assertEqual(datetime.fromtimestamp(start).hour, 0)
+        self.assertEqual(reports.local_datetime(start).hour, 0)
 
     def test_bad_lines_and_reset_counters_surface_coverage_notices(self):
         entries = self.codex_header() + [self.codex_event(NOW - 20, 1000, 100, 0), self.codex_event(NOW - 10, 50, 10, 0)]
@@ -395,7 +395,7 @@ class ReportTests(unittest.TestCase):
 
     def test_month_bounds_and_cli_fee_validation(self):
         start, _ = reports.period_bounds("month", NOW)
-        local = datetime.fromtimestamp(start)
+        local = reports.local_datetime(start)
         self.assertEqual((local.day, local.hour, local.minute, local.second), (1, 0, 0, 0))
         script = Path(__file__).resolve().parents[1] / "usage_tray.py"
         for invalid in ("-1", "nan", "inf"):

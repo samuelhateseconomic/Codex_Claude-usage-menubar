@@ -14,6 +14,8 @@ import subprocess
 import sys
 
 from usage_core import RateLimited, UsageError, demo_snapshot, fetch_claude, fetch_codex
+from usage_time import DEFAULT_TIMEZONE
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from usage_reports import collect_report, load_prices, render_text_report, report_directory, save_report
 
 
@@ -92,7 +94,7 @@ class ProviderState:
             return lines
 
 
-def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None):
+def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None, timezone=DEFAULT_TIMEZONE):
     try:
         import pystray
         from PIL import Image, ImageDraw
@@ -119,7 +121,7 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
                 for state in states:
                     with state.lock:
                         snapshots[state.provider] = state.snapshot
-                report = collect_report(period, [s.provider for s in states], snapshots, prices=prices, demo=demo, plan_costs=plan_costs)
+                report = collect_report(period, [s.provider for s in states], snapshots, prices=prices, demo=demo, plan_costs=plan_costs, timezone=timezone)
                 path = save_report(report, format=report_format)
                 report_status[0] = "Report saved — select a report to refresh it"
                 open_report(path, report_format)
@@ -216,7 +218,12 @@ def main():
     parser.add_argument("--prices", type=Path, help="JSON file of exact-model USD prices per million tokens")
     parser.add_argument("--codex-plan-usd", type=float, default=20.0, help="Codex monthly subscription price in USD (default: 20)")
     parser.add_argument("--claude-plan-usd", type=float, default=20.0, help="Claude monthly subscription price in USD (default: 20)")
+    parser.add_argument("--timezone", default=DEFAULT_TIMEZONE, help="IANA timezone for report boundaries and dates (default: America/Los_Angeles)")
     args = parser.parse_args()
+    try:
+        ZoneInfo(args.timezone)
+    except (ZoneInfoNotFoundError, ValueError):
+        parser.error("Unknown report timezone; use an IANA name such as America/Los_Angeles or UTC.")
     plan_costs = {"Codex": args.codex_plan_usd, "Claude": args.claude_plan_usd}
     if any(not math.isfinite(value) or value < 0 for value in plan_costs.values()):
         parser.error("Monthly plan prices must be finite, nonnegative USD amounts")
@@ -236,7 +243,7 @@ def main():
     if args.report:
         providers = [p for p in PROVIDERS if args.provider in ("both", p.lower())]
         try:
-            report = collect_report(args.report, providers, prices=prices, demo=args.demo, plan_costs=plan_costs)
+            report = collect_report(args.report, providers, prices=prices, demo=args.demo, plan_costs=plan_costs, timezone=args.timezone)
             if args.report_format == "text" and not args.output and not args.open_report and sys.stdout is not None:
                 print(render_text_report(report))
                 return 0
@@ -263,7 +270,7 @@ def main():
                 results.append({"provider": name, "error": message})
         print(json.dumps(results, indent=2, ensure_ascii=False))
         return 1 if failed else 0
-    run_tray(args.demo, args.provider, prices, args.report_format, plan_costs)
+    run_tray(args.demo, args.provider, prices, args.report_format, plan_costs, args.timezone)
     return 0
 
 
