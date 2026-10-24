@@ -1,5 +1,7 @@
 # Usage Hub dashboard implementation and core handoff
 
+Integration follow-up (October 24): the isolated `codex/dashboard-core-integration` branch combines main `963275c`, S08 `e0bcd79` and S09 tooling `fee6e23`. Preview valuation, summary arithmetic and fee comparisons now delegate to the authoritative core; normal demo totals are preserved. Query grouping/IDs and the preview wire shape remain development adapters pending S11-S13. CLI launch remains explicit and demo-only, using effective core settings and S08 command guards. See [the integration plan and evidence](branch-integration-plan.md); the historical slice below does not describe current core gate status.
+
 Status: functional **demo development preview**. Real-data integration and the S11-S14 release gates remain incomplete. Prepared October 23, 2026, America/Los_Angeles.
 
 ## Delivered slice

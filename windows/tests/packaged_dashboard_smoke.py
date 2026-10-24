@@ -9,9 +9,14 @@ import os
 from pathlib import Path
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 from urllib.request import HTTPCookieProcessor, Request, build_opener
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from usage_identity import APP_VERSION
 
 
 def main():
@@ -88,7 +93,7 @@ def check(args, fixture):
     version = fixture/'version.json'
     assert invoke('--version','--output',version).returncode == 0
     identity=json.loads(version.read_text(encoding='utf-8'))
-    assert identity['app_version']=='0.8.0'
+    assert identity['app_version']==APP_VERSION
     import hashlib
     assert identity['build_id']=='exe-sha256:'+hashlib.sha256(args.exe.read_bytes()).hexdigest()
     report_path, diagnostic_path = fixture/'report.txt', fixture/'operation.json'

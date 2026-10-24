@@ -1,5 +1,7 @@
 # S05 service to dashboard integration handoff
 
+Integration follow-up (October 24): [the combined branch session](branch-integration-plan.md) now removes duplicate preview event valuation, summary arithmetic and fee subtraction. `usage_value.py` is only a projection over core `value_event`/`summarize_values`; fee comparisons call `compare_plans`. Persistent revisions, canonical ID/wire mapping, whole-query grouping/facet adoption, jobs and real-data publication remain S11-S13 responsibilities. This closes the arithmetic seam without claiming the full production query adapter is implemented.
+
 Reviewed October 24, 2026 against committed core `97b6070` and dashboard base `70dde1f`. Status: **review complete; real-data integration not implemented**. S06 is owned by the other agent. This review changes neither that worktree nor its service/configuration contracts. The [refinement plan](project-refinement-plan.md), [integration contract](usage-hub-integration-plan.md), and [database handoff](usage-hub-database-handoff.md) retain their ownership and gates.
 
 Follow-up: S06 and S07 are now committed on the separate core branch through `461c3a3`; S08 privacy/diagnostic verification is next. The [resilience handoff](dashboard-resilience-handoff.md) closes this review's decimal money-formatting gap and adds focused failure/recovery coverage. This review remains the historical S05 contract baseline; its other integration requirements are still pending. Consult both coverage inventories before duplicating UI checks.

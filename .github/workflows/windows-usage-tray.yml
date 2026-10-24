@@ -17,17 +17,21 @@ permissions:
 jobs:
   windows:
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12', '3.13', '3.14']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      - name: Test and build executable
+          python-version: ${{ matrix.python }}
+      - name: Test, build and smoke-test executable
         shell: powershell
         run: ./windows/build.ps1
       - uses: actions/upload-artifact@v4
         with:
-          name: UsageTray-Windows
+          name: UsageTray-Windows-Python-${{ matrix.python }}
           path: windows/dist/UsageTray.exe
           if-no-files-found: error

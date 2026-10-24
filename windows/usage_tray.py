@@ -8,6 +8,7 @@ from pathlib import Path
 import threading
 import webbrowser
 import os
+import platform
 import subprocess
 import sys
 
@@ -241,7 +242,7 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
 
 def version_info(prices=None):
     catalog = build_catalog(prices)
-    return {"app_version": APP_VERSION, "build_id": build_identity(), "parser_version": PARSER_VERSION,
+    return {"app_version": APP_VERSION, "build_id": build_identity(), "python_version": platform.python_version(), "parser_version": PARSER_VERSION,
             "reconciliation_version": RECONCILIATION_VERSION, "query_version": QUERY_VERSION,
             "valuation_policy": POLICY_VERSION, "catalog_version": catalog.catalog_version,
             "override_version": catalog.override_version, "pricing_version": catalog.version,

@@ -1,5 +1,7 @@
 # Dashboard exact display and request recovery
 
+Integration follow-up (October 24): consult [the branch integration record](branch-integration-plan.md) for combined S08/S09 tooling evidence. All 20 previous Node regressions are retained; two focused privacy/null-fee display cases are added. The S08 core and historical preview privacy suites both survive the merge. New browser evidence is limited to hostile label/attribute/detail handling, exact filter identities and null-versus-zero fees; this is not a repeat certification of ordinary navigation or every recovery path.
+
 Status: **complete for the demo preview**, October 24, 2026. Independent work while the other agent owns S07 on `codex/s01-observation-contracts`. Main starts at `70dde1f`; S06 is committed on that separate refinement branch at `6a29b00`. No core session gate advances here. Follow-up: the user authorized a local commit; S07 is now committed separately at `461c3a3`. Commit validation is recorded in the refinement ledger. This does not merge the core branch or authorize a push.
 
 ## Ownership and overlap guard

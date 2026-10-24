@@ -1,5 +1,7 @@
 # Pre-S08 privacy regression handoff
 
+Integration follow-up (October 24): S08 is committed at `e0bcd79`. The combined branch preserves these eight assertions in [test_preview_privacy.py](../windows/tests/test_preview_privacy.py), alongside S08's separate 17-test [core suite](../windows/tests/test_privacy.py). The synthetic Claude fixture now explicitly observes zero cache counters, and empty results keep an explicit provider query scope. All three historical assertions pass without expected-failure markers; the strict probe exits 0. The remainder below records the original preparation findings and evidence, not current open defects. See [the branch integration record](branch-integration-plan.md).
+
 Prepared October 24, 2026, America/Los_Angeles. Scope: independent regression preparation for [S08](project-refinement-plan.md#s08--verify-privacy-safe-rendering-and-diagnostics), while another agent owns S04. Preparation is complete; **S08 is not complete** and its S05-S07 dependencies remain unchanged.
 
 Starting commit: `0f4ce44`. Existing uncommitted `usage_reports.py`, `usage_records.py`, `usage_observations.py`, and `test_observations.py` changes belong to the other core work and are excluded. No production parser, valuation, UI, credential handling, or scheduler was changed here.
@@ -8,7 +10,7 @@ Starting commit: `0f4ce44`. Existing uncommitted `usage_reports.py`, `usage_reco
 
 [privacy_cases.py](../windows/tests/privacy_cases.py) supplies synthetic logs and exercises the actual legacy readers, report renderers, saved text/HTML files, and development-preview summary/detail DTOs. It never discovers real log roots or reads credentials. These are current `/api/preview` boundaries, not tests of the proposed database or `/api/v1` contract.
 
-[test_privacy.py](../windows/tests/test_privacy.py) verifies:
+[test_preview_privacy.py](../windows/tests/test_preview_privacy.py) preserves the original preparation checks:
 
 - Both providers produce a nonempty usage record while transcript content, thinking text, nested credential/header fields, and arbitrary payload fields remain absent from records, text/HTML reports, saved exports, preview queries, and details for normally typed metadata.
 - Hostile strings in project, conversation, model, effort, effort source, turn ID, and notices remain escaped HTML. Parsing that output produces no injected script/image elements or event-handler attributes. Rendering preserves the original record identity.
@@ -56,7 +58,7 @@ $privacyTemp = Join-Path $PWD 'windows\build\privacy-temp'
 New-Item -ItemType Directory -Path $privacyTemp -Force | Out-Null
 $env:TEMP = $privacyTemp
 $env:TMP = $privacyTemp
-.\windows\.venv\Scripts\python.exe -m unittest discover -s windows/tests -p test_privacy.py -v
+.\windows\.venv\Scripts\python.exe -m unittest discover -s windows/tests -p "test*privacy.py" -v
 .\windows\.venv\Scripts\python.exe docs/review_privacy_probes.py
 ```
 
