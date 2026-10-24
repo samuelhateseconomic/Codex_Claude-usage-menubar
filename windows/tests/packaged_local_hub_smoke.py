@@ -4,6 +4,7 @@ S14 still owns full native lifecycle, migration/restart and performance release
 acceptance. This check opens no browser/tray and polls no provider accounts.
 """
 import argparse
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import http.client
 import json
@@ -27,12 +28,37 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
+@contextmanager
+def synthetic_workspace(scratch, *, cleanup_timeout=10):
+    # Job termination/process signaling can precede Windows releasing the last
+    # file handle. Retry only our own temporary fixture; never suppress a
+    # persistent failure or broaden process termination/file cleanup scope.
+    scratch = Path(scratch).resolve(strict=True)
+    temporary = tempfile.TemporaryDirectory(prefix='s13-packaged-', dir=scratch)
+    owned = Path(temporary.name).resolve()
+    require(owned.parent == scratch and owned.name.startswith('s13-packaged-'),
+            'Refusing cleanup outside the owned fixture directory.')
+    try:
+        yield owned
+    finally:
+        deadline = time.monotonic() + cleanup_timeout
+        while True:
+            require(Path(temporary.name).resolve() == owned,
+                    'Owned fixture cleanup target changed.')
+            try:
+                temporary.cleanup()
+                break
+            except PermissionError:
+                if time.monotonic() >= deadline:
+                    raise
+                time.sleep(.05)
+
+
 def check(executable):
     require(os.name == 'nt', 'Packaged local hub checks require Windows.')
     scratch = Path(__file__).resolve().parents[1] / 'build'
     scratch.mkdir(exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='s13-packaged-', dir=scratch) as folder:
-        root = Path(folder)
+    with synthetic_workspace(scratch) as root:
         logs = root / 'codex' / 'sessions'
         logs.mkdir(parents=True)
         stamp = datetime.now(timezone.utc).isoformat()
@@ -131,9 +157,9 @@ def check(executable):
                 second.close()
             require(json.loads(discovery.read_text(encoding='utf-8'))==native, 'Repeated launch replaced the active owner.')
             require(api('GET','/api/v1/overview?query_context_id='+context,auth=True)[2]['data']['summary']==summary, 'Repeated launch invalidated the frozen query.')
-            print('Packaged local hub: PASS (real launcher, synthetic 2,840,000 tokens / USD18.42, local assets, auth/resume, offline limits, detail and owner reuse)')
         finally:
             tree.close()
+    print('Packaged local hub: PASS (real launcher, synthetic 2,840,000 tokens / USD18.42, local assets, auth/resume, offline limits, detail and owner reuse)')
 
 
 def main():
