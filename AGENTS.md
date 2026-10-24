@@ -33,6 +33,7 @@
 
 ## Reliability, privacy, and integration
 
+- Keep polling, per-provider wake/eligibility and ownership in `windows/usage_runtime.py`; preserve scoped child containment in `windows/usage_process.py`. Automatic report retention is restricted to the reserved Generated folder; never extend it to histories, legacy reports or explicit exports. See [the S07 contract](docs/s07-runtime-recovery.md).
 - Keep provider refreshes independent, enforce cooldown/backoff, and preserve labeled last-successful state. Offline usage queries must not require provider polling or GUI imports.
 - Handle append/truncation/replacement explicitly. Failed reads must not silently replace accepted history with empty data. Retain a coherent last committed dataset when persistence exists.
 - One runtime owner schedules provider checks and database writes when clients/processes share a service. Do not persist monotonic deadlines as UTC timestamps.

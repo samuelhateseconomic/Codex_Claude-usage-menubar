@@ -20,6 +20,10 @@ The icon appears in the system tray, possibly under **Show hidden icons**. Right
 
 Each provider refreshes independently every five minutes. Failures back off; Claude's `Retry-After` is respected. The Refresh menu wakes the checker but does not bypass its polling or backoff interval. Failed polls retain the last successful reading with an explicit stale-data warning. Reset dates are displayed in your local time zone.
 
+The tray redraws on state/report changes rather than every second. Both providers receive Refresh independently, and repeated clicks preserve cooldown/backoff. Login, network, unsupported-response, blocked-usage and unexpected local states are identified separately; a blocked Codex status remains blocked even when a percentage shows remaining capacity.
+
+One tray or real `--once` process owns the local application-data `runtime.lock` file. A duplicate launch exits 3 without starting another poller; use the existing tray or Quit before restarting. Offline reports and diagnostics still work while it runs. Quit cancels Codex RPC waits and cleans up only the app-owned Codex process tree; report viewers already opened for you can stay open. A new process starts a new in-memory polling schedule. See [S07 runtime/recovery](../docs/s07-runtime-recovery.md) for ownership, timing and shutdown limits.
+
 To use only one provider, add `--provider codex` or `--provider claude`. A missing provider login does not stop the other provider.
 
 ## Diagnose and test
@@ -99,6 +103,12 @@ Settings live in `%LOCALAPPDATA%\UsageTray\settings.json` (or `~/.local/share/Us
 Explicit CLI values override saved values for that run; only `--save-settings` persists them. `--config PATH` selects a separate file. Repeated `--codex-root` / `--claude-root` flags replace that provider's log-directory list with absolute paths. In JSON, null roots retain environment defaults and an empty list disables discovery; null fees mean unknown, while zero is a known zero fee. Saved settings include exact rates, timezone and the existing text/HTML preference. [settings.example.json](settings.example.json) is the complete schema template.
 
 The legacy automatic `prices.json` remains active until settings are first saved; that save copies validated rates into settings without modifying the legacy file. Afterward edit `rate_overrides` in settings or use `--prices PATH`, which replaces custom overrides for a run and persists them only with `--save-settings`. Invalid or partial settings stop startup with recovery guidance and remain untouched. `--version` works independently for diagnosis; JSON commands in the windowed executable use `--output` without opening a browser. `--show-settings` includes configured paths; `--diagnostics` includes only root modes/counts plus computation/configuration identities. See [S06 configuration and recovery](../docs/s06-persistent-configuration.md) for schema, migration, precision, atomic-write and build-identity limits.
+
+### Generated reports and recovery
+
+Automatic saved reports now go to `%LOCALAPPDATA%\UsageTray\Reports\Generated`. After each successful automatic save, the app keeps at most 100 generated reports and removes generated reports older than 30 days. The new report is protected; a cleanup permission/IO failure leaves it available and produces a safe warning. Keep manually managed files outside this reserved folder. Old reports directly under Reports and explicit `--output` exports elsewhere are untouched; source histories are never cleanup targets. This bounds count/age, not total disk bytes. Terminal output without a saved file needs no cleanup.
+
+Report failures identify permissions, disk space, file IO, unsupported data/calculation, unexpected local problems or opening the viewer. If opening fails, the saved file remains available. Native viewer launch/interaction and unusual long-running IO still need the release checks documented in [the S07 contract](../docs/s07-runtime-recovery.md).
 
 ### Effort changes within a conversation
 

@@ -9,6 +9,7 @@ from pathlib import Path
 import tempfile
 import time
 
+from usage_artifacts import generated_directory, prune_reports
 from usage_config import application_directory, load_prices
 from usage_ingestion import discover, parsed_entries, scan_observations, verified_prefix
 from usage_time import DEFAULT_TIMEZONE, RangeContext, local_datetime, resolve_range
@@ -365,14 +366,22 @@ def report_directory() -> Path:
 def save_report(report: Report | UsageResult, output: Path | None = None, format="html") -> Path:
     if format not in ("html", "text"):
         raise ValueError("Unsupported report format")
-    if output is None:
-        base = report_directory()
+    generated = output is None
+    if generated:
+        base = generated_directory()
         base.mkdir(parents=True, exist_ok=True)
         handle, filename = tempfile.mkstemp(prefix="usage-" + datetime.now().strftime("%Y%m%d-%H%M%S-"), suffix=".txt" if format == "text" else ".html", dir=base)
         os.close(handle)
         output = Path(filename)
     else:
         output = Path(output).expanduser().resolve()
+        if output.is_relative_to(generated_directory()):
+            raise ValueError("The generated folder is reserved for automatic reports; choose another output directory.")
         output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(render_text_report(report) if format == "text" else render_report(report), encoding="utf-8")
+    if generated:
+        outcome = prune_reports(keep=output)
+        if outcome.failed:
+            import warnings
+            warnings.warn("Generated report retention could not finish; saved report is available.", RuntimeWarning)
     return output.resolve()

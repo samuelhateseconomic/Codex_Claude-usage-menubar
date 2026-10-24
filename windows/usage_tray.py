@@ -3,17 +3,17 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import replace
-from datetime import datetime
 import json
 from pathlib import Path
 import threading
-import time
 import webbrowser
 import os
 import subprocess
 import sys
 
-from usage_core import RateLimited, UsageError, demo_snapshot, fetch_claude, fetch_codex
+from usage_core import UsageError, demo_snapshot, fetch_claude, fetch_codex
+from usage_failures import report_failure
+from usage_runtime import AlreadyRunning, PollingRuntime, ProviderState, RuntimeOwner
 from usage_config import (SCHEMA_VERSION, SettingsError, application_directory, effective_settings,
                           load_settings, save_settings, settings_data, settings_path)
 from usage_identity import APP_VERSION, build_identity
@@ -32,7 +32,8 @@ def open_local(path):
     if os.name == "nt":
         os.startfile(str(path))
     else:
-        webbrowser.open(path.as_uri())
+        if not webbrowser.open(path.as_uri()):
+            raise OSError("No report viewer available.")
 
 
 def open_report(path, format):
@@ -50,56 +51,6 @@ def open_report(path, format):
         print(path.read_text(encoding="utf-8"))
 
 
-class ProviderState:
-    def __init__(self, provider, fetch):
-        self.provider = provider
-        self.fetch = fetch
-        self.snapshot = None
-        self.error = "Waiting for first refresh…"
-        self.next_check = 0.0
-        self.failures = 0
-        self.lock = threading.Lock()
-        self.fetch_lock = threading.Lock()
-
-    def refresh(self, now=None):
-        now = time.monotonic() if now is None else now
-        if not self.fetch_lock.acquire(blocking=False):
-            return
-        try:
-            if now < self.next_check:
-                return
-            try:
-                snapshot = self.fetch()
-                with self.lock:
-                    self.snapshot = snapshot
-                    self.error = ""
-                    self.failures = 0
-                    self.next_check = time.monotonic() + 300
-            except Exception as exc:
-                with self.lock:
-                    self.failures = min(4, self.failures + 1)
-                    self.error = str(exc) if isinstance(exc, UsageError) else "Unexpected provider error. Update the app or check your CLI installation."
-                    delay = max(300 * 2 ** (self.failures - 1), exc.retry_after if isinstance(exc, RateLimited) else 0)
-                    self.next_check = time.monotonic() + delay
-        finally:
-            self.fetch_lock.release()
-
-    def lines(self):
-        with self.lock:
-            lines = [self.provider]
-            if self.snapshot:
-                lines += [window.text() for window in self.snapshot.windows]
-                if self.snapshot.note:
-                    lines.append(self.snapshot.note)
-                checked = datetime.fromtimestamp(self.snapshot.checked_at).strftime("%H:%M:%S")
-                lines.append(("Last successful check " if self.error else "Updated ") + checked)
-            if self.error:
-                lines.append(self.error)
-                if self.snapshot:
-                    lines.append("Showing previous data; it may be out of date.")
-            return lines
-
-
 def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None, timezone=DEFAULT_TIMEZONE, roots=None, settings_version=None):
     try:
         import pystray
@@ -107,38 +58,54 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
     except ImportError:
         raise SystemExit("Tray dependencies missing. Run: python -m pip install -r requirements.txt") from None
 
-    states = [ProviderState(name, (lambda p=name: demo_snapshot(p)) if demo else fetch)
-              for name, fetch in PROVIDERS.items() if selected == "both" or name.lower() == selected]
     stop = threading.Event()
-    wake = threading.Event()
+    changed = threading.Event()
+    fetchers = {name: (lambda p=name: demo_snapshot(p)) if demo else (lambda f=fetch: f(cancel_event=stop))
+                for name, fetch in PROVIDERS.items() if selected == "both" or name.lower() == selected}
+    runtime = PollingRuntime(fetchers, stop=stop, changed=changed.set)
+    states = runtime.states
     render_lock = threading.Lock()
     report_lock = threading.Lock()
     report_status = [""]
+    report_threads = []
 
     def make_report(period):
         if not report_lock.acquire(blocking=False):
             return
 
         def generate():
+            phase = "query"
             try:
                 report_status[0] = "Building local usage report…"
-                icon.update_menu()
+                changed.set()
                 snapshots = {}
                 for state in states:
                     with state.lock:
                         snapshots[state.provider] = state.snapshot
                 report = query_usage(period, [s.provider for s in states], snapshots, prices=prices, demo=demo, plan_costs=plan_costs, timezone=timezone, roots=roots)
                 report = replace(report, settings_version=settings_version)
+                if stop.is_set():
+                    return
+                phase = "save"
                 path = save_report(report, format=report_format)
                 report_status[0] = "Report saved — select a report to refresh it"
-                open_report(path, report_format)
-            except Exception:
-                report_status[0] = "Report failed — check local log and report-folder permissions"
+                if not stop.is_set():
+                    phase = "open"
+                    open_report(path, report_format)
+            except Exception as exc:
+                failure = report_failure(exc, phase)
+                report_status[0] = failure.category + ": " + failure.message
             finally:
                 report_lock.release()
-                icon.update_menu()
+                changed.set()
 
-        threading.Thread(target=generate, daemon=True).start()
+        if stop.is_set():
+            report_lock.release()
+            return
+        worker = threading.Thread(target=generate, daemon=True, name="usage-report")
+        report_threads[:] = [thread for thread in report_threads if thread.is_alive()]
+        report_threads.append(worker)
+        worker.start()
 
     def open_reports(icon, item):
         try:
@@ -164,14 +131,15 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
         if report_status[0]:
             yield pystray.MenuItem(report_status[0], None, enabled=False)
         yield pystray.Menu.SEPARATOR
-        yield pystray.MenuItem("Refresh (five-minute minimum)", lambda icon, item: wake.set())
+        yield pystray.MenuItem("Refresh (five-minute minimum)", lambda icon, item: runtime.refresh())
         yield pystray.MenuItem("Codex usage page", lambda icon, item: webbrowser.open("https://chatgpt.com/codex/settings/usage"))
         yield pystray.MenuItem("Claude usage page", lambda icon, item: webbrowser.open("https://claude.ai/settings/usage"))
         yield pystray.MenuItem("Quit", quit_app)
 
     def quit_app(icon, item):
         stop.set()
-        wake.set()
+        runtime.refresh()
+        changed.set()
         icon.stop()
 
     def image():
@@ -182,7 +150,7 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
             with state.lock:
                 windows = state.snapshot.windows if state.snapshot else []
                 remaining = min((w.remaining for w in windows), default=0)
-                color = "#8793a5" if state.error else ("#55dba6" if remaining > 50 else "#f1b858" if remaining > 20 else "#ff6978")
+                color = "#8793a5" if state.error else "#ff6978" if state.snapshot and state.snapshot.blocked else ("#55dba6" if remaining > 50 else "#f1b858" if remaining > 20 else "#ff6978")
             y = 17 + i * 22
             draw.rounded_rectangle((11, y, 53, y + 12), radius=3, fill="#39445a")
             if remaining > 0:
@@ -193,24 +161,33 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
 
     icon = pystray.Icon("UsageTray", image(), "Usage Tray" + (" — DEMO" if demo else ""), pystray.Menu(menu_items))
 
-    def worker(state):
+    def redraw():
         while not stop.is_set():
-            state.refresh()
+            changed.wait()
+            changed.clear()
             if stop.is_set():
                 break
             with render_lock:
                 icon.icon = image()
                 icon.update_menu()
-            # Each provider runs independently, so a slow CLI cannot block Claude.
-            wake.wait(1)
-            wake.clear()
+
+    renderer = threading.Thread(target=redraw, daemon=True, name="usage-tray-render")
 
     def setup(tray_icon):
         tray_icon.visible = True
-        for state in states:
-            threading.Thread(target=worker, args=(state,), daemon=True).start()
+        renderer.start()
+        runtime.start()
 
-    icon.run(setup=setup)
+    try:
+        icon.run(setup=setup)
+    finally:
+        stop.set()
+        changed.set()
+        runtime.close(timeout=30)
+        if renderer.is_alive():
+            renderer.join(timeout=2)
+        for worker in report_threads:
+            worker.join(timeout=1)
 
 
 def version_info(prices=None):
@@ -313,20 +290,44 @@ def main():
     args.timezone, args.report_format = settings.timezone, settings.report_format
     if args.report:
         providers = [p for p in PROVIDERS if args.provider in ("both", p.lower())]
+        phase = "query"
         try:
             report = query_usage(args.report, providers, prices=prices, demo=args.demo, plan_costs=plan_costs, timezone=args.timezone, roots=roots)
             report = replace(report, settings_version=settings.version)
             if args.report_format == "text" and not args.output and not args.open_report and sys.stdout is not None:
                 print(render_text_report(report))
                 return 0
+            phase = "save"
             path = save_report(report, args.output, format=args.report_format)
-        except (OSError, ValueError):
-            parser.exit(1, "Cannot create the report. Check local log and output-folder permissions.\n")
+        except Exception as exc:
+            failure = report_failure(exc, phase)
+            parser.exit(1, failure.category + ": " + failure.message + "\n")
         if sys.stdout is not None:
             print(str(path))
         if args.open_report or (sys.stdout is None and not args.output):
-            open_report(path, args.report_format)
+            try:
+                open_report(path, args.report_format)
+            except Exception as exc:
+                failure = report_failure(exc, "open")
+                parser.exit(1, failure.category + ": " + failure.message + "\n")
         return 0
+    if args.once and args.demo:
+        print(json.dumps([demo_snapshot(name).to_dict() for name in PROVIDERS if args.provider in ("both", name.lower())], indent=2, ensure_ascii=False))
+        return 0
+    owner = RuntimeOwner()
+    try:
+        owner.__enter__()
+    except AlreadyRunning as exc:
+        parser.exit(3, str(exc) + "\n")
+    except OSError:
+        parser.exit(1, "Cannot acquire runtime ownership. Check application-data folder permissions.\n")
+    try:
+        return run_live(args, prices, plan_costs, roots, settings.version)
+    finally:
+        owner.__exit__(None, None, None)
+
+
+def run_live(args, prices, plan_costs, roots, settings_version):
     if args.once:
         results = []
         failed = False
@@ -339,11 +340,11 @@ def main():
             except Exception as exc:
                 failed = True
                 message = str(exc) if isinstance(exc, UsageError) else "Unexpected provider error; check your CLI installation."
-                results.append({"provider": name, "error": message})
+                results.append({"provider": name, "error": message, "category": exc.category if isinstance(exc, UsageError) else "unexpected_local"})
         print(json.dumps(results, indent=2, ensure_ascii=False))
         return 1 if failed else 0
     run_tray(args.demo, args.provider, prices, args.report_format, plan_costs, args.timezone,
-             roots=roots, settings_version=settings.version)
+             roots=roots, settings_version=settings_version)
     return 0
 
 
