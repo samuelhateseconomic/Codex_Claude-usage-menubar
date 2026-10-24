@@ -300,9 +300,16 @@ body{font:15px system-ui,sans-serif;background:#101827;color:#e5ecf5;max-width:1
 </style><h1>Token usage &amp; API-equivalent value</h1>""" + demo + f"<p>{metadata_note}</p><div class='summary'><div><strong>{totals.total:,}</strong>Local recorded tokens</div><div><strong>{text(money)}</strong>Estimated API-equivalent value<br>{text(pricing_note(report, valuation_summary))}</div><div><strong>{report.total.conversation_count:,}</strong>Conversations</div></div><ul>{boundaries}</ul>" + "<p>Dollar values estimate standard API list-price usage. They are not subscription charges or a conversion of your limit percentage. The monthly comparison subtracts your monthly plan fee from the estimated API value of recorded usage so far. Counts include only token records available on this computer, across accounts using these log folders. Browser chat, remote/cloud tasks, other devices, missing logs, and unrecorded activity are excluded. Reasoning is included in output; cached input is counted once. No prompts or replies appear in this report.</p><p>Effort is the recorded request setting, not a measurement of thinking performed. Switching medium, high, or ultra changes the usage bucket for subsequent recorded work. Cost uses actual recorded tokens and model prices without an effort multiplier. Reasoning tokens, when recorded separately, are shown as a subset of output and are never billed twice. Labels such as xhigh, max, and ultra are preserved separately.</p>" + (f"<ul class='notice'>{notice_html}</ul>" if notices else "") + sections + f"<h2>Pricing assumptions (USD per million tokens)</h2><p>Bundled standard prices checked {PRICE_DATE}; <a href='{PRICE_SOURCE}'>price registry source</a>. Custom exact-model rates override bundled entries. Discounts, service-tier premiums, tool charges, taxes, and other unrecorded billing adjustments are excluded.</p><ul>{''.join(pricing)}</ul><small>Generated locally {text(date(context.captured_at))}. This file contains local project names and usage metadata; review before sharing. Full paths and IDs require an explicit metadata export.</small></html>"
 
 
-def render_text_report(report: Report | UsageResult, *, include_metadata=False) -> str:
+def render_text_report(report: Report | UsageResult, *, include_metadata=False, view="audit", width=80,
+                       dimension="model", page=1, page_size=10) -> str:
     """Format an authoritative headless result without calculating usage."""
     report = _result(report)
+    if view in ("summary", "details"):
+        from usage_terminal import render_terminal
+        return render_terminal(report, dimension=dimension if view == "details" else None, width=width,
+                               page=page, page_size=page_size, include_metadata=include_metadata)
+    if view != "audit":
+        raise ValueError("Unsupported terminal view")
     context = report.context
     def clean(value):
         return display_text(value)
@@ -372,9 +379,13 @@ def report_directory() -> Path:
     return application_directory() / "Reports"
 
 
-def save_report(report: Report | UsageResult, output: Path | None = None, format="html", *, include_metadata=False) -> Path:
+def save_report(report: Report | UsageResult, output: Path | None = None, format="html", *, include_metadata=False,
+                text_view="audit", width=80, dimension="model", page=1, page_size=10) -> Path:
     if format not in ("html", "text"):
         raise ValueError("Unsupported report format")
+    content = (render_text_report(report, include_metadata=include_metadata, view=text_view, width=width,
+                                  dimension=dimension, page=page, page_size=page_size)
+               if format == "text" else render_report(report, include_metadata=include_metadata))
     generated = output is None
     if generated:
         base = generated_directory()
@@ -387,7 +398,7 @@ def save_report(report: Report | UsageResult, output: Path | None = None, format
         if output.is_relative_to(generated_directory()):
             raise ValueError("The generated folder is reserved for automatic reports; choose another output directory.")
         output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(render_text_report(report, include_metadata=include_metadata) if format == "text" else render_report(report, include_metadata=include_metadata), encoding="utf-8")
+    output.write_text(content, encoding="utf-8")
     if generated:
         outcome = prune_reports(keep=output)
         if outcome.failed:

@@ -12,6 +12,7 @@
 - Inspect current Git status and applicable instructions first. Preserve existing edits; never reset, stash, overwrite, or clean them merely to simplify work.
 - Work in a coherent requested session, respecting its dependencies. Verify already-completed tasks instead of repeating them. Record substantive design deviations and rationale in the plan ledger.
 - Keep Python, current adapters, tray access, and compatible CLI/report behavior. Extract responsibilities incrementally; avoid a broad rewrite or adding infrastructure without a demonstrated need or scoped hub request.
+- Compact terminal views belong in `windows/usage_terminal.py` and consume immutable summaries. CLI/tray default to summary; retain `--audit` and legacy programmatic audit behavior. Detail paging is presentation-only and cannot narrow headline accounting. See [S10](docs/s10-terminal-views.md).
 - Fix accounting before presentation/storage expansion. Preserve the terminal; open a future dashboard explicitly unless the user changes that preference. Do not prioritize output styling during core refinement.
 - Do not mark sessions complete from documentation, a successful build, or test count alone. Record actual gate evidence, unrun checks, limitations, and the next ready session.
 

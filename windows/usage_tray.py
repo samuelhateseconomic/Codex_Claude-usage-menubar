@@ -122,7 +122,7 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
                 if stop.is_set():
                     return
                 phase = "save"
-                path = save_report(report, format=report_format)
+                path = save_report(report, format=report_format, text_view="summary")
                 report_status[0] = "Report saved — select a report to refresh it"
                 if not stop.is_set():
                     phase = "open"
@@ -259,6 +259,12 @@ def main():
     parser.add_argument("--no-browser", action="store_true", help="Serve the dashboard without opening a browser")
     parser.add_argument("--report", choices=("session", "today", "week", "month"), help="Estimate API-equivalent value from local tokens; month also compares plan fees")
     parser.add_argument("--report-format", choices=("text", "html"), default=None, help="Report display format (saved preference or terminal text)")
+    terminal_mode = parser.add_mutually_exclusive_group()
+    terminal_mode.add_argument("--details", choices=("provider", "model", "model_effort", "effort", "project", "conversation", "day"), help="Show one ranked terminal grouping")
+    terminal_mode.add_argument("--audit", action="store_true", help="Full legacy terminal report with exact counts, rates and issue notes")
+    parser.add_argument("--page", type=int, default=None, help="Detail page, starting at 1")
+    parser.add_argument("--page-size", type=int, default=None, help="Groups per detail page (1..50; default 10)")
+    parser.add_argument("--width", type=int, default=None, help="Compact/detail terminal width (40..160; default 80)")
     parser.add_argument("--output", type=Path, help="Destination for --report or JSON --version/--diagnostics/--show-settings")
     parser.add_argument("--include-metadata", action="store_true", help="Explicit report export of full project paths and conversation/turn IDs; review before sharing")
     parser.add_argument("--diagnostic-output", type=Path, help="Explicit redacted operation JSON export for --report or --once, including failures")
@@ -298,6 +304,19 @@ def main():
         parser.error("--include-metadata requires --report")
     if args.diagnostic_output and not (args.report or args.once):
         parser.error("--diagnostic-output requires --report or --once")
+    terminal_options = bool(args.details or args.audit or args.page is not None or args.page_size is not None or args.width is not None)
+    if terminal_options and not args.report:
+        parser.error("Terminal view options require --report")
+    if (args.page is not None or args.page_size is not None) and not args.details:
+        parser.error("--page and --page-size require --details")
+    if args.page is not None and args.page < 1:
+        parser.error("--page must be at least 1")
+    if args.page_size is not None and not 1 <= args.page_size <= 50:
+        parser.error("--page-size must be 1..50")
+    if args.width is not None and not 40 <= args.width <= 160:
+        parser.error("--width must be 40..160")
+    if args.audit and args.width is not None:
+        parser.error("--width applies to compact/detail views; omit it with --audit")
     config_path = settings_path() if args.config is None else args.config
     diagnostic_targets = [args.diagnostic_output] + ([args.output] if args.diagnostics else [])
     for destination in (path for path in diagnostic_targets if path is not None):
@@ -359,6 +378,8 @@ def main():
         settings = effective_settings(settings, codex_fee=args.codex_plan_usd, claude_fee=args.claude_plan_usd,
             timezone=args.timezone, report_format=args.report_format, codex_roots=args.codex_root,
             claude_roots=args.claude_root, prices=prices)
+        if terminal_options and settings.report_format != "text":
+            parser.error("Terminal view options require --report-format text")
         if args.save_settings:
             save_settings(settings, config_path)
             saved_version = settings.version
@@ -398,6 +419,9 @@ def main():
                 timezone=args.timezone, selected=args.provider, open_browser=not args.no_browser)
         except Exception:
             parser.exit(1, "Cannot start the dashboard. Check the port, packaged assets and timezone dependency.\n")
+    text_options = dict(view="details" if args.details else "audit" if args.audit else "summary",
+                        width=args.width or 80, dimension=args.details or "model", page=args.page or 1,
+                        page_size=args.page_size or 10)
     if args.report:
         providers = [p for p in PROVIDERS if args.provider in ("both", p.lower())]
         phase = "query"
@@ -408,10 +432,12 @@ def main():
             source_category = "source_incomplete" if any(source.state in ("partial", "failed") for source in report.sources) else "success"
             phase = "render"
             if args.report_format == "text" and not args.output and not args.open_report and sys.stdout is not None:
-                print(render_text_report(report, include_metadata=args.include_metadata))
+                print(render_text_report(report, include_metadata=args.include_metadata, **text_options))
                 return complete(0, "complete", source_category, report)
             phase = "save"
-            path = save_report(report, args.output, format=args.report_format, include_metadata=args.include_metadata)
+            path = save_report(report, args.output, format=args.report_format, include_metadata=args.include_metadata,
+                               text_view=text_options["view"], width=text_options["width"], dimension=text_options["dimension"],
+                               page=text_options["page"], page_size=text_options["page_size"])
         except Exception as exc:
             failure = report_failure(exc, phase)
             complete(1, phase, failure.category, report)

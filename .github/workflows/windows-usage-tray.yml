@@ -30,6 +30,13 @@ jobs:
       - name: Test, build and smoke-test executable
         shell: powershell
         run: ./windows/build.ps1
+      - name: Test existing dashboard interactions and packaged preview
+        shell: powershell
+        run: |
+          node --test windows/dashboard/tests/*.test.mjs
+          if ($LASTEXITCODE -ne 0) { throw "Dashboard interaction tests failed." }
+          ./windows/.venv/Scripts/python.exe windows/tests/packaged_dashboard_smoke.py --exe windows/dist/UsageTray.exe
+          if ($LASTEXITCODE -ne 0) { throw "Packaged dashboard smoke failed." }
       - uses: actions/upload-artifact@v4
         with:
           name: UsageTray-Windows-Python-${{ matrix.python }}

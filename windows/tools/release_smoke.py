@@ -64,8 +64,18 @@ def check_executable(executable):
         require(data('info.json')['timezone'] == 'America/Los_Angeles', 'Named timezone unavailable with host search path disabled.')
         command('demo-text', ['--report', 'week', '--demo', '--output', str(root/'demo.txt')])
         require(all(s in read('demo.txt') for s in ('DEMO', '108,000', '$0.2658')), 'Demo accounting differs.')
+        require(20 <= len(read('demo.txt').splitlines()) <= 30 and 'RATES -' not in read('demo.txt'), 'Default terminal summary is not compact.')
         command('demo-html', ['--report', 'week', '--demo', '--report-format', 'html', '--output', str(root/'demo.html')])
         require('<html' in read('demo.html') and '108,000' in read('demo.html'), 'Saved HTML unavailable.')
+
+        for page, label in ((1,'Claude / claude-sonnet-4-6'),(2,'Codex / gpt-5.4')):
+            target='details-'+str(page)+'.txt'
+            command('terminal-details-page-'+str(page), ['--report','week','--demo','--details','model','--page-size','1','--page',str(page),'--output',str(root/target)])
+            require(label in read(target) and 'page '+str(page)+'/2' in read(target) and '$0.2658' in read(target), 'Paged terminal details differ from full headline.')
+        command('terminal-narrow', ['--report','week','--demo','--details','conversation','--width','40','--output',str(root/'narrow.txt')])
+        require(all(len(line)<=40 for line in read('narrow.txt').splitlines()) and 'demo-conversation' not in read('narrow.txt'), 'Narrow terminal view or reduced metadata differs.')
+        command('terminal-invalid-page', ['--report','week','--demo','--details','model','--page','99','--output',str(root/'invalid-page.txt')],1)
+        require(not (root/'invalid-page.txt').exists(), 'Invalid detail page produced a report.')
 
         # Pick a timestamp inside this calendar month; never use wall-clock fixture dates.
         now = time.time()
@@ -92,7 +102,7 @@ def check_executable(executable):
         config = root/'appdata/UsageTray/settings.json'
         original = config.read_bytes()
         env.update(CODEX_HOME=str(root/'unused'), CLAUDE_CONFIG_DIR=str(root/'unused'))
-        command('restart-exact-accounting', ['--report', 'month', '--output', str(root/'local.txt'),
+        command('restart-exact-accounting', ['--report', 'month', '--audit', '--output', str(root/'local.txt'),
                                             '--diagnostic-output', str(root/'operation.json')])
         text = read('local.txt')
         require(all(s in text for s in ('2,905,000', '$18.8910', '-$11.11', 'Pricing coverage: complete')), 'Persisted accounting differs.')

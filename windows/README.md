@@ -72,7 +72,7 @@ Credentials are used locally and sent only by the provider's normal authenticati
 
 ## Estimated API value and plan comparison
 
-Right-click the tray icon and choose **This month: API value & plan comparison…**, **Current session estimated API value…**, **Today's estimated API value…**, or **Last 7 days estimated API value…**. By default, a text report opens in a PowerShell window that stays open until you close it. No browser is needed. It shows totals and breakdowns by provider, model and effort, project, conversation, and day. To use the full HTML report instead, start the tray with `--report-format html`. The HTML report includes:
+Right-click the tray icon and choose **This month: API value & plan comparison…**, **Current session estimated API value…**, **Today's estimated API value…**, or **Last 7 days estimated API value…**. By default, a text report opens in a PowerShell window that stays open until you close it. No browser is needed. It shows a compact summary of value, plan comparisons, tokens and coverage. Use the CLI detail/audit options below for deeper inspection. To use the full HTML report instead, start the tray with `--report-format html`. The HTML report includes:
 
 - Total recorded tokens and estimated API-equivalent USD value.
 - Uncached input, cache reads, cache writes, and output (including reasoning).
@@ -111,6 +111,20 @@ You can also generate reports without starting the tray, without API access, and
 .\.venv\Scripts\python.exe usage_tray.py --report week --provider codex --open-report
 .\.venv\Scripts\python.exe usage_tray.py --report session --demo --output .\demo.txt
 ```
+
+### Compact terminal views
+
+The CLI and tray text default is a roughly 20–30-line summary at 80 columns, with API-equivalent value, qualified signed plan differences, token categories, and separate source/counter/pricing/assumption states. Thousands remain exact comma-separated integers; millions/billions use M/B with up to two decimal places, matching the dashboard. `--audit` retains exact counts, all legacy groupings, rates and detailed notes. HTML remains the explicit full report.
+
+```powershell
+.\.venv\Scripts\python.exe usage_tray.py --report month
+.\.venv\Scripts\python.exe usage_tray.py --report month --details model
+.\.venv\Scripts\python.exe usage_tray.py --report month --details conversation --page-size 10 --page 2
+.\.venv\Scripts\python.exe usage_tray.py --report month --details project --width 60
+.\.venv\Scripts\python.exe usage_tray.py --report month --audit --output .\audit.txt
+```
+
+`--details` selects one provider, model, model_effort, effort, project, conversation or day grouping. Pages rank exact priced contribution, then unpriced groups; partial values stay labeled as priced subtotals. The headline always covers the full matched result. Omit `--details` to return to the summary. Each CLI invocation captures a fresh scan; pagination across separate commands is not a persisted frozen query. Page size is 1–50 and width 40–160. Terminal options require text format; if HTML is saved as your preference, add `--report-format text`. Full path/ID metadata still requires explicit `--include-metadata`; reduced labels are not anonymization. View/paging/width choices do not become saved settings. See [S10 terminal views](../docs/s10-terminal-views.md).
 
 Offline commands do not fetch a provider reset time, so `--report session` uses the last five hours. `--demo` uses clearly labeled samples and reads no logs. For updated or new models, copy [prices.example.json](prices.example.json) to `%LOCALAPPDATA%\UsageTray\prices.json` and edit exact model rates in **USD per million tokens**. Before persistent settings are initialized, the app loads that file at startup; `--prices .\my-prices.json` selects another file. See persistent settings below for migration and precedence. Each model requires `input`, `output`, and `cached`; Claude cache writes also use `write5m` and `write1h`. Omitted write rates stay unconfigured: events using them are unpriced until configured. Explicit zero rates are allowed. JSON numbers and decimal strings support up to 12 fractional digits, bounded to USD 1,000,000,000 per million; fees share that bound/scale. Restart the tray after changing prices.
 
@@ -168,7 +182,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 .\dist\UsageTray.exe
 ```
 
-The script installs pinned dependencies, runs the full suite, bundles Python and local named-timezone data into `dist\UsageTray.exe`, then runs 14 bounded offline executable checks. A failed smoke check fails the build. Existing `.venv` environments are reused; a missing environment uses the `python` selected on PATH (including `actions/setup-python` in CI). Codex/Claude CLIs remain separate prerequisites. The executable is unsigned; signing and distribution are separate release steps. No startup registration is changed automatically. To launch at login, optionally place a shortcut to your built executable in the folder opened by `Win+R` → `shell:startup`.
+The script installs pinned dependencies, runs the full suite, bundles Python and local named-timezone data into `dist\UsageTray.exe`, then runs 18 bounded offline executable checks. A failed smoke check fails the build. Existing `.venv` environments are reused; a missing environment uses the `python` selected on PATH (including `actions/setup-python` in CI). Codex/Claude CLIs remain separate prerequisites. The executable is unsigned; signing and distribution are separate release steps. No startup registration is changed automatically. To launch at login, optionally place a shortcut to your built executable in the folder opened by `Win+R` → `shell:startup`.
 
 Alternatively, push the changes to GitHub and run **Actions → Build Windows Usage Tray → Run workflow**. The workflow has Windows jobs for Python 3.11, 3.12, 3.13 and 3.14; each tests, builds and smoke-tests its own executable and uploads `UsageTray-Windows-Python-<version>`. It also runs when changes to `windows/` are pushed or proposed in a pull request. A configured matrix is not evidence that remote jobs passed; see the [Windows release record](../docs/s09-windows-release.md) for actual results and limits.
 
