@@ -1,5 +1,7 @@
 # Frontend contract preparation handoff
 
+S13 follow-up: the published S12 schema supersedes this candidate for the production frontend. Use the [S13 frontend handoff](s13-frontend-handoff.md) for the implemented local dashboard, its exact runtime assets, current checks and remaining Agent 1 integration. The candidate files below remain historical preparation; the new real dashboard does not import them.
+
 October 24, 2026. Base: combined S10 commit `88c6786`. Branch: `codex/frontend-contract-preparation`, using the previously clean managed integration checkout. Status: **fixture-backed preparation complete; candidate requires backend alignment**. S11/S12 implementation and S13 production integration are not completed here.
 
 ## Files and ownership

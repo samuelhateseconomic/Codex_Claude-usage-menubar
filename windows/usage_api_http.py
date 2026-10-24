@@ -63,7 +63,7 @@ class LocalSessions:
 
 def static_files():
     # Only shipped application assets; never map an arbitrary URL onto disk.
-    files = {'/': ('index.html', 'text/html; charset=utf-8'),
+    files = {'/': ('local.html', 'text/html; charset=utf-8'),
              '/style.css': ('style.css', 'text/css; charset=utf-8')}
     for path in STATIC.glob('*.js'):
         files['/' + path.name] = (path.name, 'text/javascript; charset=utf-8')

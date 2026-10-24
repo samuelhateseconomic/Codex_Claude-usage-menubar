@@ -29,13 +29,13 @@ class ProductionAssets(HttpFixture):
         status, headers, body = self.request('GET', '/')
         self.assertEqual(status, 200)
         self.assertIn(b'data-api-mode="v1"', body)
-        self.assertIn(b'/app.js', body)
+        self.assertIn(b'/local-app.js', body)
         self.assertNotIn('Set-Cookie', headers)
         csp = headers['Content-Security-Policy']
         for directive in ("script-src 'self'", "style-src 'self'", "font-src 'self'", "connect-src 'self'"):
             self.assertIn(directive, csp)
         self.assertNotIn("unsafe-inline", csp)
-        for path in ('/app.js', '/format.js', '/style.css', '/api-bootstrap.js',
+        for path in ('/local-app.js', '/local-session.js', '/local-view.js', '/v1-client.js', '/v1-schema.js', '/format.js', '/style.css', '/api-bootstrap.js',
                      '/assets/overview.svg', '/assets/Geist.woff2', '/assets/GeistMono.woff2', '/service'):
             with self.subTest(path=path):
                 status, headers, body = self.request('GET', path)

@@ -38,7 +38,7 @@ From the repository root:
 
 The real dashboard reads the committed local index through the authenticated v1 API. It uses the existing saved fees, timezone, approved source roots and rates. Its explicit standalone launch imports local metadata but does not poll provider accounts. Open it from the ordinary live tray's **Open usage dashboard...** action to share that tray's cached active-account limits. The normal tray starts no browser automatically; its reports remain accessible in the terminal.
 
-The source dashboard host stays alive until Ctrl+C. A windowed executable with `--dashboard` hosts an offline tray; Quit stops the service. Closing a browser tab does not quit the application. Repeated launches reuse the first owner's port, hosting mode and provider schedule; quit/relaunch that owner to change its mode. `--dashboard-port` defaults to 8765; 0 selects an available port. Launch URLs contain short-lived one-use handoffs, and a plain unauthenticated page visit grants no private data access. Reload can resume an existing session.
+The source dashboard host stays alive until Ctrl+C. A windowed executable with `--dashboard` hosts an offline tray; Quit stops the service. Closing a browser tab does not quit the application. Repeated launches reuse the first owner's port, hosting mode and provider schedule; quit/relaunch that owner to change its mode or load updated application code. `--dashboard-port` defaults to 8765; 0 selects an available port. Launch URLs contain short-lived one-use handoffs, and a plain unauthenticated page visit grants no private data access. Reload can resume an existing session.
 
 The real launch rejects temporary fee/price/timezone overrides and report/export/root commands. Save configuration separately before launch, or use supported browser settings. Temporary settings on the legacy tray retain their existing behavior and label its dashboard unavailable. If optional hub startup fails, the ordinary tray retains its terminal/core path; an explicit dashboard failure reports an error and never substitutes sample data.
 
@@ -66,6 +66,7 @@ Run the dashboard checks from the repository root:
 .\windows\.venv\Scripts\python.exe -m unittest discover -s windows/tests -p test_hub.py -v
 node --test windows/dashboard/tests/*.test.mjs
 .\windows\.venv\Scripts\python.exe windows/tests/packaged_dashboard_smoke.py --exe windows/dist/UsageTray.exe
+.\windows\.venv\Scripts\python.exe windows/tests/packaged_local_hub_smoke.py --exe windows/dist/UsageTray.exe
 ```
 
 Node is needed only for formatter and controlled handler/recovery tests, not for running the dashboard. The HTTP tests need local loopback access. Packaging uses the normal `windows/build.ps1`, including dashboard assets and `tzdata`. Before repeating interaction work, read the [completed coverage inventory and synthetic browser fault driver instructions](../docs/dashboard-resilience-handoff.md); ordinary navigation and request-failure evidence are recorded separately there.
