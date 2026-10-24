@@ -7,6 +7,7 @@ import threading
 import time
 
 from usage_config import application_directory
+from usage_privacy import display_text
 from usage_core import RateLimited, Snapshot, UsageError
 
 MIN_INTERVAL = 300
@@ -111,7 +112,7 @@ class ProviderState:
             except (ValueError, OverflowError, OSError):
                 retry = "outside the supported display range"
             lines.append("Next eligible check " + retry + " (cooldown)")
-        return lines
+        return [display_text(line) for line in lines]
 
 
 class PollingRuntime:

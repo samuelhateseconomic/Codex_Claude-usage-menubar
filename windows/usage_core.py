@@ -10,12 +10,13 @@ import shutil
 import subprocess
 import threading
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime
 from urllib import error, request
 
 from usage_identity import APP_VERSION
 from usage_process import ChildTree
+from usage_privacy import display_text
 
 
 class UsageError(Exception):
@@ -54,7 +55,7 @@ class Window:
                 reset = "resets " + datetime.fromtimestamp(self.resets_at).strftime("%a %H:%M")
             except (ValueError, OverflowError, OSError):
                 pass
-        return f"{self.label}: {self.remaining:.0f}% left · {reset}"
+        return f"{display_text(self.label)}: {self.remaining:.0f}% left · {reset}"
 
 
 @dataclass(frozen=True)
@@ -66,10 +67,11 @@ class Snapshot:
     blocked: bool = False
 
     def to_dict(self) -> dict:
-        result = asdict(self)
-        for original, serialized in zip(self.windows, result["windows"]):
-            serialized["remaining"] = original.remaining
-        return result
+        # Explicit public snapshot projection excludes extra subclass/payload fields.
+        return {"provider": display_text(self.provider), "checked_at": self.checked_at,
+                "note": display_text(self.note), "blocked": self.blocked,
+                "windows": [{"label": display_text(w.label), "used": w.used, "resets_at": w.resets_at,
+                             "duration_minutes": w.duration_minutes, "remaining": w.remaining} for w in self.windows]}
 
 
 def number(value) -> float | None:
@@ -87,7 +89,9 @@ def parse_codex(payload: dict) -> Snapshot:
     for bucket_id, bucket in buckets.items():
         if not isinstance(bucket, dict):
             continue
-        name = bucket.get("limitName") or bucket_id
+        name = bucket.get("limitName")
+        if not isinstance(name, str) or not name or len(name) > 200:
+            name = bucket_id if isinstance(bucket_id, str) and 0 < len(bucket_id) <= 200 else "Codex"
         for key in ("primary", "secondary"):
             window = bucket.get(key)
             if not isinstance(window, dict):

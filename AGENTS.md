@@ -38,6 +38,7 @@
 - Handle append/truncation/replacement explicitly. Failed reads must not silently replace accepted history with empty data. Retain a coherent last committed dataset when persistence exists.
 - One runtime owner schedules provider checks and database writes when clients/processes share a service. Do not persist monotonic deadlines as UTC timestamps.
 - Extract allowlisted metadata only. Never persist/export/log prompts, responses, credentials, raw provider payloads, or raw source lines. Parsing source bytes does not imply permission to retain content.
+- Use `windows/usage_privacy.py` for display-only projections and `windows/usage_diagnostics.py` for allowlisted explicit operation exports. Full report paths/IDs require `--include-metadata`; never serialize the internal query graph as redacted diagnostics. See [the S08 contract](docs/s08-privacy-diagnostics.md).
 - Treat source metadata as untrusted text: escape HTML and neutralize terminal control sequences while preserving internal identities. Keep errors/diagnostics sanitized and actionable.
 - Preserve credential redirect protections; do not write or refresh credentials as an incidental workaround.
 - Database/API/frontend are optional sessions, not existing features. Follow the integration contract for transactions, exact numeric contracts, frozen queries, job status, migrations, and loopback access controls.

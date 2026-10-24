@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from html import escape
+from usage_privacy import display_text, metadata_label
 import os
 from pathlib import Path
 import tempfile
@@ -217,11 +218,11 @@ def pricing_note(report, summary):
             "Coverage describes configured rates, not full source/account accuracy.")
 
 
-def render_report(report: Report | UsageResult) -> str:
+def render_report(report: Report | UsageResult, *, include_metadata=False) -> str:
     report = _result(report)
     context = report.context
     def text(value):
-        return escape(str(value), quote=True)
+        return escape(display_text(value), quote=True)
 
     def date(value):
         return local_datetime(value, context.timezone).strftime("%Y-%m-%d %H:%M:%S %z")
@@ -235,7 +236,8 @@ def render_report(report: Report | UsageResult) -> str:
         rows = []
         for group in report.groups_for(dimension):
             tokens, value = group.summary.tokens, group.summary.value
-            label = " / ".join(group.key)
+            label = " / ".join(metadata_label(v, "project" if dimension == "project" else "id", include_metadata)
+                               if dimension in ("project", "conversation") and i else v for i, v in enumerate(group.key))
             cells = [label, f"{tokens.input:,}", f"{tokens.cached:,}", f"{tokens.write5m:,}", f"{tokens.write1h:,}", f"{tokens.output:,}", reasoning_text(group.summary.reasoning), f"{tokens.total:,}", summary_value_text(value)]
             rows.append("<tr>" + "".join(f"<td>{text(c)}</td>" for c in cells) + "</tr>")
         headers = [title, "Uncached input", "Cache read", "Cache write 5m", "Cache write 1h", "Output incl. reasoning", "Reasoning (subset)", "Total tokens", "Est. API value (USD)"]
@@ -249,7 +251,8 @@ def render_report(report: Report | UsageResult) -> str:
             tokens = detail.summary.tokens
             cost = detail.valuation.amount_usd
             cells = [date(record.timestamp), record.provider, record.model, record.effort,
-                     record.effort_source, record.session, record.turn_id or "not recorded",
+                     record.effort_source, metadata_label(record.session, "id", include_metadata),
+                     metadata_label(record.turn_id or "not recorded", "id", include_metadata),
                      f"{tokens.input:,}", f"{tokens.cached:,}", f"{tokens.write5m:,}", f"{tokens.write1h:,}",
                      f"{tokens.output:,}", reasoning_text(detail.summary.reasoning), f"{tokens.total:,}",
                      summary_value_text(detail.summary.value) if cost is not None else "unpriced"]
@@ -288,19 +291,21 @@ def render_report(report: Report | UsageResult) -> str:
         + table(f"Day ({context.timezone})", "day")
         + history()
     )
+    metadata_note = "Full project paths and IDs explicitly included; review before sharing." if include_metadata else "Reduced metadata: project basenames and abbreviated ID digests; this is not anonymization."
     demo = "<p class='notice'>DEMO — sample data; no local logs or accounts were accessed.</p>" if context.demo else ""
     return """<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
 <title>Usage Tray — estimated API value</title><style>
 body{font:15px system-ui,sans-serif;background:#101827;color:#e5ecf5;max-width:1250px;margin:32px auto;padding:0 20px;line-height:1.55}h1,h2{color:#fff}a{color:#86ccff}.summary{display:flex;gap:30px;flex-wrap:wrap;padding:20px;background:#1d2b42;border-radius:12px}.summary strong{display:block;font-size:28px}.scroll{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}td,th{padding:10px;text-align:right;border-bottom:1px solid #344259;white-space:nowrap}td:first-child,th:first-child{text-align:left;white-space:normal;overflow-wrap:anywhere}th{color:#a8c5df}.notice{padding:12px;background:#473c23;border-radius:8px}small{color:#b7c7d9}
-</style><h1>Token usage &amp; API-equivalent value</h1>""" + demo + f"<div class='summary'><div><strong>{totals.total:,}</strong>Local recorded tokens</div><div><strong>{text(money)}</strong>Estimated API-equivalent value<br>{text(pricing_note(report, valuation_summary))}</div><div><strong>{report.total.conversation_count:,}</strong>Conversations</div></div><ul>{boundaries}</ul>" + "<p>Dollar values estimate standard API list-price usage. They are not subscription charges or a conversion of your limit percentage. The monthly comparison subtracts your monthly plan fee from the estimated API value of recorded usage so far. Counts include only token records available on this computer, across accounts using these log folders. Browser chat, remote/cloud tasks, other devices, missing logs, and unrecorded activity are excluded. Reasoning is included in output; cached input is counted once. No prompts or replies appear in this report.</p><p>Effort is the recorded request setting, not a measurement of thinking performed. Switching medium, high, or ultra changes the usage bucket for subsequent recorded work. Cost uses actual recorded tokens and model prices without an effort multiplier. Reasoning tokens, when recorded separately, are shown as a subset of output and are never billed twice. Labels such as xhigh, max, and ultra are preserved separately.</p>" + (f"<ul class='notice'>{notice_html}</ul>" if notices else "") + sections + f"<h2>Pricing assumptions (USD per million tokens)</h2><p>Bundled standard prices checked {PRICE_DATE}; <a href='{PRICE_SOURCE}'>price registry source</a>. Custom exact-model rates override bundled entries. Discounts, service-tier premiums, tool charges, taxes, and other unrecorded billing adjustments are excluded.</p><ul>{''.join(pricing)}</ul><small>Generated locally {text(date(context.captured_at))}. This file contains local project names and conversation IDs; review before sharing.</small></html>"
+</style><h1>Token usage &amp; API-equivalent value</h1>""" + demo + f"<p>{metadata_note}</p><div class='summary'><div><strong>{totals.total:,}</strong>Local recorded tokens</div><div><strong>{text(money)}</strong>Estimated API-equivalent value<br>{text(pricing_note(report, valuation_summary))}</div><div><strong>{report.total.conversation_count:,}</strong>Conversations</div></div><ul>{boundaries}</ul>" + "<p>Dollar values estimate standard API list-price usage. They are not subscription charges or a conversion of your limit percentage. The monthly comparison subtracts your monthly plan fee from the estimated API value of recorded usage so far. Counts include only token records available on this computer, across accounts using these log folders. Browser chat, remote/cloud tasks, other devices, missing logs, and unrecorded activity are excluded. Reasoning is included in output; cached input is counted once. No prompts or replies appear in this report.</p><p>Effort is the recorded request setting, not a measurement of thinking performed. Switching medium, high, or ultra changes the usage bucket for subsequent recorded work. Cost uses actual recorded tokens and model prices without an effort multiplier. Reasoning tokens, when recorded separately, are shown as a subset of output and are never billed twice. Labels such as xhigh, max, and ultra are preserved separately.</p>" + (f"<ul class='notice'>{notice_html}</ul>" if notices else "") + sections + f"<h2>Pricing assumptions (USD per million tokens)</h2><p>Bundled standard prices checked {PRICE_DATE}; <a href='{PRICE_SOURCE}'>price registry source</a>. Custom exact-model rates override bundled entries. Discounts, service-tier premiums, tool charges, taxes, and other unrecorded billing adjustments are excluded.</p><ul>{''.join(pricing)}</ul><small>Generated locally {text(date(context.captured_at))}. This file contains local project names and usage metadata; review before sharing. Full paths and IDs require an explicit metadata export.</small></html>"
 
 
-def render_text_report(report: Report | UsageResult) -> str:
+def render_text_report(report: Report | UsageResult, *, include_metadata=False) -> str:
     """Format an authoritative headless result without calculating usage."""
     report = _result(report)
     context = report.context
     def clean(value):
-        return "".join(c if c.isprintable() else " " for c in str(value))
+        return display_text(value)
 
     def summary(summary):
         value, tokens, reasoning = summary.value, summary.tokens, summary.reasoning
@@ -314,7 +319,9 @@ def render_text_report(report: Report | UsageResult) -> str:
 
     lines = ["USAGE TRAY - ESTIMATED API VALUE", "=" * 64,
              "What these tokens would approximately cost at API token prices.",
-             "This is a comparison estimate, not an actual charge."]
+             "This is a comparison estimate, not an actual charge.",
+             "Full project paths and conversation IDs explicitly included; review before sharing." if include_metadata else
+             "Reduced metadata: project basenames and abbreviated ID digests; this is not anonymization."]
     if context.demo:
         lines.append("DEMO - sample data; no local logs or accounts accessed.")
     for provider, r in context.ranges:
@@ -330,7 +337,9 @@ def render_text_report(report: Report | UsageResult) -> str:
                              ("PROJECT", "project"), ("CONVERSATION", "conversation"), ("DAY", "day")]:
         lines += ["", title, "-" * 64]
         for group in report.groups_for(dimension):
-            lines += [clean(" / ".join(group.key))] + summary(group.summary)
+            label = " / ".join(metadata_label(v, "project" if dimension == "project" else "id", include_metadata)
+                               if dimension in ("project", "conversation") and i else v for i, v in enumerate(group.key))
+            lines += [label] + summary(group.summary)
     lines += ["", "NOTES", "Dollar values are API-equivalent estimates, not subscription charges.",
               "Only local recorded usage is included. Unknown effort stays unknown.",
               "Reasoning is included in output; cached input is counted once.",
@@ -356,14 +365,14 @@ def render_text_report(report: Report | UsageResult) -> str:
     if missing:
         lines.append(f"Effort not recorded for {missing:,} usage records.")
     lines += [clean(notice) for notice in report.notices]
-    return "\n".join(lines) + "\n"
+    return "\n".join(clean(line) for line in lines) + "\n"
 
 
 def report_directory() -> Path:
     return application_directory() / "Reports"
 
 
-def save_report(report: Report | UsageResult, output: Path | None = None, format="html") -> Path:
+def save_report(report: Report | UsageResult, output: Path | None = None, format="html", *, include_metadata=False) -> Path:
     if format not in ("html", "text"):
         raise ValueError("Unsupported report format")
     generated = output is None
@@ -378,7 +387,7 @@ def save_report(report: Report | UsageResult, output: Path | None = None, format
         if output.is_relative_to(generated_directory()):
             raise ValueError("The generated folder is reserved for automatic reports; choose another output directory.")
         output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(render_text_report(report) if format == "text" else render_report(report), encoding="utf-8")
+    output.write_text(render_text_report(report, include_metadata=include_metadata) if format == "text" else render_report(report, include_metadata=include_metadata), encoding="utf-8")
     if generated:
         outcome = prune_reports(keep=output)
         if outcome.failed:

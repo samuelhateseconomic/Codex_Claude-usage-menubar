@@ -94,7 +94,8 @@ class ReportTests(unittest.TestCase):
         for effort in ("medium", "high", "ultra"):
             self.assertIn(f"Codex / gpt-5.2-codex / {effort}", html)
         self.assertIn("Turn and usage-event history", html)
-        self.assertIn("turn-2", html)
+        self.assertNotIn("turn-2", html)
+        self.assertIn("turn-2", reports.render_report(report, include_metadata=True))
         self.assertIn("Reasoning (subset)", html)
 
     def test_codex_missing_or_null_effort_does_not_inherit_last_turn(self):

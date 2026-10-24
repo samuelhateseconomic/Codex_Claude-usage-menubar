@@ -4,7 +4,7 @@ import hashlib
 from pathlib import Path
 import sys
 
-APP_VERSION = "0.7.0"
+APP_VERSION = "0.8.0"
 
 
 @lru_cache(maxsize=1)

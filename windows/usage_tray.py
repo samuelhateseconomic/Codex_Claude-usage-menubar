@@ -13,6 +13,8 @@ import sys
 
 from usage_core import UsageError, demo_snapshot, fetch_claude, fetch_codex
 from usage_failures import report_failure
+from usage_privacy import display_text
+from usage_diagnostics import Operation, report_counts, write_diagnostic
 from usage_runtime import AlreadyRunning, PollingRuntime, ProviderState, RuntimeOwner
 from usage_config import (SCHEMA_VERSION, SettingsError, application_directory, effective_settings,
                           load_settings, save_settings, settings_data, settings_path)
@@ -207,6 +209,8 @@ def main():
     parser.add_argument("--report", choices=("session", "today", "week", "month"), help="Estimate API-equivalent value from local tokens; month also compares plan fees")
     parser.add_argument("--report-format", choices=("text", "html"), default=None, help="Report display format (saved preference or terminal text)")
     parser.add_argument("--output", type=Path, help="Destination for --report or JSON --version/--diagnostics/--show-settings")
+    parser.add_argument("--include-metadata", action="store_true", help="Explicit report export of full project paths and conversation/turn IDs; review before sharing")
+    parser.add_argument("--diagnostic-output", type=Path, help="Explicit redacted operation JSON export for --report or --once, including failures")
     parser.add_argument("--open-report", action="store_true", help="Open the report in a terminal (or browser for HTML)")
     parser.add_argument("--prices", type=Path, help="JSON file of exact-model USD prices per million tokens")
     parser.add_argument("--codex-plan-usd", default=None, help="Codex monthly subscription price in USD (saved value or 20)")
@@ -228,6 +232,37 @@ def main():
         parser.error("--output requires --report, --version, --diagnostics or --show-settings")
     if sum(bool(value) for value in (args.version, args.diagnostics, args.show_settings, args.report, args.once)) > 1:
         parser.error("Choose one of --version, --diagnostics, --show-settings, --report or --once")
+    if args.include_metadata and not args.report:
+        parser.error("--include-metadata requires --report")
+    if args.diagnostic_output and not (args.report or args.once):
+        parser.error("--diagnostic-output requires --report or --once")
+    config_path = settings_path() if args.config is None else args.config
+    diagnostic_targets = [args.diagnostic_output] + ([args.output] if args.diagnostics else [])
+    for destination in (path for path in diagnostic_targets if path is not None):
+        target = destination.resolve()
+        protected = [config_path, application_directory() / "prices.json", args.prices]
+        if destination == args.diagnostic_output:
+            protected.append(args.output)
+        if any(path is not None and target == path.resolve() for path in protected):
+            parser.error("Diagnostic output must differ from settings, prices and report output")
+        if target.is_relative_to((application_directory() / "Reports" / "Generated").resolve()):
+            parser.error("Choose a diagnostic output outside the reserved Generated report folder")
+    operation = Operation("report" if args.report else "provider_check" if args.once else "settings")
+
+    def complete(code, phase, category, result=None, providers=()):
+        if args.diagnostic_output:
+            counts = report_counts(result) if result is not None else None
+            partial = category == "source_incomplete"
+            data = operation.finish("failed" if code else "partial" if partial else "success",
+                                    phase, category, counts=counts, providers=providers, scope="demo" if args.demo else "local")
+            try:
+                write_diagnostic(args.diagnostic_output, data)
+            except OSError:
+                if sys.stderr is not None:
+                    sys.stderr.write("Diagnostic export failed: check destination access and free space.\n")
+                return code or 1
+        return code
+
     def emit_json(payload):
         encoded = json.dumps(payload, indent=2, ensure_ascii=True) + "\n"
         if args.output:
@@ -246,7 +281,6 @@ def main():
             parser.error("--version cannot save settings")
         emit_json(version_info())
         return 0
-    config_path = settings_path() if args.config is None else args.config
     try:
         settings = load_settings(config_path)
         saved_version = settings.version if config_path.exists() else None
@@ -267,6 +301,12 @@ def main():
             save_settings(settings, config_path)
             saved_version = settings.version
     except SettingsError as exc:
+        if args.diagnostics:
+            info = version_info()
+            info["operation"] = operation.finish("failed", "settings", "settings_invalid", scope="configuration")
+            emit_json(info)
+            return 2
+        complete(2, "settings", "settings_invalid")
         parser.error(str(exc))
     if args.show_settings:
         emit_json(settings_data(settings))
@@ -278,6 +318,7 @@ def main():
                     timezone=settings.timezone, report_format=settings.report_format,
                     root_modes={p: "environment_defaults" if roots is None else "explicit" for p, roots in settings.log_roots},
                     explicit_root_counts={p: len(roots) for p, roots in settings.log_roots if roots is not None})
+        info["operation"] = operation.finish("success", "settings", "success", scope="configuration")
         emit_json(info)
         return 0
     if args.save_settings and not (args.report or args.once):
@@ -291,58 +332,70 @@ def main():
     if args.report:
         providers = [p for p in PROVIDERS if args.provider in ("both", p.lower())]
         phase = "query"
+        report = None
         try:
             report = query_usage(args.report, providers, prices=prices, demo=args.demo, plan_costs=plan_costs, timezone=args.timezone, roots=roots)
             report = replace(report, settings_version=settings.version)
+            source_category = "source_incomplete" if any(source.state in ("partial", "failed") for source in report.sources) else "success"
+            phase = "render"
             if args.report_format == "text" and not args.output and not args.open_report and sys.stdout is not None:
-                print(render_text_report(report))
-                return 0
+                print(render_text_report(report, include_metadata=args.include_metadata))
+                return complete(0, "complete", source_category, report)
             phase = "save"
-            path = save_report(report, args.output, format=args.report_format)
+            path = save_report(report, args.output, format=args.report_format, include_metadata=args.include_metadata)
         except Exception as exc:
             failure = report_failure(exc, phase)
+            complete(1, phase, failure.category, report)
             parser.exit(1, failure.category + ": " + failure.message + "\n")
         if sys.stdout is not None:
-            print(str(path))
+            print(display_text(path))
         if args.open_report or (sys.stdout is None and not args.output):
             try:
                 open_report(path, args.report_format)
             except Exception as exc:
                 failure = report_failure(exc, "open")
+                complete(1, "open", failure.category, report)
                 parser.exit(1, failure.category + ": " + failure.message + "\n")
-        return 0
+        return complete(0, "complete", source_category, report)
     if args.once and args.demo:
-        print(json.dumps([demo_snapshot(name).to_dict() for name in PROVIDERS if args.provider in ("both", name.lower())], indent=2, ensure_ascii=False))
-        return 0
+        print(json.dumps([demo_snapshot(name).to_dict() for name in PROVIDERS if args.provider in ("both", name.lower())], indent=2, ensure_ascii=True))
+        return complete(0, "complete", "success")
     owner = RuntimeOwner()
     try:
         owner.__enter__()
     except AlreadyRunning as exc:
+        complete(3, "ownership", "already_running")
         parser.exit(3, str(exc) + "\n")
     except OSError:
+        complete(1, "ownership", "permission_denied")
         parser.exit(1, "Cannot acquire runtime ownership. Check application-data folder permissions.\n")
     try:
-        return run_live(args, prices, plan_costs, roots, settings.version)
+        return run_live(args, prices, plan_costs, roots, settings.version, complete=complete)
     finally:
         owner.__exit__(None, None, None)
 
 
-def run_live(args, prices, plan_costs, roots, settings_version):
+def run_live(args, prices, plan_costs, roots, settings_version, complete=None):
     if args.once:
         results = []
         failed = False
+        categories = []
         for name, fetch in PROVIDERS.items():
             if args.provider not in ("both", name.lower()):
                 continue
             try:
                 snapshot = demo_snapshot(name) if args.demo else fetch()
                 results.append(snapshot.to_dict())
+                categories.append((name, "blocked" if snapshot.blocked else "success"))
             except Exception as exc:
                 failed = True
                 message = str(exc) if isinstance(exc, UsageError) else "Unexpected provider error; check your CLI installation."
-                results.append({"provider": name, "error": message, "category": exc.category if isinstance(exc, UsageError) else "unexpected_local"})
-        print(json.dumps(results, indent=2, ensure_ascii=False))
-        return 1 if failed else 0
+                category = exc.category if isinstance(exc, UsageError) else "unexpected_local"
+                categories.append((name, category))
+                results.append({"provider": name, "error": display_text(message), "category": category})
+        print(json.dumps(results, indent=2, ensure_ascii=True))
+        code = 1 if failed else 0
+        return complete(code, "poll", "provider_error" if failed else "success", providers=categories) if complete else code
     run_tray(args.demo, args.provider, prices, args.report_format, plan_costs, args.timezone,
              roots=roots, settings_version=settings_version)
     return 0

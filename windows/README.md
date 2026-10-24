@@ -110,11 +110,24 @@ Automatic saved reports now go to `%LOCALAPPDATA%\UsageTray\Reports\Generated`. 
 
 Report failures identify permissions, disk space, file IO, unsupported data/calculation, unexpected local problems or opening the viewer. If opening fails, the saved file remains available. Native viewer launch/interaction and unusual long-running IO still need the release checks documented in [the S07 contract](../docs/s07-runtime-recovery.md).
 
+### Metadata privacy and local diagnostics
+
+Reports now use project-path basenames and abbreviated ID digests by default. These are display labels, not anonymization; counts and internal identities stay exact. Add `--include-metadata` to a report command for full project paths and conversation IDs (plus turn IDs in HTML history). Full metadata remains intentional and should be reviewed before sharing. Terminal controls, bidi/format characters and embedded newlines are rendered as visible escapes; HTML text is escaped and embedded active content is restricted.
+
+```powershell
+.\.venv\Scripts\python.exe .\usage_tray.py --report month --include-metadata --output .\private-report.txt
+.\.venv\Scripts\python.exe .\usage_tray.py --diagnostics --output .\configuration-check.json
+.\.venv\Scripts\python.exe .\usage_tray.py --report month --diagnostic-output .\report-operation.json
+.\.venv\Scripts\python.exe .\usage_tray.py --once --demo --diagnostic-output .\demo-check.json
+```
+
+`--diagnostics` checks configuration/build identities offline, including a safe settings failure result (exit 2). The explicit `--diagnostic-output` option records a report/one-shot operation's ID, build, phase, category, static recovery action and aggregate counts, even on handled failure. It excludes transcripts, credentials, raw exceptions/payloads, paths and record identifiers. It is not a log of the running tray. Real `--once` still polls providers; demo avoids credential/network access. Partial source coverage is labeled `partial` even if report generation succeeds. No diagnostic file is written automatically, uploaded or pruned; manage the selected export yourself. `--show-settings` intentionally includes configured roots and is not a redacted diagnostic export. See [the S08 contract](../docs/s08-privacy-diagnostics.md) for schema, artifact locations, retention and verification limits.
+
 ### Effort changes within a conversation
 
 Effort is tracked per recorded turn/message, not once per conversation. For example, a GPT-5.4 conversation that switches **medium → high → ultra** produces three separate model-and-effort buckets. Every subsequent token increment is associated with the recorded turn context active when that increment was logged. `xhigh`, `max`, and `ultra` remain distinct wire labels; the app does not map them to each other. Custom recorded effort names are preserved as well.
 
-For Codex, effort comes from [`turn_context.effort`](https://github.com/openai/codex/blob/main/codex-rs/protocol/src/protocol.rs), with an explicit collaboration-mode setting as a fallback when the top-level field is absent. The next context resets the association: if it omits effort, new usage is **unknown**, rather than inheriting the previous turn's setting. The report also shows recorded turn IDs and metadata sources in **Turn and usage-event history**. Multiple usage increments can belong to the same turn.
+For Codex, effort comes from [`turn_context.effort`](https://github.com/openai/codex/blob/main/codex-rs/protocol/src/protocol.rs), with an explicit collaboration-mode setting as a fallback when the top-level field is absent. The next context resets the association: if it omits effort, new usage is **unknown**, rather than inheriting the previous turn's setting. The HTML report shows metadata sources and abbreviated turn labels in **Turn and usage-event history**; `--include-metadata` explicitly includes full turn IDs. Multiple usage increments can belong to the same turn.
 
 For Claude, only explicit effort metadata attached to the logged request, message, or user turn is used (such as `effort`, `effortValue`, or `output_config.effort`). Tool-result messages remain in the current turn; a new user prompt resets the association. Some Claude Code versions do **not** persist the effective request effort in their transcript. Those records stay **unknown**, and the report states how many records/tokens lack effort. Current settings files, thinking budgets, and prompt text cannot reliably reconstruct historical effort and are not used to guess it. Existing logs with no effort metadata cannot be retroactively labeled accurately.
 
