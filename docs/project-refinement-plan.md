@@ -442,6 +442,17 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - Limitations: both accounting defects remain open; no real-log/account, macOS, CI, price-verification, or interactive lifecycle checks were run. S00 completion does not raise runtime maturity scores.
 - Next ready: **S01 observation/canonical-event contracts**. S02 requires that seam and regression assertions before fixing deltas. No unresolved S00 decision blocks S01.
 
+### Dashboard development slice — October 23, 2026
+
+- Status: **in_progress** for dashboard integration; no S01-S14 gate is completed by this preview. See the [implementation and core handoff](dashboard-implementation.md).
+- Starting state: clean commit `854ac73`, S00 complete. Concurrent S01 record/observation contracts and reader changes appeared during work and were preserved. A provisional accounting fix was withdrawn to avoid competing with that core session; the two S02 invariants remain open.
+- Scope/decision: implement the reviewed Figma first slice as an explicit demo-only local development preview while core refinement continues. This permits UI/adapter verification without treating unfinished core results as trusted real data. No database or migrations were introduced; existing database work still needs inspection before integration. This development-scope deviation does not waive S11-S14 dependencies or release gates.
+- Files: new `windows/dashboard/` UI/assets/formatter tests; `windows/usage_hub.py`, `usage_value.py`, `dashboard_main.py`, `tests/test_hub.py`, and `tests/packaged_dashboard_smoke.py`; changes to `usage_tray.py`, `requirements.txt`, `build.ps1`, `windows/README.md`, this ledger, and the linked handoff. Changes in `usage_reports.py`, `usage_records.py`, `usage_observations.py`, and `test_observations.py` belong to the concurrent core work, not this slice.
+- Evidence: demo totals reconcile to Figma (8,920,000 tokens / USD 49.506 / 12 conversations / four projects); Python query/HTTP tests and Node formatter/axis tests pass. Actual browser interactions cover provider selection, metric/day drill-down, detail/Back, pagination, no-match search/recovery, and help/keyboard shortcuts. Narrow-width and original local SVG/font checks were performed.
+- Packaging: the existing Windows build script succeeded with bundled dashboard assets and timezone data. Executable smoke checks passed for demo API totals, named timezone, local assets/fonts, and the preserved offline terminal month-demo report. Build and smoke success do not certify interactive packaged lifecycle or real-data accounting.
+- Limitations/next: real-data CLI launch remains gated; Settings is read-only; Limits is sample data in demo mode. Exact preview valuation still needs S04/S05 consolidation into the authoritative core service. Persistent index/API, database handoff, full runtime ownership, and S09/S14 release gates remain outstanding. Detailed check counts and final verification outcomes are recorded in the handoff.
+- Commit isolation: the staged dashboard snapshot passed 66 Python tests and two Node tests against the committed core baseline, plus JavaScript syntax and staged whitespace checks. Concurrent core files were excluded from the dashboard commit. The earlier 80-test working-tree run includes those separate core tests; neither result completes a core gate.
+
 ## 11. Completion and reassessment
 
 - **Core complete:** S00–S09 gates pass; terminal functionality remains available; known accounting defects have regression coverage and correct outcomes.

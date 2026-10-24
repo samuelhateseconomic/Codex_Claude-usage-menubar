@@ -92,7 +92,8 @@ class ProviderState:
             return lines
 
 
-def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None):
+def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None,
+             dashboard=False, dashboard_port=8765):
     try:
         import pystray
         from PIL import Image, ImageDraw
@@ -106,6 +107,26 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
     render_lock = threading.Lock()
     report_lock = threading.Lock()
     report_status = [""]
+    dashboard_lock = threading.Lock()
+    dashboard_owner = []
+
+    def open_dashboard(icon=None, item=None):
+        if not demo or not dashboard_lock.acquire(blocking=False):
+            return
+        def open_preview():
+            try:
+                if not dashboard_owner:
+                    from dashboard_main import start_preview
+                    dashboard_owner.append(start_preview(port=dashboard_port, prices=prices,
+                                                         fees=plan_costs, selected=selected, open_browser=False))
+                if not stop.is_set():
+                    webbrowser.open(dashboard_owner[0][2])
+            except (OSError, ValueError):
+                report_status[0] = "Dashboard unavailable — check the local port and timezone dependency"
+            finally:
+                dashboard_lock.release()
+                icon.update_menu() if icon is not None else None
+        threading.Thread(target=open_preview, daemon=True).start()
 
     def make_report(period):
         if not report_lock.acquire(blocking=False):
@@ -143,6 +164,7 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
     def menu_items():
         if demo:
             yield pystray.MenuItem("DEMO — sample usage", None, enabled=False)
+            yield pystray.MenuItem("Open dashboard preview (sample data)…", open_dashboard)
         for state in states:
             for line in state.lines():
                 yield pystray.MenuItem(line, None, enabled=False)
@@ -163,6 +185,10 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
     def quit_app(icon, item):
         stop.set()
         wake.set()
+        with dashboard_lock:
+            for server, _, _ in dashboard_owner:
+                server.shutdown()
+                server.server_close()
         icon.stop()
 
     def image():
@@ -198,6 +224,8 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
 
     def setup(tray_icon):
         tray_icon.visible = True
+        if dashboard:
+            open_dashboard(tray_icon)
         for state in states:
             threading.Thread(target=worker, args=(state,), daemon=True).start()
 
@@ -209,6 +237,9 @@ def main():
     parser.add_argument("--provider", choices=("both", "codex", "claude"), default="both")
     parser.add_argument("--demo", action="store_true", help="Use clearly labeled sample data without reading credentials")
     parser.add_argument("--once", action="store_true", help="Print one usage snapshot as JSON, without a tray")
+    parser.add_argument("--dashboard", action="store_true", help="Open the local dashboard development preview (currently requires --demo)")
+    parser.add_argument("--dashboard-port", type=int, default=8765, help="Loopback dashboard port (default: 8765)")
+    parser.add_argument("--no-browser", action="store_true", help="Serve the dashboard without opening a browser")
     parser.add_argument("--report", choices=("session", "today", "week", "month"), help="Estimate API-equivalent value from local tokens; month also compares plan fees")
     parser.add_argument("--report-format", choices=("text", "html"), default="text", help="Report display format (default: text in a terminal)")
     parser.add_argument("--output", type=Path, help="Report destination (used with --report)")
@@ -217,6 +248,15 @@ def main():
     parser.add_argument("--codex-plan-usd", type=float, default=20.0, help="Codex monthly subscription price in USD (default: 20)")
     parser.add_argument("--claude-plan-usd", type=float, default=20.0, help="Claude monthly subscription price in USD (default: 20)")
     args = parser.parse_args()
+    if args.dashboard:
+        if not args.demo:
+            parser.error("Real-data dashboard integration awaits the core gates; use --dashboard --demo for the reviewed preview.")
+        if args.once or args.report or args.output or args.open_report:
+            parser.error("--dashboard cannot be combined with --once or report options")
+        if not 0 <= args.dashboard_port <= 65535:
+            parser.error("--dashboard-port must be between 0 and 65535")
+    elif args.no_browser or args.dashboard_port != 8765:
+        parser.error("--no-browser and --dashboard-port require --dashboard")
     plan_costs = {"Codex": args.codex_plan_usd, "Claude": args.claude_plan_usd}
     if any(not math.isfinite(value) or value < 0 for value in plan_costs.values()):
         parser.error("Monthly plan prices must be finite, nonnegative USD amounts")
@@ -233,6 +273,16 @@ def main():
         prices = load_prices(price_path)
     except (OSError, ValueError):
         parser.error("Cannot load prices. Check the file and the pricing format in windows/README.md.")
+    if args.dashboard:
+        from dashboard_main import run_preview
+        try:
+            if sys.stdout is None and not args.no_browser:
+                return run_tray(args.demo, args.provider, prices, args.report_format, plan_costs,
+                                dashboard=True, dashboard_port=args.dashboard_port)
+            return run_preview(port=args.dashboard_port, prices=prices, fees=plan_costs, selected=args.provider,
+                               open_browser=not args.no_browser)
+        except (OSError, ValueError):
+            parser.exit(1, "Cannot start the dashboard. Check the port, packaged assets, and timezone dependency.\n")
     if args.report:
         providers = [p for p in PROVIDERS if args.provider in ("both", p.lower())]
         try:
