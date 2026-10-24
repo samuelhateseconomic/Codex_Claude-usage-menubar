@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 from datetime import datetime
 import json
 from pathlib import Path
@@ -13,10 +14,14 @@ import subprocess
 import sys
 
 from usage_core import RateLimited, UsageError, demo_snapshot, fetch_claude, fetch_codex
-from usage_valuation import DEFAULT_PLAN_FEES, bounded_decimal
+from usage_config import (SCHEMA_VERSION, SettingsError, application_directory, effective_settings,
+                          load_settings, save_settings, settings_data, settings_path)
+from usage_identity import APP_VERSION, build_identity
+from usage_valuation import POLICY_VERSION, build_catalog
 from usage_time import DEFAULT_TIMEZONE
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-from usage_service import query_usage
+from usage_observations import PARSER_VERSION
+from usage_reconciliation import RECONCILIATION_VERSION
+from usage_service import QUERY_VERSION, query_usage
 from usage_reports import load_prices, render_text_report, report_directory, save_report
 
 
@@ -95,7 +100,7 @@ class ProviderState:
             return lines
 
 
-def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None, timezone=DEFAULT_TIMEZONE):
+def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None, timezone=DEFAULT_TIMEZONE, roots=None, settings_version=None):
     try:
         import pystray
         from PIL import Image, ImageDraw
@@ -122,7 +127,8 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
                 for state in states:
                     with state.lock:
                         snapshots[state.provider] = state.snapshot
-                report = query_usage(period, [s.provider for s in states], snapshots, prices=prices, demo=demo, plan_costs=plan_costs, timezone=timezone)
+                report = query_usage(period, [s.provider for s in states], snapshots, prices=prices, demo=demo, plan_costs=plan_costs, timezone=timezone, roots=roots)
+                report = replace(report, settings_version=settings_version)
                 path = save_report(report, format=report_format)
                 report_status[0] = "Report saved — select a report to refresh it"
                 open_report(path, report_format)
@@ -207,45 +213,109 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
     icon.run(setup=setup)
 
 
+def version_info(prices=None):
+    catalog = build_catalog(prices)
+    return {"app_version": APP_VERSION, "build_id": build_identity(), "parser_version": PARSER_VERSION,
+            "reconciliation_version": RECONCILIATION_VERSION, "query_version": QUERY_VERSION,
+            "valuation_policy": POLICY_VERSION, "catalog_version": catalog.catalog_version,
+            "override_version": catalog.override_version, "pricing_version": catalog.version,
+            "settings_schema_version": SCHEMA_VERSION}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--provider", choices=("both", "codex", "claude"), default="both")
     parser.add_argument("--demo", action="store_true", help="Use clearly labeled sample data without reading credentials")
     parser.add_argument("--once", action="store_true", help="Print one usage snapshot as JSON, without a tray")
     parser.add_argument("--report", choices=("session", "today", "week", "month"), help="Estimate API-equivalent value from local tokens; month also compares plan fees")
-    parser.add_argument("--report-format", choices=("text", "html"), default="text", help="Report display format (default: text in a terminal)")
-    parser.add_argument("--output", type=Path, help="Report destination (used with --report)")
+    parser.add_argument("--report-format", choices=("text", "html"), default=None, help="Report display format (saved preference or terminal text)")
+    parser.add_argument("--output", type=Path, help="Destination for --report or JSON --version/--diagnostics/--show-settings")
     parser.add_argument("--open-report", action="store_true", help="Open the report in a terminal (or browser for HTML)")
     parser.add_argument("--prices", type=Path, help="JSON file of exact-model USD prices per million tokens")
-    parser.add_argument("--codex-plan-usd", default=str(DEFAULT_PLAN_FEES["Codex"]), help="Codex monthly subscription price in USD (default: 20)")
-    parser.add_argument("--claude-plan-usd", default=str(DEFAULT_PLAN_FEES["Claude"]), help="Claude monthly subscription price in USD (default: 20)")
-    parser.add_argument("--timezone", default=DEFAULT_TIMEZONE, help="IANA timezone for report boundaries and dates (default: America/Los_Angeles)")
+    parser.add_argument("--codex-plan-usd", default=None, help="Codex monthly subscription price in USD (saved value or 20)")
+    parser.add_argument("--claude-plan-usd", default=None, help="Claude monthly subscription price in USD (saved value or 20)")
+    parser.add_argument("--timezone", default=None, help="IANA timezone (saved preference or America/Los_Angeles)")
+    parser.add_argument("--config", type=Path, help="Settings JSON (default: local application-data UsageTray/settings.json)")
+    parser.add_argument("--save-settings", action="store_true", help="Atomically persist effective settings; alone, exit without launching the tray")
+    parser.add_argument("--show-settings", action="store_true", help="Print effective settings JSON, including configured root paths, and exit")
+    parser.add_argument("--diagnostics", action="store_true", help="Print effective version/quality identities without reading logs or polling providers")
+    parser.add_argument("--version", action="store_true", help="Print application/build and bundled computation identities, even with invalid settings")
+    parser.add_argument("--codex-root", action="append", type=Path, help="Absolute Codex log directory; repeat to replace that provider's root list")
+    parser.add_argument("--claude-root", action="append", type=Path, help="Absolute Claude log directory; repeat to replace that provider's root list")
     args = parser.parse_args()
-    try:
-        ZoneInfo(args.timezone)
-    except (ZoneInfoNotFoundError, ValueError):
-        parser.error("Unknown report timezone; use an IANA name such as America/Los_Angeles or UTC.")
-    try:
-        plan_costs = {"Codex": bounded_decimal(args.codex_plan_usd), "Claude": bounded_decimal(args.claude_plan_usd)}
-    except ValueError:
-        parser.error("Monthly plan prices must be finite, nonnegative USD amounts up to 1000000000 with at most 12 decimal places")
     if args.once and args.report:
         parser.error("--once and --report cannot be used together")
-    if (args.output or args.open_report) and not args.report:
-        parser.error("--output and --open-report require --report")
-    price_path = args.prices
-    if price_path is None:
-        candidate = Path(os.environ.get("LOCALAPPDATA") or Path.home() / ".local" / "share") / "UsageTray" / "prices.json"
-        if candidate.is_file():
-            price_path = candidate
+    if args.open_report and not args.report:
+        parser.error("--open-report requires --report")
+    if args.output and not any((args.report, args.version, args.diagnostics, args.show_settings)):
+        parser.error("--output requires --report, --version, --diagnostics or --show-settings")
+    if sum(bool(value) for value in (args.version, args.diagnostics, args.show_settings, args.report, args.once)) > 1:
+        parser.error("Choose one of --version, --diagnostics, --show-settings, --report or --once")
+    def emit_json(payload):
+        encoded = json.dumps(payload, indent=2, ensure_ascii=True) + "\n"
+        if args.output:
+            try:
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(encoded, encoding="utf-8")
+            except OSError:
+                parser.exit(1, "Cannot write diagnostic output. Check destination permissions.\n")
+        elif sys.stdout is not None:
+            print(encoded, end="")
+        else:
+            parser.error("Use --output with JSON commands in the windowed executable")
+
+    if args.version:
+        if args.save_settings:
+            parser.error("--version cannot save settings")
+        emit_json(version_info())
+        return 0
+    config_path = settings_path() if args.config is None else args.config
     try:
-        prices = load_prices(price_path)
-    except (OSError, ValueError):
-        parser.error("Cannot load prices. Check the file and the pricing format in windows/README.md.")
+        settings = load_settings(config_path)
+        saved_version = settings.version if config_path.exists() else None
+        # Until the first explicit save, retain the legacy automatic price file.
+        price_path = args.prices
+        if price_path is None and args.config is None and not config_path.exists():
+            candidate = application_directory() / "prices.json"
+            if candidate.is_file():
+                price_path = candidate
+        try:
+            prices = load_prices(price_path) if price_path is not None else None
+        except (OSError, ValueError, RecursionError):
+            raise SettingsError("Cannot load prices. Check the file and the pricing format in windows/README.md.") from None
+        settings = effective_settings(settings, codex_fee=args.codex_plan_usd, claude_fee=args.claude_plan_usd,
+            timezone=args.timezone, report_format=args.report_format, codex_roots=args.codex_root,
+            claude_roots=args.claude_root, prices=prices)
+        if args.save_settings:
+            save_settings(settings, config_path)
+            saved_version = settings.version
+    except SettingsError as exc:
+        parser.error(str(exc))
+    if args.show_settings:
+        emit_json(settings_data(settings))
+        return 0
+    if args.diagnostics:
+        info = version_info(dict(settings.rate_overrides))
+        info.update(settings_version=settings.version, settings_file_state="present" if saved_version else "absent",
+                    effective_settings_saved=settings.version == saved_version,
+                    timezone=settings.timezone, report_format=settings.report_format,
+                    root_modes={p: "environment_defaults" if roots is None else "explicit" for p, roots in settings.log_roots},
+                    explicit_root_counts={p: len(roots) for p, roots in settings.log_roots if roots is not None})
+        emit_json(info)
+        return 0
+    if args.save_settings and not (args.report or args.once):
+        if sys.stdout is not None:
+            print("Settings saved. Restart the tray to use them.")
+        return 0
+    prices = dict(settings.rate_overrides)
+    plan_costs = dict(settings.plan_fees_usd)
+    roots = settings.roots()
+    args.timezone, args.report_format = settings.timezone, settings.report_format
     if args.report:
         providers = [p for p in PROVIDERS if args.provider in ("both", p.lower())]
         try:
-            report = query_usage(args.report, providers, prices=prices, demo=args.demo, plan_costs=plan_costs, timezone=args.timezone)
+            report = query_usage(args.report, providers, prices=prices, demo=args.demo, plan_costs=plan_costs, timezone=args.timezone, roots=roots)
+            report = replace(report, settings_version=settings.version)
             if args.report_format == "text" and not args.output and not args.open_report and sys.stdout is not None:
                 print(render_text_report(report))
                 return 0
@@ -272,7 +342,8 @@ def main():
                 results.append({"provider": name, "error": message})
         print(json.dumps(results, indent=2, ensure_ascii=False))
         return 1 if failed else 0
-    run_tray(args.demo, args.provider, prices, args.report_format, plan_costs, args.timezone)
+    run_tray(args.demo, args.provider, prices, args.report_format, plan_costs, args.timezone,
+             roots=roots, settings_version=settings.version)
     return 0
 
 

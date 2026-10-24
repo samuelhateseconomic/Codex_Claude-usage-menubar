@@ -82,7 +82,23 @@ You can also generate reports without starting the tray, without API access, and
 .\.venv\Scripts\python.exe usage_tray.py --report session --demo --output .\demo.txt
 ```
 
-Offline commands do not fetch a provider reset time, so `--report session` uses the last five hours. `--demo` uses clearly labeled samples and reads no logs. For updated or new models, copy [prices.example.json](prices.example.json) to `%LOCALAPPDATA%\UsageTray\prices.json` and edit exact model rates in **USD per million tokens**. The app loads that file at startup; `--prices .\my-prices.json` selects another file. Each model requires `input`, `output`, and `cached`; Claude cache writes also use `write5m` and `write1h`. Omitted write rates stay unconfigured: events using them are unpriced until configured. Explicit zero rates are allowed. JSON numbers and decimal strings support up to 12 fractional digits, bounded to USD 1,000,000,000 per million; fees share that bound/scale. Restart the tray after changing prices.
+Offline commands do not fetch a provider reset time, so `--report session` uses the last five hours. `--demo` uses clearly labeled samples and reads no logs. For updated or new models, copy [prices.example.json](prices.example.json) to `%LOCALAPPDATA%\UsageTray\prices.json` and edit exact model rates in **USD per million tokens**. Before persistent settings are initialized, the app loads that file at startup; `--prices .\my-prices.json` selects another file. See persistent settings below for migration and precedence. Each model requires `input`, `output`, and `cached`; Claude cache writes also use `write5m` and `write1h`. Omitted write rates stay unconfigured: events using them are unpriced until configured. Explicit zero rates are allowed. JSON numbers and decimal strings support up to 12 fractional digits, bounded to USD 1,000,000,000 per million; fees share that bound/scale. Restart the tray after changing prices.
+
+### Persistent settings and version diagnostics
+
+Settings live in `%LOCALAPPDATA%\UsageTray\settings.json` (or `~/.local/share/UsageTray` without LOCALAPPDATA). Ordinary startup uses defaults when absent and does not create a file. Save your choices explicitly; restart an existing tray to load them:
+
+```powershell
+.\.venv\Scripts\python.exe usage_tray.py --save-settings --codex-plan-usd 20 --claude-plan-usd 20 --timezone America/Los_Angeles --report-format text
+.\.venv\Scripts\python.exe usage_tray.py --show-settings
+.\.venv\Scripts\python.exe usage_tray.py --diagnostics
+.\dist\UsageTray.exe --version --output .\version.json
+.\dist\UsageTray.exe --diagnostics --output .\diagnostics.json
+```
+
+Explicit CLI values override saved values for that run; only `--save-settings` persists them. `--config PATH` selects a separate file. Repeated `--codex-root` / `--claude-root` flags replace that provider's log-directory list with absolute paths. In JSON, null roots retain environment defaults and an empty list disables discovery; null fees mean unknown, while zero is a known zero fee. Saved settings include exact rates, timezone and the existing text/HTML preference. [settings.example.json](settings.example.json) is the complete schema template.
+
+The legacy automatic `prices.json` remains active until settings are first saved; that save copies validated rates into settings without modifying the legacy file. Afterward edit `rate_overrides` in settings or use `--prices PATH`, which replaces custom overrides for a run and persists them only with `--save-settings`. Invalid or partial settings stop startup with recovery guidance and remain untouched. `--version` works independently for diagnosis; JSON commands in the windowed executable use `--output` without opening a browser. `--show-settings` includes configured paths; `--diagnostics` includes only root modes/counts plus computation/configuration identities. See [S06 configuration and recovery](../docs/s06-persistent-configuration.md) for schema, migration, precision, atomic-write and build-identity limits.
 
 ### Effort changes within a conversation
 

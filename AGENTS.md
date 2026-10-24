@@ -27,6 +27,7 @@
 - Estimate accepted events before aggregation. Preserve request-context evidence or label tier assumptions; aggregate counters do not prove one request's context.
 - Use exact decimal money/rates in the refined shared service with documented bounds/rounding. Repricing cannot change canonical token facts. All renderers consume one authoritative summary.
 - Use `windows/usage_service.py` for selection, ordering, grouping and immutable `UsageResult` summaries; renderers only format that result. Preserve full canonical conversation identity for groups/drilldowns; display labels and legacy occurrence IDs are not global identities. See [the S05 contract](docs/s05-headless-query-service.md).
+- Use `windows/usage_config.py` for validated settings and atomic writes. CLI overrides are temporary unless `--save-settings` is explicit; preserve malformed files and the documented legacy price migration. Direct headless queries use explicit inputs, without silently loading user settings. See [the S06 contract](docs/s06-persistent-configuration.md).
 - Persist one fee configuration source, initially Codex USD 20/month and Claude USD 20/month. Compare full fees only for unfiltered calendar-month-to-date, optionally by provider; show signed differences and qualifications, not actual bills or realized savings.
 - Capture one range/timezone context. The refined service uses UTC `[start, end)` with named local-day/month boundaries; migrate legacy inclusive-end behavior explicitly. Follow frozen revision/query-context rules on the hub track.
 

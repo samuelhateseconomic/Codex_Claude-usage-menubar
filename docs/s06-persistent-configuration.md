@@ -1,0 +1,58 @@
+# S06: persistent settings and identifiable builds
+
+Implemented October 24, 2026 in the isolated refinement worktree, starting at `97b6070`. This session adds validated local configuration and computation identities to the S05 service consumers. Polling ownership and lifecycle changes remain S07.
+
+## Configuration boundary
+
+[usage_config.py](../windows/usage_config.py) owns the schema, strict JSON/rate loading, per-user application directory, default root resolution, validation and atomic writes. It imports no provider adapter, tray, GUI library or report renderer and performs no IO at import. The immutable validated settings passed into the application contain only fees, root paths, timezone, bundled catalog selection, flat exact-model rate overrides and the supported text/HTML preference. Source content, provider responses and credentials are never configuration fields.
+
+The Windows default is `%LOCALAPPDATA%\UsageTray\settings.json`, alongside the existing Reports folder, separate from source/build output and provider authentication. Without LOCALAPPDATA the existing fallback is `~/.local/share/UsageTray/settings.json`. `--config PATH` explicitly selects another settings file. Nothing is written on ordinary first-run startup, demo, reports or diagnostics. First-run defaults are an explicit in-memory state; use `--save-settings` to initialize persistent settings. Fees continue to come from the single `DEFAULT_PLAN_FEES` definition in [usage_valuation.py](../windows/usage_valuation.py), Codex USD 20/month and Claude USD 20/month.
+
+[settings.example.json](../windows/settings.example.json) is a complete schema-v1 recovery/template file. All seven top-level fields are required; unknown fields, unknown/future schema versions, duplicate JSON fields and partial files are rejected. Files are limited to one MiB, rates to 1,000 models and roots to 64 entries per provider. UTF-8 with an optional BOM is accepted. Both providers must be explicit in fee/root maps; no partial-file guessing or partial application occurs.
+
+- `plan_fees_usd`: bounded exact decimal values or null for each provider. Null means fee unknown and blocks its comparison; zero is a known zero fee. Omission is a schema error, rather than a reset to USD 20. Numeric JSON and decimal strings are accepted; saves use decimal strings. The S04 bound of USD 1,000,000,000 and at most 12 meaningful fractional digits applies, with no NaN/infinity, negatives or booleans.
+- `log_roots`: per-provider null selects the existing dynamic environment/home defaults; an explicit list replaces that provider's defaults, and an empty list disables discovery for that provider. Defaults are CODEX_HOME/sessions plus archived_sessions, and CLAUDE_CONFIG_DIR/projects (otherwise ~/.codex and ~/.claude). Explicit paths must be absolute on the running platform; shell variables, tilde and relative paths are not expanded. Repeated identical strings are collapsed, while scanner identity checks still handle aliases. A root is a log directory to scan recursively, not a provider home that receives implicit subdirectories. Approval means explicit user configuration, not an inferred account match or filesystem existence guarantee. Missing/unreadable roots keep the existing failed-source state; they do not enable demo data. Root selection affects local reports only, never CLI-managed authentication.
+- `timezone`: an available IANA zone, including bundled tzdata in the Windows executable. It controls report boundaries/dates, not provider credentials or billing cycles.
+- `rate_catalog`: only `bundled` is implemented. It selects the existing versioned rate snapshot; no remote catalog fetching or refreshed rates are implied.
+- `rate_overrides`: inline exact-model flat rates using the existing prices.json schema: required input/output/cached, optional write5m/write1h, USD per million. Missing write rates remain unconfigured and explicit zero remains priced. Unknown fields and terminal control characters in model metadata are rejected. Custom tier definitions are unsupported here and cannot be silently discarded during save. Bundled tiered models retain their existing tiers unless that exact model is explicitly replaced by a flat override.
+- `report_format`: `text` or `html`. Default terminal reports and explicit browser opening remain intact. No appearance or automatic dashboard setting is added.
+
+## Precedence, migration and restart
+
+Each application start loads and validates the entire selected file, then applies explicit CLI overrides. Omitted arguments retain saved settings. Overrides are ephemeral unless `--save-settings` is present; that flag saves the complete effective configuration, including unchanged providers. Alone it saves and exits without starting polling/tray. With a report it saves and then generates the requested report; saving is not rolled back if later report generation fails. The already-running tray uses its immutable startup settings; restart it after saving changes elsewhere.
+
+`--codex-plan-usd`, `--claude-plan-usd`, `--timezone` and `--report-format` retain their legacy forms. Repeated `--codex-root` / `--claude-root` flags replace only that provider's configured roots. Set null/empty root lists and unknown fees in a complete JSON file when those states are needed.
+
+If the default settings file is absent, the legacy `%LOCALAPPDATA%\UsageTray\prices.json` is still loaded automatically. The first explicit save snapshots those validated rates into settings; the legacy file is left untouched and stops being an automatic input once settings exist. `--prices PATH` replaces the entire custom override map for that run; it does not layer another competing override source, and `--save-settings` explicitly persists the replacement. Bundled entries still fill models without a custom override. An explicit alternate `--config` never automatically reads the default-location legacy price file. No credentials/settings from another checkout are copied during this implementation.
+
+From the Windows folder, use these source commands. For executable commands, replace `.\.venv\Scripts\python.exe usage_tray.py` with `.\dist\UsageTray.exe` after a build:
+
+```powershell
+.\.venv\Scripts\python.exe usage_tray.py --show-settings
+.\.venv\Scripts\python.exe usage_tray.py --save-settings --codex-plan-usd 20 --claude-plan-usd 20 --timezone America/Los_Angeles --report-format text
+.\.venv\Scripts\python.exe usage_tray.py --report month --demo
+.\.venv\Scripts\python.exe usage_tray.py --version
+.\.venv\Scripts\python.exe usage_tray.py --diagnostics
+.\dist\UsageTray.exe --version --output .\version.json
+.\dist\UsageTray.exe --diagnostics --output .\diagnostics.json
+```
+
+`--show-settings` deliberately displays configured root paths, with JSON escaping. Review before sharing it. `--diagnostics` instead exposes root modes/counts and effective settings identity, never paths or configuration contents. It separately reports file presence and whether the effective settings are saved, so temporary overrides are not mislabeled as persistent. Neither command reads usage logs or polls a provider. `--output` supports these JSON commands as well as reports; the windowed executable requires it when no stdout exists. JSON output is UTF-8 with escaped control characters; no browser/terminal is opened by diagnostics. `--version` bypasses settings loading and reports the bundled catalog, so it remains available when settings need recovery. `--diagnostics` reports the effective catalog and fails closed on invalid settings.
+
+## Validation and recovery
+
+Loading never replaces an invalid file with defaults. The application exits with sanitized guidance to preserve/fix the original or use a separate valid `--config`; the malformed file remains byte-for-byte intact, even with CLI overrides and `--save-settings`. Create a separate complete file from the template to recover, verify it with `--config PATH --show-settings`, then choose that file explicitly. Permission failures and raw JSON/OS errors cannot disclose file contents through diagnostics.
+
+Saving revalidates the candidate before creating a directory, checks that the existing destination is absent or valid, writes a sibling temporary file, flushes/fsyncs it, closes it and replaces the destination with `os.replace`. Validation, fsync and replacement failures preserve the previous settings file. Temporary files are removed on handled failure where permissions allow. A hard process/power interruption before replacement can leave an application-owned `.settings-*.tmp`; it is never a configuration input. Atomic replacement prevents readers seeing a partial write, but no Windows directory durability/power-loss guarantee or concurrent writer serialization is claimed. Concurrent settings edits require coordination; single runtime ownership belongs to S07. No automatic backup/last-good file masks a malformed startup file: this gate uses the explicit recovery/first-run path allowed by the plan.
+
+## Identity and core integration
+
+[usage_identity.py](../windows/usage_identity.py) defines app version `0.6.0` and captures one code identity per process. Source mode hashes sorted application module names/bytes (`usage_*.py`); packaged mode streams a SHA-256 fingerprint of the delivered executable. Paths, configuration and usage data are excluded. A read failure is explicitly `unavailable`, never an invented build revision. Source changes require a process restart to change its captured identity. Dependency/OS versions are not encoded in the source fingerprint; the packaged binary fingerprint identifies the bundled artifact, not a reproducible or signed release promise.
+
+The immutable `UsageResult` now includes app version, build identity and nullable settings version, alongside existing parser, reconciliation, query, valuation and pricing identities. Application entry points attach the effective validated settings hash before rendering; direct programmatic queries keep `settings_version=None` because they use explicit inputs and never silently load a user's configuration. The pure query builder uses the captured code identity without filesystem IO. Both renderers format those identities in their existing pricing note without recomputing totals. The settings hash fingerprints configuration values; null environment roots remain dynamic, so it is not a frozen database revision or an identity for environment-resolved source datasets. Existing source/counter provenance still supplies data evidence. No token accounting, tier inference, rates or fee comparison formula changes.
+
+## Gate evidence and limits
+
+See the S06 ledger in [the refinement plan](project-refinement-plan.md) for the final focused/full-suite, build and packaged acceptance outcomes. New regression checks cover restart persistence, exact rates/fees, known zero versus unknown fee, strict partial/invalid JSON rejection, unreadable files, interrupted save stages, root semantics, timezone/catalog validation, explicit override precedence, non-destructive legacy migration, headless loading, diagnostic status and result/report identities.
+
+Interactive tray restart/popup, live accounts, real histories, macOS, remote CI and concurrent-writer behavior are not validated by synthetic offline checks. No deployment, source-history deletion, provider credential refresh, optional database/API or interface redesign is included. S07 is the next dependency after the recorded S06 gate passes.

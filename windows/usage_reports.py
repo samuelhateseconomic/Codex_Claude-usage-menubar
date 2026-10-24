@@ -4,13 +4,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from html import escape
-from decimal import Decimal
-import json
 import os
 from pathlib import Path
 import tempfile
 import time
 
+from usage_config import application_directory, load_prices
 from usage_ingestion import discover, parsed_entries, scan_observations, verified_prefix
 from usage_time import DEFAULT_TIMEZONE, RangeContext, local_datetime, resolve_range
 from usage_records import Record, Tokens
@@ -33,27 +32,6 @@ def estimate(record: Record, overrides: dict | None = None) -> float | None:
 def value_text(records, prices=None, precision=4):
     catalog = build_catalog(prices)
     return summary_value_text(aggregate_values(value_event(r, catalog) for r in records), precision)
-
-
-def load_prices(path: Path | None) -> dict:
-    if path is None:
-        return {}
-    def reject_constant(_):
-        raise ValueError("Non-finite prices are unsupported.")
-    data = json.loads(path.read_text(encoding="utf-8-sig"), parse_float=Decimal, parse_constant=reject_constant)
-    if not isinstance(data, dict):
-        raise ValueError("Prices must be an object keyed by exact model name.")
-    prices = {}
-    for name, values in data.items():
-        if not isinstance(name, str) or not name.strip() or not isinstance(values, dict):
-            raise ValueError("Invalid model price entry.")
-        if not {"input", "output", "cached"} <= values.keys():
-            raise ValueError("Each model needs input, output, and cached USD per million tokens.")
-        if values.keys() - {"input", "output", "cached", "write5m", "write1h"}:
-            raise ValueError("Unsupported price fields; use input, output, cached, write5m, write1h.")
-        # Price validates exact numeric bounds/scale; JSON decimal strings are also supported.
-        prices[name] = Price(**{key: bounded_decimal(value) for key, value in values.items()})
-    return prices
 
 
 def count(value) -> int:
@@ -232,6 +210,9 @@ def pricing_note(report, summary):
     return (f"Pricing coverage: {summary.state}; unpriced records {summary.unpriced_records:,} / "
             f"tokens {summary.unpriced_tokens:,}; assumption-bearing records {summary.assumed_records:,}. "
             f"Pricing version {report.catalog.version}; policy {POLICY_VERSION}. "
+            f"App {report.app_version}; build {report.build_id}; parser {report.parser_version}; "
+            f"reconciliation {report.reconciliation_version}; query {report.query_version}; "
+            f"settings {report.settings_version or 'explicit_programmatic_inputs'}. "
             "Coverage describes configured rates, not full source/account accuracy.")
 
 
@@ -378,7 +359,7 @@ def render_text_report(report: Report | UsageResult) -> str:
 
 
 def report_directory() -> Path:
-    return Path(os.environ.get("LOCALAPPDATA") or Path.home() / ".local" / "share") / "UsageTray" / "Reports"
+    return application_directory() / "Reports"
 
 
 def save_report(report: Report | UsageResult, output: Path | None = None, format="html") -> Path:

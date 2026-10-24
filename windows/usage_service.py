@@ -12,11 +12,11 @@ from datetime import date
 import hashlib
 import json
 import math
-import os
-from pathlib import Path
 import time
 from zoneinfo import ZoneInfo
 
+from usage_config import default_roots
+from usage_identity import APP_VERSION, BUILD_ID
 from usage_ingestion import ScanIssue, scan_observations
 from usage_observations import CanonicalEvent, PARSER_VERSION
 from usage_reconciliation import AccountingIssue, RECONCILIATION_VERSION, reconcile_observations
@@ -193,6 +193,9 @@ class UsageResult:
     write_models: tuple[str, ...]
     missing_effort_records: int
     missing_effort_tokens: int
+    app_version: str = APP_VERSION
+    build_id: str = BUILD_ID
+    settings_version: str | None = None  # None for explicit programmatic queries without settings.
     parser_version: str = PARSER_VERSION
     reconciliation_version: str = RECONCILIATION_VERSION
     valuation_policy: str = POLICY_VERSION
@@ -325,12 +328,6 @@ class CollectedUsage:
 
     def query(self, prices=None, fees=None):
         return build_usage_result(self.entries, self.context, build_catalog(prices), fees, self.sources, self.notices)
-
-
-def default_roots():
-    codex = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex")
-    claude = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude")
-    return {"Codex": [codex / "sessions", codex / "archived_sessions"], "Claude": [claude / "projects"]}
 
 
 def collect_usage(period="session", providers=("Codex", "Claude"), snapshots=None, roots=None,
