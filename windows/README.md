@@ -46,7 +46,8 @@ Right-click the tray icon and choose **Current session token & cost report…**,
 
 - Total recorded tokens and estimated API-equivalent USD value.
 - Uncached input, cache reads, cache writes, and output (including reasoning).
-- Breakdowns by provider, model, project, conversation, and day.
+- Breakdowns by provider, **model + effort**, effort, model, project, conversation, and day.
+- Recorded effort and reasoning-token subtotals, plus an expandable turn/usage-event history showing the setting's source.
 - Price assumptions, unpriced models, and missing or incomplete log coverage.
 
 For the session report, a recent provider reset time anchors the current five-hour quota window when available. Otherwise the report explicitly uses the last five hours. This is a quota session; separate conversation IDs appear in the conversation breakdown. Today uses your local midnight; the weekly report covers the last seven days. Reports are generated on demand, without uploading logs. They include all accounts whose activity is present in the configured local log folders, and cannot attribute usage to the currently signed-in account reliably.
@@ -67,6 +68,16 @@ You can also generate reports without starting the tray, without API access, and
 ```
 
 Offline commands do not fetch a provider reset time, so `--report session` uses the last five hours. `--demo` uses clearly labeled samples and reads no logs. For updated or new models, copy `prices.example.json` to `%LOCALAPPDATA%\UsageTray\prices.json` and edit exact model rates in **USD per million tokens**. The app loads that file at startup; `--prices .\my-prices.json` selects another file. Each model requires `input`, `output`, and `cached`; Claude cache writes also use `write5m` and `write1h`. Restart the tray after changing prices.
+
+### Effort changes within a conversation
+
+Effort is tracked per recorded turn/message, not once per conversation. For example, a GPT-5.4 conversation that switches **medium → high → ultra** produces three separate model-and-effort buckets. Every subsequent token increment is associated with the recorded turn context active when that increment was logged. `xhigh`, `max`, and `ultra` remain distinct wire labels; the app does not map them to each other. Custom recorded effort names are preserved as well.
+
+For Codex, effort comes from [`turn_context.effort`](https://github.com/openai/codex/blob/main/codex-rs/protocol/src/protocol.rs), with an explicit collaboration-mode setting as a fallback when the top-level field is absent. The next context resets the association: if it omits effort, new usage is **unknown**, rather than inheriting the previous turn's setting. The report also shows recorded turn IDs and metadata sources in **Turn and usage-event history**. Multiple usage increments can belong to the same turn.
+
+For Claude, only explicit effort metadata attached to the logged request, message, or user turn is used (such as `effort`, `effortValue`, or `output_config.effort`). Tool-result messages remain in the current turn; a new user prompt resets the association. Some Claude Code versions do **not** persist the effective request effort in their transcript. Those records stay **unknown**, and the report states how many records/tokens lack effort. Current settings files, thinking budgets, and prompt text cannot reliably reconstruct historical effort and are not used to guess it. Existing logs with no effort metadata cannot be retroactively labeled accurately.
+
+The **Reasoning (subset)** column uses a separate numeric usage counter when recorded. Missing or inconsistent counters remain unavailable. Reasoning tokens are already part of output tokens, so this column is informational and is never added to totals or charged twice. Effort itself does not receive an invented price multiplier: API-equivalent value remains the actual token counts multiplied by model rates. Higher effort can consume more output/reasoning tokens; the report captures those recorded differences.
 
 ## Build an executable on Windows
 

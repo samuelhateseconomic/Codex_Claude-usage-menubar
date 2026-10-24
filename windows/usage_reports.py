@@ -75,6 +75,10 @@ class Record:
     project: str
     model: str
     tokens: Tokens
+    effort: str = "unknown"
+    effort_source: str = "not recorded"
+    turn_id: str | None = None
+    reasoning_tokens: int | None = None  # A subset of output, never an extra charge.
 
 
 def price_for(model: str, overrides: dict | None = None) -> Price | None:
@@ -137,6 +141,29 @@ def object_value(value) -> dict:
     return value if isinstance(value, dict) else {}
 
 
+def recorded_effort(*sources: tuple[str, dict]) -> tuple[str, str] | None:
+    """Only read explicit metadata; never infer effort from budgets or text."""
+    for name, data in sources:
+        for key in ("effort", "reasoning_effort", "reasoningEffort", "effortValue", "effortLevel"):
+            if key not in data:
+                continue
+            value = data[key]
+            if isinstance(value, str) and value.strip() and len(value) <= 80 and not any(ord(c) < 32 for c in value):
+                # Preserve wire values: xhigh, max, and ultra are distinct.
+                return value.strip(), f"{name}.{key}"
+            return "unknown", f"{name}.{key} (unavailable)"
+    return None
+
+
+def reasoning_count(usage: dict, output: int) -> int | None:
+    value = usage.get("reasoning_output_tokens")
+    if "reasoning_output_tokens" not in usage:
+        value = object_value(usage.get("output_tokens_details")).get("reasoning_tokens")
+    if isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= output:
+        return value
+    return None
+
+
 def log_files(roots: list[Path], notices: list[str], since: float | None = None):
     for root in roots:
         if not root.is_dir():
@@ -182,12 +209,25 @@ def read_claude(roots: list[Path], notices: list[str], since: float | None = Non
     messages = {}
     for path in log_files(roots, notices, since):
         session_root = None
+        turn_effort = None
+        turn_id = None
         for entry in lines(path, notices):
             if session_root is None and isinstance(entry.get("cwd"), str):
                 session_root = entry["cwd"]
+            msg = object_value(entry.get("message"))
+            if entry.get("type") == "user":
+                content = msg.get("content")
+                tool_result = (isinstance(content, list) and bool(content)
+                               and all(isinstance(block, dict) and block.get("type") == "tool_result" for block in content))
+                if not tool_result:
+                    # Each new user turn resets effort. A missing setting must
+                    # not inherit the preceding turn's explicit setting.
+                    turn_effort = recorded_effort(("Claude user", entry), ("Claude user message", msg),
+                                                  ("Claude user output_config", object_value(msg.get("output_config"))))
+                    turn_id = str(entry["uuid"]) if entry.get("uuid") else None
+                continue
             if entry.get("type") != "assistant":
                 continue
-            msg = object_value(entry.get("message"))
             usage = object_value(msg.get("usage"))
             when = timestamp(entry.get("timestamp"))
             model = msg.get("model")
@@ -209,13 +249,23 @@ def read_claude(roots: list[Path], notices: list[str], since: float | None = Non
                             count(usage.get("cache_read_input_tokens")), write5m, write1h)
             key = (session, str(msg["id"]), str(entry.get("requestId") or ""))
             previous = messages.get(key)
+            explicit_effort = recorded_effort(
+                ("Claude assistant", entry), ("Claude assistant message", msg),
+                ("Claude output_config", object_value(msg.get("output_config"))),
+                ("Claude request output_config", object_value(object_value(entry.get("request")).get("output_config"))),
+            )
+            effort, source = explicit_effort or ((previous.effort, previous.effort_source) if previous else None) or turn_effort or ("unknown", "not recorded")
+            reasoning = reasoning_count(usage, tokens.output)
             if previous:
                 # Streamed assistant records update the same usage. Keep maxima,
                 # not a sum of chunks, and attribute to the final response time.
                 tokens = Tokens(*(max(a, b) for a, b in zip(asdict(tokens).values(), asdict(previous.tokens).values())))
                 when = max(when, previous.timestamp)
+                if previous.reasoning_tokens is not None:
+                    reasoning = max(reasoning if reasoning is not None else 0, previous.reasoning_tokens)
             messages[key] = Record("Claude", when, session, session_root or path.parent.name,
-                                   str(model or "unknown"), tokens)
+                                   str(model or "unknown"), tokens, effort, source,
+                                   previous.turn_id if previous else turn_id, reasoning)
     return list(messages.values())
 
 
@@ -224,6 +274,9 @@ def read_codex(roots: list[Path], notices: list[str], since: float | None = None
     for path in log_files(roots, notices, since):
         session, project, model = path.stem, "Unknown project", "unknown"
         previous = (0, 0, 0)
+        previous_reasoning = 0
+        effort, effort_source = "unknown", "not recorded"
+        turn_id = None
         last_only_seen = set()
         created = None
         forked = False
@@ -238,6 +291,11 @@ def read_codex(roots: list[Path], notices: list[str], since: float | None = None
                 continue
             if kind == "turn_context":
                 model = str(payload.get("model") or "unknown")
+                effort, effort_source = recorded_effort(
+                    ("Codex turn_context", payload),
+                    ("Codex collaboration settings", object_value(object_value(payload.get("collaboration_mode")).get("settings"))),
+                ) or ("unknown", "not recorded")
+                turn_id = str(payload["turn_id"]) if payload.get("turn_id") else None
                 continue
             if kind != "event_msg" or payload.get("type") != "token_count":
                 continue
@@ -249,15 +307,25 @@ def read_codex(roots: list[Path], notices: list[str], since: float | None = None
                 continue
             if totals:
                 current = tuple(count(totals.get(key)) for key in ("input_tokens", "output_tokens", "cached_input_tokens"))
+                current_reasoning = reasoning_count(totals, current[1])
                 if any(a < b for a, b in zip(current, previous)):
                     notices.append("A Codex cumulative counter reset; an ambiguous interval was excluded.")
                     previous = current
+                    previous_reasoning = current_reasoning
                     continue
                 delta = tuple(a - b for a, b in zip(current, previous))
+                reasoning = None
+                if current_reasoning is not None and previous_reasoning is not None:
+                    change = current_reasoning - previous_reasoning
+                    if 0 <= change <= delta[1]:
+                        reasoning = change
+                if current != previous or current_reasoning is not None:
+                    previous_reasoning = current_reasoning
                 previous = current
                 identity = (session, current)
             elif last:
                 delta = tuple(count(last.get(key)) for key in ("input_tokens", "output_tokens", "cached_input_tokens"))
+                reasoning = reasoning_count(last, delta[1])
                 identity = (session, when, delta)
                 if identity in last_only_seen:
                     continue
@@ -275,7 +343,8 @@ def read_codex(roots: list[Path], notices: list[str], since: float | None = None
             # cached_input_tokens is a subset of input_tokens. Reasoning is a
             # subset of output_tokens and is deliberately not added again.
             tokens = Tokens(delta[0] - delta[2], delta[1], delta[2])
-            records.setdefault(identity, Record("Codex", when, session, project, model, tokens))
+            records.setdefault(identity, Record("Codex", when, session, project, model, tokens,
+                                                 effort, effort_source, turn_id, reasoning))
     return list(records.values())
 
 
@@ -316,7 +385,11 @@ def collect_report(period="session", providers=("Codex", "Claude"), snapshots=No
     records, notices = [], []
     for provider in providers:
         if demo:
-            candidates = [Record(provider, now - 60, "demo-conversation", "Demo project", "gpt-5.4" if provider == "Codex" else "claude-sonnet-4-6", Tokens(12000, 2500, 40000))]
+            candidates = [Record(provider, now - 60 * (3 - i), "demo-conversation", "Demo project",
+                                 "gpt-5.4" if provider == "Codex" else "claude-sonnet-4-6",
+                                 Tokens(4000, 1000 * (i + 1), 12000), effort, "demo metadata",
+                                 f"demo-turn-{i + 1}", 300 * (i + 1) if provider == "Codex" else None)
+                          for i, effort in enumerate(("medium", "high", "ultra"))]
         else:
             reader = read_codex if provider == "Codex" else read_claude
             candidates = reader(roots.get(provider, []), notices, periods[provider][0])
@@ -347,6 +420,12 @@ def render_report(report: Report) -> str:
         money = f"${cost:,.4f}" + (" + unpriced usage" if unknown else "")
         return tokens, money, unknown
 
+    def reasoning_text(records):
+        known = [r.reasoning_tokens for r in records if r.reasoning_tokens is not None]
+        if not known:
+            return "not recorded"
+        return f"{sum(known):,}" + (" + not recorded" if len(known) < len(records) else "")
+
     def table(title, key):
         groups = defaultdict(list)
         for record in report.records:
@@ -354,14 +433,31 @@ def render_report(report: Report) -> str:
         rows = []
         for label, records in sorted(groups.items()):
             tokens, money, _ = summarize(records)
-            cells = [label, f"{tokens.input:,}", f"{tokens.cached:,}", f"{tokens.write5m:,}", f"{tokens.write1h:,}", f"{tokens.output:,}", f"{tokens.total:,}", money]
+            cells = [label, f"{tokens.input:,}", f"{tokens.cached:,}", f"{tokens.write5m:,}", f"{tokens.write1h:,}", f"{tokens.output:,}", reasoning_text(records), f"{tokens.total:,}", money]
             rows.append("<tr>" + "".join(f"<td>{text(c)}</td>" for c in cells) + "</tr>")
-        headers = [title, "Uncached input", "Cache read", "Cache write 5m", "Cache write 1h", "Output incl. reasoning", "Total tokens", "Est. USD"]
-        return f"<h2>{text(title)}</h2><div class='scroll'><table><thead><tr>" + "".join(f"<th>{text(h)}</th>" for h in headers) + "</tr></thead><tbody>" + ("".join(rows) or "<tr><td colspan='8'>No local records in this period</td></tr>") + "</tbody></table></div>"
+        headers = [title, "Uncached input", "Cache read", "Cache write 5m", "Cache write 1h", "Output incl. reasoning", "Reasoning (subset)", "Total tokens", "Est. USD"]
+        return f"<h2>{text(title)}</h2><div class='scroll'><table><thead><tr>" + "".join(f"<th>{text(h)}</th>" for h in headers) + "</tr></thead><tbody>" + ("".join(rows) or "<tr><td colspan='9'>No local records in this period</td></tr>") + "</tbody></table></div>"
+
+    def history():
+        headers = ["Local time", "Provider", "Model", "Effort", "Effort source", "Conversation", "Turn ID", "Uncached input", "Cache read", "Cache write 5m", "Cache write 1h", "Output incl. reasoning", "Reasoning (subset)", "Total tokens", "Est. USD"]
+        rows = []
+        for record in report.records:
+            tokens = record.tokens
+            cost = estimate(record, report.prices)
+            cells = [date(record.timestamp), record.provider, record.model, record.effort,
+                     record.effort_source, record.session, record.turn_id or "not recorded",
+                     f"{tokens.input:,}", f"{tokens.cached:,}", f"{tokens.write5m:,}", f"{tokens.write1h:,}",
+                     f"{tokens.output:,}", reasoning_text([record]), f"{tokens.total:,}",
+                     f"${cost:,.4f}" if cost is not None else "unpriced"]
+            rows.append("<tr>" + "".join(f"<td>{text(c)}</td>" for c in cells) + "</tr>")
+        return f"<h2>Turn and usage-event history</h2><p>Each row is a recorded usage increment or completed Claude message. A turn can contain several rows. Effort is taken from that turn or message's recorded metadata; missing values stay unknown.</p><details><summary>Show {len(rows):,} usage records</summary><div class='scroll'><table><thead><tr>" + "".join(f"<th>{text(h)}</th>" for h in headers) + "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div></details>"
 
     totals, money, unknown = summarize(report.records)
     boundaries = "".join(f"<li><b>{text(p)}</b>: {text(date(start))} to {text(date(report.end))} — {text(label)}</li>" for p, (start, label) in report.periods.items())
     notices = list(report.notices)
+    missing_effort = [r for r in report.records if r.effort == "unknown"]
+    if missing_effort:
+        notices.append(f"Effort was not recorded for {len(missing_effort):,} usage records ({sum(r.tokens.total for r in missing_effort):,} tokens). These remain in an unknown-effort bucket; today's settings and thinking budgets are not used to guess historical effort.")
     if unknown:
         models = sorted({r.model for r in report.records if price_for(r.model, report.prices) is None})
         notices.append("Unpriced models (token counts included, dollar subtotal incomplete): " + ", ".join(models))
@@ -373,12 +469,21 @@ def render_report(report: Report) -> str:
         if p and p.threshold and p.high:
             values += f"; above {p.threshold:,} input tokens/request: input ${p.high[0]:g}, output ${p.high[1]:g}, cache read ${p.high[2]:g}"
         pricing.append(f"<li><b>{text(model)}</b>: {text(values)}</li>")
-    sections = table("Provider", lambda r: r.provider) + table("Model", lambda r: f"{r.provider} / {r.model}") + table("Project", lambda r: f"{r.provider} / {r.project}") + table("Conversation", lambda r: f"{r.provider} / {r.session}") + table("Day (local time)", lambda r: date(r.timestamp)[:10])
+    sections = (
+        table("Provider", lambda r: r.provider)
+        + table("Model + effort", lambda r: f"{r.provider} / {r.model} / {r.effort}")
+        + table("Effort", lambda r: f"{r.provider} / {r.effort}")
+        + table("Model", lambda r: f"{r.provider} / {r.model}")
+        + table("Project", lambda r: f"{r.provider} / {r.project}")
+        + table("Conversation", lambda r: f"{r.provider} / {r.session}")
+        + table("Day (local time)", lambda r: date(r.timestamp)[:10])
+        + history()
+    )
     demo = "<p class='notice'>DEMO — sample data; no local logs or accounts were accessed.</p>" if report.demo else ""
     return """<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Usage Tray — token and cost report</title><style>
 body{font:15px system-ui,sans-serif;background:#101827;color:#e5ecf5;max-width:1250px;margin:32px auto;padding:0 20px;line-height:1.55}h1,h2{color:#fff}a{color:#86ccff}.summary{display:flex;gap:30px;flex-wrap:wrap;padding:20px;background:#1d2b42;border-radius:12px}.summary strong{display:block;font-size:28px}.scroll{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}td,th{padding:10px;text-align:right;border-bottom:1px solid #344259;white-space:nowrap}td:first-child,th:first-child{text-align:left;white-space:normal;overflow-wrap:anywhere}th{color:#a8c5df}.notice{padding:12px;background:#473c23;border-radius:8px}small{color:#b7c7d9}
-</style><h1>Token usage &amp; API-equivalent value</h1>""" + demo + f"<div class='summary'><div><strong>{totals.total:,}</strong>Local recorded tokens</div><div><strong>{text(money)}</strong>Estimated API-equivalent value</div><div><strong>{len({(r.provider, r.session) for r in report.records}):,}</strong>Conversations</div></div><ul>{boundaries}</ul>" + "<p>Dollar values estimate standard API list-price usage. They are not subscription charges, savings, or a conversion of your limit percentage. Counts include only token records available on this computer, across accounts using these log folders. Browser chat, remote/cloud tasks, other devices, missing logs, and unrecorded activity are excluded. Reasoning is included in output; cached input is counted once. No prompts or replies appear in this report.</p>" + (f"<ul class='notice'>{notice_html}</ul>" if notices else "") + sections + f"<h2>Pricing assumptions (USD per million tokens)</h2><p>Bundled standard prices checked {PRICE_DATE}; <a href='{PRICE_SOURCE}'>price registry source</a>. Custom exact-model rates override bundled entries. Discounts, service-tier premiums, tool charges, taxes, and other unrecorded billing adjustments are excluded.</p><ul>{''.join(pricing)}</ul><small>Generated locally {text(date(report.end))}. This file contains local project names and conversation IDs; review before sharing.</small></html>"
+</style><h1>Token usage &amp; API-equivalent value</h1>""" + demo + f"<div class='summary'><div><strong>{totals.total:,}</strong>Local recorded tokens</div><div><strong>{text(money)}</strong>Estimated API-equivalent value</div><div><strong>{len({(r.provider, r.session) for r in report.records}):,}</strong>Conversations</div></div><ul>{boundaries}</ul>" + "<p>Dollar values estimate standard API list-price usage. They are not subscription charges, savings, or a conversion of your limit percentage. Counts include only token records available on this computer, across accounts using these log folders. Browser chat, remote/cloud tasks, other devices, missing logs, and unrecorded activity are excluded. Reasoning is included in output; cached input is counted once. No prompts or replies appear in this report.</p><p>Effort is the recorded request setting, not a measurement of thinking performed. Switching medium, high, or ultra changes the usage bucket for subsequent recorded work. Cost uses actual recorded tokens and model prices without an effort multiplier. Reasoning tokens, when recorded separately, are shown as a subset of output and are never billed twice. Labels such as xhigh, max, and ultra are preserved separately.</p>" + (f"<ul class='notice'>{notice_html}</ul>" if notices else "") + sections + f"<h2>Pricing assumptions (USD per million tokens)</h2><p>Bundled standard prices checked {PRICE_DATE}; <a href='{PRICE_SOURCE}'>price registry source</a>. Custom exact-model rates override bundled entries. Discounts, service-tier premiums, tool charges, taxes, and other unrecorded billing adjustments are excluded.</p><ul>{''.join(pricing)}</ul><small>Generated locally {text(date(report.end))}. This file contains local project names and conversation IDs; review before sharing.</small></html>"
 
 
 def report_directory() -> Path:

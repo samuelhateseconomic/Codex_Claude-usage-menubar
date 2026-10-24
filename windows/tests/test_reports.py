@@ -7,6 +7,7 @@ import tempfile
 import time
 import unittest
 from datetime import datetime, timezone
+from dataclasses import replace
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -73,6 +74,82 @@ class ReportTests(unittest.TestCase):
         self.assertEqual([r.model for r in records], ["gpt-5", "gpt-5.4"])
         self.assertEqual(records[1].tokens, reports.Tokens(1500, 300, 500))
 
+    def test_effort_switches_inside_one_codex_conversation_follow_each_turn(self):
+        entries = self.codex_header()
+        for index, (effort, output, reasoning) in enumerate([("medium", 100, 20), ("high", 300, 100), ("ultra", 600, 250)]):
+            entries += [{"type": "turn_context", "payload": {"model": "gpt-5.2-codex", "effort": effort, "turn_id": f"turn-{index}"}},
+                        self.codex_event(NOW - 30 + index * 10, (index + 1) * 1000, output, 0, reasoning)]
+        self.write(self.codex, "mixed-effort.jsonl", entries)
+        records = reports.read_codex([self.codex], [])
+        self.assertEqual([r.effort for r in records], ["medium", "high", "ultra"])
+        self.assertEqual([r.turn_id for r in records], ["turn-0", "turn-1", "turn-2"])
+        self.assertEqual([r.tokens.output for r in records], [100, 200, 300])
+        self.assertEqual([r.reasoning_tokens for r in records], [20, 80, 150])
+        self.assertTrue(all(r.effort_source == "Codex turn_context.effort" for r in records))
+        total_cost = sum(reports.estimate(r) for r in records)
+        self.assertAlmostEqual(total_cost, (3000 * 1.75 + 600 * 14) / 1e6)
+        self.assertEqual(reports.estimate(records[0]), reports.estimate(replace(records[0], effort="ultra")))
+        report = reports.collect_report(roots=self.roots, now=NOW)
+        html = reports.render_report(report)
+        for effort in ("medium", "high", "ultra"):
+            self.assertIn(f"Codex / gpt-5.2-codex / {effort}", html)
+        self.assertIn("Turn and usage-event history", html)
+        self.assertIn("turn-2", html)
+        self.assertIn("Reasoning (subset)", html)
+
+    def test_codex_missing_or_null_effort_does_not_inherit_last_turn(self):
+        entries = self.codex_header()
+        settings = [{"effort": "ultra"}, {}, {"effort": None, "collaboration_mode": {"settings": {"reasoning_effort": "high"}}},
+                    {"collaboration_mode": {"settings": {"reasoning_effort": "medium"}}}]
+        for i, setting in enumerate(settings):
+            entries += [{"type": "turn_context", "payload": {"model": "gpt-5.2-codex", **setting}},
+                        self.codex_event(NOW - 40 + i * 10, (i + 1) * 1000, (i + 1) * 100, 0)]
+        self.write(self.codex, "missing-effort.jsonl", entries)
+        records = reports.read_codex([self.codex], [])
+        self.assertEqual([r.effort for r in records], ["ultra", "unknown", "unknown", "medium"])
+        self.assertEqual(records[-1].effort_source, "Codex collaboration settings.reasoning_effort")
+        html = reports.render_report(reports.collect_report(roots=self.roots, now=NOW))
+        self.assertIn("Effort was not recorded for 2 usage records", html)
+
+    def test_repeated_counters_after_effort_change_do_not_relabel_previous_usage(self):
+        entries = self.codex_header()
+        entries += [{"type": "turn_context", "payload": {"model": "gpt-5", "effort": "medium"}}, self.codex_event(NOW - 20, 1000, 100, 0),
+                    {"type": "turn_context", "payload": {"model": "gpt-5", "effort": "ultra"}}, self.codex_event(NOW - 10, 1000, 100, 0)]
+        self.write(self.codex, "repeated.jsonl", entries)
+        records = reports.read_codex([self.codex], [])
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0].effort, "medium")
+
+    def test_wire_effort_values_are_distinct_including_custom_values(self):
+        for value in ["none", "minimal", "medium", "high", "xhigh", "max", "ultra", "persistent", "future-value"]:
+            with self.subTest(value=value):
+                self.assertEqual(reports.recorded_effort(("turn", {"effort": value}))[0], value)
+        self.assertEqual(reports.recorded_effort(("turn", {"effort": 80}))[0], "unknown")
+        self.assertIsNone(reports.recorded_effort(("turn", {"maxThinkingTokens": 10000})))
+
+    def test_reasoning_counter_gaps_do_not_assign_old_reasoning_to_new_effort(self):
+        entries = self.codex_header()
+        first = self.codex_event(NOW - 40, 1000, 100, 0, 20)
+        missing = self.codex_event(NOW - 30, 2000, 200, 0)
+        del missing["payload"]["info"]["total_token_usage"]["reasoning_output_tokens"]
+        entries += [first, missing, self.codex_event(NOW - 20, 3000, 300, 0, 50), self.codex_event(NOW - 10, 4000, 400, 0, 80)]
+        self.write(self.codex, "reasoning-gap.jsonl", entries)
+        records = reports.read_codex([self.codex], [])
+        self.assertEqual([r.reasoning_tokens for r in records], [20, None, None, 30])
+        self.assertEqual(sum(r.tokens.output for r in records), 400)
+        self.assertEqual(reports.reasoning_count({"reasoning_output_tokens": 200}, 100), None)
+
+    def test_codex_last_usage_effort_and_reasoning_without_cumulative_counters(self):
+        entries = self.codex_header()
+        entries += [{"type": "turn_context", "payload": {"model": "gpt-5.4", "effort": "ultra"}},
+                    {"type": "event_msg", "timestamp": iso(NOW - 10), "payload": {"type": "token_count", "info": {
+                        "last_token_usage": {"input_tokens": 1000, "cached_input_tokens": 500, "output_tokens": 100, "reasoning_output_tokens": 60}}}}]
+        self.write(self.codex, "last-only.jsonl", entries)
+        record = reports.read_codex([self.codex], [])[0]
+        self.assertEqual(record.effort, "ultra")
+        self.assertEqual(record.reasoning_tokens, 60)
+        self.assertEqual(record.tokens.total, 1100)
+
     def test_copied_codex_and_claude_logs_are_not_double_counted(self):
         entries = self.codex_header() + [self.codex_event(NOW - 10, 3000, 400, 1500)]
         self.write(self.codex, "one.jsonl", entries)
@@ -99,6 +176,47 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(record.tokens.write5m, 700)
         self.assertIsNotNone(reports.estimate(record))
         self.assertIsNone(reports.price_for("gpt-5.4-unknown-premium"))
+
+    def test_claude_explicit_message_effort_and_stream_updates(self):
+        first = self.claude_event(output=10)
+        first["message"]["output_config"] = {"effort": "high"}
+        final = self.claude_event(NOW - 5, output=100)
+        self.write(self.claude, "effort.jsonl", [first, final])
+        records = reports.read_claude([self.claude], [])
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0].effort, "high")
+        self.assertEqual(records[0].effort_source, "Claude output_config.effort")
+        self.assertIsNone(records[0].reasoning_tokens)
+
+    def test_claude_turn_metadata_covers_tool_results_then_resets_on_new_prompt(self):
+        entries = [
+            {"type": "user", "uuid": "u1", "effortValue": "medium", "message": {"content": "PRIVATE PROMPT"}},
+            self.claude_event(msg="m1"),
+            {"type": "user", "message": {"content": [{"type": "tool_result", "content": "PRIVATE RESULT"}]}},
+            self.claude_event(msg="m2"),
+            {"type": "user", "uuid": "u2", "message": {"content": "NEXT PRIVATE PROMPT"}},
+            self.claude_event(msg="m3"),
+        ]
+        self.write(self.claude, "turns.jsonl", entries)
+        records = reports.read_claude([self.claude], [])
+        self.assertEqual([r.effort for r in records], ["medium", "medium", "unknown"])
+        self.assertEqual([r.turn_id for r in records], ["u1", "u1", "u2"])
+
+    def test_claude_thinking_budget_is_not_an_effort_label(self):
+        entry = self.claude_event()
+        entry["thinkingMetadata"] = {"level": "high", "maxThinkingTokens": 10000}
+        self.write(self.claude, "thinking.jsonl", [entry])
+        record = reports.read_claude([self.claude], [])[0]
+        self.assertEqual(record.effort, "unknown")
+        self.assertIsNone(record.reasoning_tokens)
+
+    def test_effort_metadata_is_escaped_in_html(self):
+        entry = self.claude_event()
+        entry["effort"] = "<script>bad()</script>"
+        self.write(self.claude, "escaped-effort.jsonl", [entry])
+        html = reports.render_report(reports.collect_report(roots=self.roots, now=NOW))
+        self.assertNotIn("<script>", html)
+        self.assertIn("&lt;script&gt;bad()&lt;/script&gt;", html)
 
     def test_unknown_model_counts_tokens_and_marks_incomplete_dollar_subtotal(self):
         self.write(self.codex, "rollout.jsonl", self.codex_header("future-model") + [self.codex_event(NOW - 10, 1000, 100, 0)])
@@ -166,7 +284,8 @@ class ReportTests(unittest.TestCase):
     def test_demo_does_not_read_any_logs_and_labels_sample_data(self):
         with patch.object(reports, "read_codex", side_effect=AssertionError), patch.object(reports, "read_claude", side_effect=AssertionError):
             report = reports.collect_report(now=NOW, demo=True)
-        self.assertEqual(len(report.records), 2)
+        self.assertEqual(len(report.records), 6)
+        self.assertEqual({r.effort for r in report.records}, {"medium", "high", "ultra"})
         self.assertIn("DEMO", reports.render_report(report))
 
     def test_missing_logs_do_not_claim_zero_account_usage(self):
