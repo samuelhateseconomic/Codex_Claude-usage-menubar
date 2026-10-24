@@ -47,4 +47,48 @@ class PackagedFixtureCleanup(unittest.TestCase):
                 if stream is not None:stream.close()
 
 
+class PackagedUnsupportedFixture(unittest.TestCase):
+    def make_backup(self, folder):
+        from usage_config import Settings,effective_settings,save_settings
+        from usage_index import UsageIndex
+        from usage_valuation import Price
+        from test_index import header,counter,context
+        import json
+        root=Path(folder)
+        logs=root/'sources';logs.mkdir()
+        (logs/'synthetic.jsonl').write_text('\n'.join(map(json.dumps,header()+[counter(100,10),counter(200,20)]))+'\n',encoding='utf-8')
+        config=root/'settings.json'
+        save_settings(effective_settings(Settings(),timezone='UTC',codex_roots=[logs],claude_roots=[],prices={'fixture-model':Price('2','10','.1')}),config)
+        store=UsageIndex(root/'original.sqlite3',config_path=config)
+        store.import_settings()
+        return root,store,config,store.backup(),context()
+
+    def test_unsupported_copy_preserves_original_backup_and_configuration(self):
+        from contextlib import closing
+        import sqlite3
+        from packaged_hub_release import unsupported_copy
+        with tempfile.TemporaryDirectory() as folder:
+            root,store,config,backup,context=self.make_backup(folder)
+            original=store.path.read_bytes();archived=backup.read_bytes();settings=config.read_bytes()
+            destination=root/'unsupported'/'index.sqlite3';new_config=destination.with_name('settings.json')
+            unsupported_copy(backup,destination,new_config)
+            with closing(sqlite3.connect(destination)) as connection:
+                self.assertEqual(connection.execute('PRAGMA user_version').fetchone()[0],99)
+                self.assertEqual(connection.execute('SELECT sum(total) FROM events').fetchone()[0],200)
+            self.assertEqual(store.path.read_bytes(),original)
+            self.assertEqual(backup.read_bytes(),archived)
+            self.assertEqual(config.read_bytes(),settings)
+            self.assertEqual(store.query(context).result.total.tokens.total,200)
+
+    def test_unsupported_copy_refuses_existing_target_instead_of_mutating_it(self):
+        from packaged_hub_release import unsupported_copy
+        with tempfile.TemporaryDirectory() as folder:
+            root,store,config,backup,context=self.make_backup(folder)
+            original=store.path.read_bytes();settings=config.read_bytes()
+            with self.assertRaises(ValueError):unsupported_copy(backup,store.path,config)
+            self.assertEqual(store.path.read_bytes(),original)
+            self.assertEqual(config.read_bytes(),settings)
+            self.assertEqual(store.query(context).result.total.tokens.total,200)
+
+
 if __name__ == '__main__':unittest.main()

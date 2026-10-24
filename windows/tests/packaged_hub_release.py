@@ -46,6 +46,13 @@ def seed_v2(path, config):
     return store.dataset_id
 
 
+def unsupported_copy(backup, index, config):
+    """New explicit fixture paths only; never mutate a just-terminated DB/WAL."""
+    restore_backup(backup,index,config_destination=config)
+    with closing(sqlite3.connect(index)) as connection, connection:
+        connection.execute('PRAGMA user_version=99')
+
+
 def fixture(root):
     logs = root / 'sources'
     logs.mkdir()
@@ -307,16 +314,19 @@ def check(executable, measurements=None):
             require(all(secret not in safe for secret in (SENTINEL,host.csrf,host.cookie,host.native['control'],str(logs))),'Private content reached diagnostics.')
             host.close();host.config.write_bytes(valid)
             print('Packaged invalid-settings retention / diagnostics: PASS',flush=True)
-            # A corrupt/unsupported optional DB must not disable a terminal report.
-            with closing(sqlite3.connect(host.index)) as connection:
-                connection.execute('PRAGMA user_version=99')
-            require(host.invoke(*host.command[1:])==1,'Unsupported index was silently rebuilt or accepted.')
-            with closing(sqlite3.connect(host.index)) as connection:
+            # Test unsupported startup independently of the deliberately killed
+            # WAL fixture. Editing its just-terminated file races Windows/SQLite
+            # teardown on some runtimes; no I/O error should be ignored/retried.
+            unsupported=PackagedHost(executable,root/'unsupported')
+            unsupported.root.mkdir()
+            unsupported_copy(backup,unsupported.index,unsupported.config)
+            require(unsupported.invoke(*unsupported.command[1:])==1,'Unsupported index was silently rebuilt or accepted.')
+            with closing(sqlite3.connect(unsupported.index)) as connection:
                 require(connection.execute('PRAGMA user_version').fetchone()[0]==99 and
-                        connection.execute('SELECT sum(total) FROM events').fetchone()[0]==4001000,
+                        connection.execute('SELECT sum(total) FROM events').fetchone()[0]==4000000,
                         'Failed optional startup changed the preserved index.')
             report=root/'terminal.txt'
-            require(host.invoke('--report','month','--audit','--output',report)==0,'Core terminal fallback failed with unsupported optional DB.')
+            require(unsupported.invoke('--report','month','--audit','--output',report)==0,'Core terminal fallback failed with unsupported optional DB.')
             text=report.read_text(encoding='utf-8')
             require('4,001,000' in text,'Core terminal fallback exact audit total missing.')
             require(SENTINEL not in text,'Transcript entered terminal report.')
