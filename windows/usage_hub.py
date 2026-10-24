@@ -256,6 +256,38 @@ def create_server(service, port=8765):
     if getattr(service, 'contract_version', None) == 'usage-hub-v1':
         from usage_api_http import handler_class, LocalSessions
         class LocalServer(ThreadingHTTPServer):
+            def __init__(self, *args):
+                self.closing = False
+                self.inflight = 0
+                self.drained = threading.Condition()
+                super().__init__(*args)
+
+            def process_request(self, request, client_address):
+                # Count before thread creation, so shutdown cannot miss an
+                # accepted operation whose worker has not started yet.
+                with self.drained:
+                    self.inflight += 1
+                try:
+                    super().process_request(request, client_address)
+                except BaseException:
+                    self.request_finished()
+                    raise
+
+            def request_finished(self):
+                with self.drained:
+                    self.inflight -= 1
+                    self.drained.notify_all()
+
+            def process_request_thread(self, request, client_address):
+                try:
+                    super().process_request_thread(request, client_address)
+                finally:
+                    self.request_finished()
+
+            def wait_drained(self, timeout):
+                with self.drained:
+                    return self.drained.wait_for(lambda: self.inflight == 0, timeout=timeout)
+
             def handle_error(self, request, client_address):
                 pass  # Never print untrusted query/header/provider payloads.
         server = LocalServer(('127.0.0.1', port), handler_class(service))
@@ -266,6 +298,8 @@ def create_server(service, port=8765):
     files = {"/": ("index.html", "text/html; charset=utf-8"), "/app.js": ("app.js", "text/javascript; charset=utf-8"),
              "/style.css": ("style.css", "text/css; charset=utf-8"),
              "/format.js": ("format.js", "text/javascript; charset=utf-8")}
+    for path in STATIC.glob("*.js"):
+        files["/" + path.name] = (path.name, "text/javascript; charset=utf-8")
     for path in (STATIC / "assets").glob("*"):
         if path.suffix in (".svg", ".woff2"):
             files["/assets/" + path.name] = ("assets/" + path.name, "image/svg+xml" if path.suffix == ".svg" else "font/woff2")
@@ -337,7 +371,10 @@ def create_server(service, port=8765):
                 return self.respond(404, {"error": "not_found"})
             filename, kind = files[url.path]
             try:
-                return self.respond(200, (STATIC / filename).read_bytes(), kind, cookie=url.path == "/")
+                body = (STATIC / filename).read_bytes()
+                if url.path == "/":
+                    body = body.replace(b'<html lang="en">', b'<html lang="en" data-api-mode="preview">', 1)
+                return self.respond(200, body, kind, cookie=url.path == "/")
             except OSError:
                 return self.respond(500, {"error": "asset_unavailable"})
 

@@ -2,6 +2,7 @@
 import http.client
 import json
 import os
+import re
 from pathlib import Path
 import tempfile
 import threading
@@ -26,6 +27,7 @@ class HubOwner:
         self.discovery=self.owner_path.with_suffix('.api.json')
         self.port=port;self.fetchers=fetchers or {};self.owner=None;self.server=None;self.thread=None;self.jobs=None
         self.runtime=PollingRuntime(self.fetchers)
+        self.http_stopped=False
 
     @property
     def configuration_key(self):return digest(str(self.index_path.resolve()),str(self.config_path.resolve()))
@@ -53,23 +55,31 @@ class HubOwner:
     @property
     def origin(self):return f'http://127.0.0.1:{self.server.server_port}'
 
-    def launch_url(self):return self.origin+'/#launch='+self.server.sessions.issue()
+    def launch_url(self,*,selected='both',status_page=False):
+        return launch_destination(self.origin+('/service' if status_page else '/')+'#launch='+self.server.sessions.issue(),selected)
 
-    def query_tray(self,period,snapshots):
+    def query_tray(self,period,snapshots,*,providers=('Codex','Claude')):
         snapshot=self.index.read_snapshot()
         now=time.time();zone=snapshot.settings.timezone
-        context=QueryContext(tuple((p,resolve_range(period,now,snapshots.get(p),zone)) for p in ('Codex','Claude')),now,period,zone)
+        context=QueryContext(tuple((p,resolve_range(period,now,snapshots.get(p),zone)) for p in providers),now,period,zone)
         return snapshot.query(context).result
 
     def close(self,timeout=30):
+        deadline=time.monotonic()+timeout
+        remaining=lambda:max(0,deadline-time.monotonic())
+        if self.server is not None and not self.http_stopped:
+            self.server.closing=True
+            if self.thread is not None and self.thread.is_alive():self.server.shutdown()
+            self.server.server_close()
+            self.http_stopped=True
         if self.jobs is not None:
             self.jobs.stop.set();self.jobs.wake.set()
-        providers_closed=self.runtime.close(timeout=timeout)
-        jobs_closed=self.jobs is None or self.jobs.close(timeout)
-        if not providers_closed or not jobs_closed:return False
-        if self.server is not None:
-            self.server.shutdown();self.server.server_close();self.server=None
-        if self.thread is not None:self.thread.join(timeout=2)
+        providers_closed=self.runtime.close(timeout=remaining())
+        jobs_closed=self.jobs is None or self.jobs.close(remaining())
+        http_closed=self.server is None or self.server.wait_drained(remaining())
+        if not providers_closed or not jobs_closed or not http_closed:return False
+        self.server=None
+        if self.thread is not None:self.thread.join(timeout=remaining())
         if self.jobs is not None:
             try:self.service.limits.flush()
             except Exception:pass
@@ -106,3 +116,16 @@ def reuse_owner(owner,timeout=5):
         except (OSError,ValueError,KeyError,http.client.HTTPException):
             if time.monotonic()>=deadline:raise AlreadyRunning('Usage Tray already owns this installation, but no reusable API is available. Use its existing tray or quit it before starting the API owner.') from None
             time.sleep(.05)
+
+
+def launch_destination(url,selected='both',*,status_page=False):
+    if selected not in ('both','codex','claude'):raise ValueError('Invalid launch provider.')
+    parsed=urlsplit(url)
+    if parsed.scheme!='http' or parsed.hostname!='127.0.0.1' or not parsed.port or parsed.path not in ('/','/service') or parsed.query or parsed.username or parsed.password:
+        raise ValueError('Invalid local launch destination.')
+    from urllib.parse import parse_qs
+    grant=parse_qs(parsed.fragment,strict_parsing=True)
+    if set(grant)!={'launch'} or len(grant['launch'])!=1 or re.fullmatch(r'[A-Za-z0-9_-]{1,128}',grant['launch'][0]) is None:
+        raise ValueError('Invalid local launch handoff.')
+    path='/service' if status_page else parsed.path
+    return parsed._replace(path=path,fragment=parsed.fragment+('&provider='+selected if selected!='both' else '')).geturl()

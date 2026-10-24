@@ -55,7 +55,8 @@ def open_report(path, format):
 
 
 def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None, timezone=DEFAULT_TIMEZONE, roots=None, settings_version=None,
-             dashboard=False, dashboard_port=8765, shared_runtime=None, report_query=None):
+             dashboard=False, dashboard_port=8765, shared_runtime=None, report_query=None,
+             dashboard_opener=None, dashboard_unavailable=False):
     try:
         import pystray
         from PIL import Image, ImageDraw
@@ -81,18 +82,22 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
     dashboard_threads = []
 
     def open_dashboard(icon=None, item=None):
-        if not demo or stop.is_set() or not dashboard_lock.acquire(blocking=False):
+        if (not demo and dashboard_opener is None) or stop.is_set() or not dashboard_lock.acquire(blocking=False):
             return
         def open_preview():
             try:
                 if stop.is_set():
                     return
-                if not dashboard_owner:
+                if dashboard_opener is not None:
+                    url = dashboard_opener()
+                elif not dashboard_owner:
                     from dashboard_main import start_preview
                     dashboard_owner.append(start_preview(port=dashboard_port, prices=prices,
                         fees=plan_costs, timezone=timezone, selected=selected, open_browser=False))
-                if not stop.is_set():
-                    webbrowser.open(dashboard_owner[0][2])
+                if dashboard_opener is None:
+                    url = dashboard_owner[0][2]
+                if not stop.is_set() and not webbrowser.open(url):
+                    report_status[0] = "Cannot open the browser - the local service remains running"
             except Exception:
                 report_status[0] = "Dashboard unavailable - check the local port and timezone dependency"
             finally:
@@ -163,6 +168,12 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
             yield pystray.MenuItem("DEMO — sample usage", None, enabled=False)
         if demo:
             yield pystray.MenuItem("Open dashboard demo preview...", open_dashboard)
+        elif dashboard_opener is not None:
+            yield pystray.MenuItem("Open usage dashboard...", open_dashboard)
+        elif dashboard_unavailable:
+            yield pystray.MenuItem("Dashboard unavailable - save settings or check the local index", None, enabled=False)
+        if shared_runtime is not None and not states:
+            yield pystray.MenuItem("Live limits disabled - local usage remains available", None, enabled=False)
         for state in states:
             for line in state.lines():
                 yield pystray.MenuItem(line, None, enabled=False)
@@ -261,7 +272,7 @@ def main():
     parser.add_argument("--provider", choices=("both", "codex", "claude"), default="both")
     parser.add_argument("--demo", action="store_true", help="Use clearly labeled sample data without reading credentials")
     parser.add_argument("--once", action="store_true", help="Print one usage snapshot as JSON, without a tray")
-    parser.add_argument("--dashboard", action="store_true", help="Open the explicit demo dashboard preview (requires --demo)")
+    parser.add_argument("--dashboard", action="store_true", help="Explicitly open the local dashboard; --demo selects the isolated preview")
     parser.add_argument("--dashboard-port", type=int, default=8765, help="Loopback dashboard port (default: 8765)")
     parser.add_argument("--no-browser", action="store_true", help="Serve the dashboard without opening a browser")
     parser.add_argument("--report", choices=("session", "today", "week", "month"), help="Estimate API-equivalent value from local tokens; month also compares plan fees")
@@ -289,12 +300,13 @@ def main():
     parser.add_argument("--claude-root", action="append", type=Path, help="Absolute Claude log directory; repeat to replace that provider's root list")
     args = parser.parse_args()
     if args.dashboard:
-        if not args.demo:
-            parser.error("Real-data dashboard integration awaits the core gates; use --dashboard --demo for the reviewed preview.")
         if any((args.once, args.report, args.output, args.open_report, args.version, args.diagnostics,
                 args.show_settings, args.save_settings, args.include_metadata, args.diagnostic_output,
                 args.report_format, args.codex_root, args.claude_root)):
             parser.error("--dashboard cannot be combined with report, export, settings commands or source-root options")
+        if not args.demo and any((args.prices, args.codex_plan_usd is not None,
+                                  args.claude_plan_usd is not None, args.timezone is not None)):
+            parser.error("Real dashboard uses saved settings; save fee, price and timezone changes separately before launch")
         if not 0 <= args.dashboard_port <= 65535:
             parser.error("--dashboard-port must be between 0 and 65535")
     elif args.no_browser or args.dashboard_port != 8765:
@@ -325,6 +337,16 @@ def main():
     if args.audit and args.width is not None:
         parser.error("--width applies to compact/detail views; omit it with --audit")
     config_path = settings_path() if args.config is None else args.config
+    if args.dashboard and not args.demo:
+        from usage_hub_launch import run_host
+        try:
+            return run_host(config_path=config_path, port=args.dashboard_port,
+                            open_browser=not args.no_browser, selected=args.provider,
+                            tray=sys.stdout is None and not args.no_browser)
+        except AlreadyRunning as error:
+            parser.exit(3, str(error) + "\n")
+        except Exception:
+            parser.exit(1, "Cannot start the real dashboard. Preserve index/settings files and check the local port, assets and permissions.\n")
     diagnostic_targets = [args.diagnostic_output] + ([args.output] if args.diagnostics else [])
     for destination in (path for path in diagnostic_targets if path is not None):
         target = destination.resolve()
@@ -470,6 +492,21 @@ def main():
     if args.once and args.demo:
         print(json.dumps([demo_snapshot(name).to_dict() for name in PROVIDERS if args.provider in ("both", name.lower())], indent=2, ensure_ascii=True))
         return complete(0, "complete", "success")
+    if not args.once and not args.demo:
+        # Shared persisted settings have one owner. Temporary legacy CLI
+        # overrides retain their previous tray/report behavior, without mixing
+        # those values into a separately configured production API.
+        if settings.version == loaded_version:
+            from usage_hub_launch import run_host
+            try:
+                return run_host(config_path=config_path, port=0, tray=True,
+                                live_limits=True, selected=args.provider, report_format=args.report_format)
+            except AlreadyRunning as error:
+                parser.exit(3, str(error) + "\n")
+            except Exception:
+                if sys.stderr is not None:
+                    sys.stderr.write("Local hub unavailable; continuing with the terminal/tray core. Preserve the index and check its settings/permissions.\n")
+        args.dashboard_unavailable = True
     owner = RuntimeOwner()
     try:
         owner.__enter__()
@@ -508,7 +545,8 @@ def run_live(args, prices, plan_costs, roots, settings_version, complete=None):
         return complete(code, "poll", "provider_error" if failed else "success", providers=categories) if complete else code
     run_tray(args.demo, args.provider, prices, args.report_format, plan_costs, args.timezone,
              roots=roots, settings_version=settings_version,
-             dashboard=args.dashboard, dashboard_port=args.dashboard_port)
+             dashboard=args.dashboard, dashboard_port=args.dashboard_port,
+             dashboard_unavailable=getattr(args, "dashboard_unavailable", False))
     return 0
 
 

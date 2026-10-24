@@ -61,10 +61,24 @@ class LocalSessions:
             return max(0,int(session[1]-self.monotonic())) if session else 0
 
 
+def static_files():
+    # Only shipped application assets; never map an arbitrary URL onto disk.
+    files = {'/': ('index.html', 'text/html; charset=utf-8'),
+             '/style.css': ('style.css', 'text/css; charset=utf-8')}
+    for path in STATIC.glob('*.js'):
+        files['/' + path.name] = (path.name, 'text/javascript; charset=utf-8')
+    for path in (STATIC / 'assets').glob('*'):
+        if path.suffix in ('.svg', '.woff2'):
+            files['/assets/' + path.name] = ('assets/' + path.name,
+                'image/svg+xml' if path.suffix == '.svg' else 'font/woff2')
+    return files
+
+
 BOOTSTRAP_HTML=b'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Usage Hub local service</title><main><h1>Usage Hub</h1><p id="state">Open this local service through Usage Tray.</p></main><script src="/api-bootstrap.js" defer></script></html>'
 
 
 def handler_class(service):
+    files = static_files()
     class Handler(BaseHTTPRequestHandler):
         server_version='UsageHub'
         sys_version=''
@@ -80,7 +94,7 @@ def handler_class(service):
             self.send_response(status)
             for key,value in {'Content-Type':kind,'Content-Length':str(len(body)),'Cache-Control':'no-store',
                 'X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Frame-Options':'DENY',
-                'Content-Security-Policy':"default-src 'none'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"}.items():self.send_header(key,value)
+                'Content-Security-Policy':"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"}.items():self.send_header(key,value)
             if cookie:self.send_header('Set-Cookie',f'usage_hub_v1={cookie}; HttpOnly; SameSite=Strict; Path=/api/v1; Max-Age=3600')
             try:self.end_headers();self.wfile.write(body)
             except (BrokenPipeError,ConnectionResetError,ConnectionAbortedError):self.close_connection=True
@@ -115,6 +129,8 @@ def handler_class(service):
         def dispatch(self,method):
             try:
                 self.boundary()
+                if getattr(self.server,'closing',False):
+                    raise ApiError(503,'service_stopping','The local service is stopping; open it again after Quit completes.')
                 if len(self.path)>MAX_URL:raise invalid()
                 if re.search(r'%(?![0-9a-fA-F]{2})',self.path):raise invalid()
                 url=urlsplit(self.path)
@@ -122,9 +138,15 @@ def handler_class(service):
                 decoded=unquote(url.path,encoding='utf-8',errors='strict')
                 if any(ord(c)<32 for c in decoded):raise invalid()
                 url=url._replace(path=decoded)
-                if method=='GET' and url.path=='/' and not url.query:return self.send(200,BOOTSTRAP_HTML,kind='text/html; charset=utf-8')
-                if method=='GET' and url.path=='/api-bootstrap.js' and not url.query:
-                    return self.send(200,(STATIC/'api-bootstrap.js').read_bytes(),kind='text/javascript; charset=utf-8')
+                if method=='GET' and url.path=='/service' and not url.query:
+                    return self.send(200,BOOTSTRAP_HTML,kind='text/html; charset=utf-8')
+                if method=='GET' and url.path in files and not url.query:
+                    filename,kind=files[url.path]
+                    try:body=(STATIC/filename).read_bytes()
+                    except OSError:raise ApiError(503,'asset_unavailable','Local dashboard assets are unavailable; check the installation.') from None
+                    if url.path=='/':
+                        body=body.replace(b'<html lang="en">',b'<html lang="en" data-api-mode="v1">',1)
+                    return self.send(200,body,kind=kind)
                 if not url.path.startswith('/api/v1/'):raise ApiError(404,'not_found','Unknown API route.')
                 path=url.path.removeprefix('/api/v1')
                 if method=='POST' and path=='/local/launch':

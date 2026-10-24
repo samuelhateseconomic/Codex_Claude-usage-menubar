@@ -113,14 +113,15 @@ class HubTests(unittest.TestCase):
         self.assertNotIn('"content"',encoded)
         self.assertNotIn('"credentials"',encoded)
 
-    def test_cli_keeps_real_dashboard_gated_and_legacy_report_available(self):
+    def test_cli_keeps_dashboard_commands_separate_and_legacy_report_available(self):
         entry=Path(__file__).resolve().parents[1]/'usage_tray.py'
-        result=subprocess.run([sys.executable,str(entry),'--dashboard'],capture_output=True,text=True,timeout=5)
+        result=subprocess.run([sys.executable,str(entry),'--dashboard','--report','month'],capture_output=True,text=True,timeout=5)
         self.assertEqual(result.returncode,2)
-        self.assertIn('core gates',result.stderr)
+        self.assertIn('cannot be combined',result.stderr)
         result=subprocess.run([sys.executable,str(entry),'--report','month','--demo'],capture_output=True,text=True,timeout=5)
         self.assertEqual(result.returncode,0)
         self.assertIn('108,000',result.stdout)
+
 
 
 class HubHTTPTests(unittest.TestCase):
