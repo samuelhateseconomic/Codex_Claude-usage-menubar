@@ -344,7 +344,8 @@ class ReportTests(unittest.TestCase):
         script = Path(__file__).resolve().parents[1] / "usage_tray.py"
         environment = dict(os.environ, CLAUDE_CONFIG_DIR=str(self.base), CODEX_HOME=str(self.base / "no-codex"), LOCALAPPDATA=str(self.base / "appdata"))
         result = subprocess.run([sys.executable, str(script), "--report", "session", "--report-format", "html", "--output", str(output)], capture_output=True, text=True, env=environment, check=True)
-        self.assertEqual(Path(result.stdout.strip()), output)
+        # Windows TEMP may use an 8.3 alias; verify destination identity, not spelling.
+        self.assertTrue(Path(result.stdout.strip()).samefile(output))
         self.assertIn("3,800", output.read_text())
         self.assertNotIn("PRIVATE PROMPT CONTENT", output.read_text())
 
