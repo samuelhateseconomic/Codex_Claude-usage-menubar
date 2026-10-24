@@ -453,6 +453,16 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - Limitations/next: real-data CLI launch remains gated; Settings is read-only; Limits is sample data in demo mode. Exact preview valuation still needs S04/S05 consolidation into the authoritative core service. Persistent index/API, database handoff, full runtime ownership, and S09/S14 release gates remain outstanding. Detailed check counts and final verification outcomes are recorded in the handoff.
 - Commit isolation: the staged dashboard snapshot passed 66 Python tests and two Node tests against the committed core baseline, plus JavaScript syntax and staged whitespace checks. Concurrent core files were excluded from the dashboard commit. The earlier 80-test working-tree run includes those separate core tests; neither result completes a core gate.
 
+### Pre-S08 privacy regression preparation — October 24, 2026
+
+- Status: preparation **complete**; S08 remains **not_started**, dependent on S05-S07. Scope: independent synthetic privacy fixtures and repair handoff while another agent owns S04. This does not certify the pending earlier gates.
+- Starting commit / concurrency: `0f4ce44`. Existing edits in `usage_reports.py` and untracked observation/record modules and tests belong to other core work and were preserved/excluded. No production file, pricing, Figma, schema, credential, or scheduler changes.
+- Files: `windows/tests/privacy_cases.py`, `windows/tests/test_privacy.py`, `docs/review_privacy_probes.py`, this ledger, and the [pre-S08 handoff](pre-s08-privacy-handoff.md).
+- Findings: legacy Codex and Claude readers stringify nested invalid metadata into public outputs; live Codex limit labels retain terminal controls. Typed metadata projection and live-display sanitization are deferred to the owning core/runtime boundaries. Existing HTML escaping, normal-content exclusion, report terminal sanitization, and fixed preview diagnostics gained executable boundary evidence.
+- Evidence: focused run executed eight tests (five passes, three explicit expected failures). Full working-tree run executed 88 tests in 9.004 seconds (85 passes, three expected failures). Loopback tests passed outside the network-restricted sandbox. The independent privacy probe exited **1**, correctly identifying all three unresolved cases; expected failures are open defects, not S08 acceptance evidence. No packaging run was needed for test/documentation-only changes.
+- Commit isolation: the staged snapshot ran 74 Python tests in 8.446 seconds (71 passes, three expected failures) against the committed core, excluding concurrent edits; the strict probe reproduced all three gaps with exit 1. Both Node formatter/axis tests, staged whitespace, and changed-document links/fences passed.
+- Next dependency: finish S04, then S05-S07; resolve the three findings and remove expected-failure annotations before completing S08. Remaining paths and release limits are explicit in the handoff. No core session gate was advanced by this preparation.
+
 ## 11. Completion and reassessment
 
 - **Core complete:** S00–S09 gates pass; terminal functionality remains available; known accounting defects have regression coverage and correct outcomes.
