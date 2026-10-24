@@ -183,6 +183,9 @@ class ObservationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             header, context = codex_header()
+            # This fixture tests line provenance and ordinary projection, not
+            # a fork without inherited baseline (now correctly excluded).
+            del header["payload"]["forked_from_thread_id"]
             path = root / "fixture.jsonl"
             path.write_text("\n" + json.dumps(header) + "\nmalformed\n" + json.dumps(context) + "\n"
                             + json.dumps(codex_usage({"input_tokens": 100, "output_tokens": 20,

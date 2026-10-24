@@ -14,6 +14,7 @@ import tempfile
 import time
 
 from usage_records import Record, Tokens
+from usage_reconciliation import reconcile_observations
 from usage_observations import extract_claude, extract_codex, recorded_effort, timestamp
 
 
@@ -174,7 +175,7 @@ def source_lines(path: Path, notices: list[str]):
 
 
 def lines(path: Path, notices: list[str]):
-    # Preserve the legacy reader interface until S02 switches acceptance policy.
+    # Preserve the parsed-line compatibility interface.
     for _, data in source_lines(path, notices):
         yield data
 
@@ -182,7 +183,7 @@ def lines(path: Path, notices: list[str]):
 def read_observations(provider: str, roots: list[Path], notices: list[str], since: float | None = None):
     """Scan metadata evidence for the pure S02 reconciliation seam.
 
-    Legacy report readers remain active in S01. File generation/recovery and
+    File generation/recovery and
     authoritative backfill discovery are S03 work; generation is unknown here.
     """
     if provider not in ("Codex", "Claude"):
@@ -199,146 +200,17 @@ def read_observations(provider: str, roots: list[Path], notices: list[str], sinc
 
 
 def read_claude(roots: list[Path], notices: list[str], since: float | None = None) -> list[Record]:
-    messages = {}
-    for path in log_files(roots, notices, since):
-        session_root = None
-        turn_effort = None
-        turn_id = None
-        for entry in lines(path, notices):
-            if session_root is None and isinstance(entry.get("cwd"), str):
-                session_root = entry["cwd"]
-            msg = object_value(entry.get("message"))
-            if entry.get("type") == "user":
-                content = msg.get("content")
-                tool_result = (isinstance(content, list) and bool(content)
-                               and all(isinstance(block, dict) and block.get("type") == "tool_result" for block in content))
-                if not tool_result:
-                    # Each new user turn resets effort. A missing setting must
-                    # not inherit the preceding turn's explicit setting.
-                    turn_effort = recorded_effort(("Claude user", entry), ("Claude user message", msg),
-                                                  ("Claude user output_config", object_value(msg.get("output_config"))))
-                    turn_id = str(entry["uuid"]) if entry.get("uuid") else None
-                continue
-            if entry.get("type") != "assistant":
-                continue
-            usage = object_value(msg.get("usage"))
-            when = timestamp(entry.get("timestamp"))
-            model = msg.get("model")
-            if not usage or when is None or model == "<synthetic>":
-                continue
-            session = str(entry.get("sessionId") or path.stem)
-            # Missing identifiers cannot safely be deduplicated; report the gap.
-            if not msg.get("id"):
-                notices.append("Claude usage records without message IDs were skipped.")
-                continue
-            creation = object_value(usage.get("cache_creation"))
-            write5m = count(creation.get("ephemeral_5m_input_tokens"))
-            write1h = count(creation.get("ephemeral_1h_input_tokens"))
-            if not creation:
-                write5m = count(usage.get("cache_creation_input_tokens"))
-                if write5m:
-                    notices.append("Legacy Claude cache writes without TTL details are estimated at the 5-minute write price.")
-            tokens = Tokens(count(usage.get("input_tokens")), count(usage.get("output_tokens")),
-                            count(usage.get("cache_read_input_tokens")), write5m, write1h)
-            key = (session, str(msg["id"]), str(entry.get("requestId") or ""))
-            previous = messages.get(key)
-            explicit_effort = recorded_effort(
-                ("Claude assistant", entry), ("Claude assistant message", msg),
-                ("Claude output_config", object_value(msg.get("output_config"))),
-                ("Claude request output_config", object_value(object_value(entry.get("request")).get("output_config"))),
-            )
-            effort, source = explicit_effort or ((previous.effort, previous.effort_source) if previous else None) or turn_effort or ("unknown", "not recorded")
-            reasoning = reasoning_count(usage, tokens.output)
-            if previous:
-                # Streamed assistant records update the same usage. Keep maxima,
-                # not a sum of chunks, and attribute to the final response time.
-                tokens = Tokens(*(max(a, b) for a, b in zip(asdict(tokens).values(), asdict(previous.tokens).values())))
-                when = max(when, previous.timestamp)
-                if previous.reasoning_tokens is not None:
-                    reasoning = max(reasoning if reasoning is not None else 0, previous.reasoning_tokens)
-            messages[key] = Record("Claude", when, session, session_root or path.parent.name,
-                                   str(model or "unknown"), tokens, effort, source,
-                                   previous.turn_id if previous else turn_id, reasoning)
-    return list(messages.values())
+    return _reconciled_records("Claude", roots, notices, since)
 
 
 def read_codex(roots: list[Path], notices: list[str], since: float | None = None) -> list[Record]:
-    records = {}
-    for path in log_files(roots, notices, since):
-        session, project, model = path.stem, "Unknown project", "unknown"
-        previous = (0, 0, 0)
-        previous_reasoning = 0
-        effort, effort_source = "unknown", "not recorded"
-        turn_id = None
-        last_only_seen = set()
-        created = None
-        forked = False
-        for entry in lines(path, notices):
-            kind = entry.get("type")
-            payload = object_value(entry.get("payload"))
-            if kind == "session_meta":
-                session = str(payload.get("id") or session)
-                project = str(payload.get("cwd") or project)
-                created = timestamp(entry.get("timestamp"))
-                forked = bool(payload.get("forked_from_id") or payload.get("forked_from_thread_id"))
-                continue
-            if kind == "turn_context":
-                model = str(payload.get("model") or "unknown")
-                effort, effort_source = recorded_effort(
-                    ("Codex turn_context", payload),
-                    ("Codex collaboration settings", object_value(object_value(payload.get("collaboration_mode")).get("settings"))),
-                ) or ("unknown", "not recorded")
-                turn_id = str(payload["turn_id"]) if payload.get("turn_id") else None
-                continue
-            if kind != "event_msg" or payload.get("type") != "token_count":
-                continue
-            when = timestamp(entry.get("timestamp"))
-            info = object_value(payload.get("info"))
-            totals = object_value(info.get("total_token_usage"))
-            last = object_value(info.get("last_token_usage"))
-            if when is None or not info:
-                continue
-            if totals:
-                current = tuple(count(totals.get(key)) for key in ("input_tokens", "output_tokens", "cached_input_tokens"))
-                current_reasoning = reasoning_count(totals, current[1])
-                if any(a < b for a, b in zip(current, previous)):
-                    notices.append("A Codex cumulative counter reset; an ambiguous interval was excluded.")
-                    previous = current
-                    previous_reasoning = current_reasoning
-                    continue
-                delta = tuple(a - b for a, b in zip(current, previous))
-                reasoning = None
-                if current_reasoning is not None and previous_reasoning is not None:
-                    change = current_reasoning - previous_reasoning
-                    if 0 <= change <= delta[1]:
-                        reasoning = change
-                if current != previous or current_reasoning is not None:
-                    previous_reasoning = current_reasoning
-                previous = current
-                identity = (session, current)
-            elif last:
-                delta = tuple(count(last.get(key)) for key in ("input_tokens", "output_tokens", "cached_input_tokens"))
-                reasoning = reasoning_count(last, delta[1])
-                identity = (session, when, delta)
-                if identity in last_only_seen:
-                    continue
-                last_only_seen.add(identity)
-                notices.append("Codex records without cumulative counters use timestamp deduplication.")
-            else:
-                continue
-            if forked and created is not None and when < created:
-                continue  # Inherited history seeds counters but is not new fork usage.
-            if not any(delta):
-                continue  # Quota notifications often repeat the same cumulative totals.
-            if delta[2] > delta[0]:
-                notices.append("A Codex cached-input counter exceeded total input; that record was skipped.")
-                continue
-            # cached_input_tokens is a subset of input_tokens. Reasoning is a
-            # subset of output_tokens and is deliberately not added again.
-            tokens = Tokens(delta[0] - delta[2], delta[1], delta[2])
-            records.setdefault(identity, Record("Codex", when, session, project, model, tokens,
-                                                 effort, effort_source, turn_id, reasoning))
-    return list(records.values())
+    return _reconciled_records("Codex", roots, notices, since)
+
+
+def _reconciled_records(provider, roots, notices, since):
+    result = reconcile_observations(read_observations(provider, roots, notices, since))
+    notices.extend(issue.message for issue in result.issues)
+    return [event.record for event in result.events]
 
 
 def default_roots() -> dict[str, list[Path]]:

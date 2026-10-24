@@ -387,7 +387,7 @@ The expected build artifact is `windows/dist/UsageTray.exe`; generated artifacts
 
 ## 10. Progress ledger and handoff template
 
-Current status in this isolated worktree: **S00 and S01 complete; S02–S14 not_started**. S01 has not been integrated into the concurrently changing original checkout. Earlier reviews, tests, pricing fixes, and documentation are baseline evidence; they do not automatically complete the broader session gates. Some tasks may already be satisfied when implementation begins; verify and record that evidence rather than repeating work unnecessarily.
+Current status in this isolated worktree: **S00–S02 complete; S03–S14 not_started**. S01/S02 have not been integrated into the separate original checkout. Earlier reviews, tests, pricing fixes, and documentation are baseline evidence; they do not automatically complete the broader session gates. Some tasks may already be satisfied when implementation begins; verify and record that evidence rather than repeating work unnecessarily.
 
 Create one entry per session and update it when work changes:
 
@@ -455,6 +455,20 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - Limits: original mixed checkout is not validated or integrated by these checks. Verified file generations/recovery, partial-scan quality, exact valuation, and request-context tier policy remain later sessions. No real-log/live-account, interactive lifecycle, macOS, Figma, or CI check was run.
 - Next ready: **S02** against this worktree's seam. Shared-checkout integration requires resolving the competing contract and rerunning its combined gates; preserve all concurrent changes meanwhile.
 
+### Session S02 — Overlap reconciliation and reset epochs
+
+- Status: **complete in the isolated refinement worktree**. Scope: F2/F6 correctness; no interface/storage expansion. Started clean at `e23f62f` on `codex/s01-observation-contracts`.
+- Implementation: both readers now extract all eligible observations before pure reconciliation and compatible Record projection. Added canonical event/source mappings, explicit accounting issues, source-supported equal-time ordering, reset epochs, conservative gap/fork baselines, metadata qualifications, and labeled last-usage behavior. Claude stream maxima preserve effort and resolve legacy/detailed cache-write representation before aggregation.
+- Decisions and limits: [S02 policy and handoff](s02-reconciliation.md) specifies supported equivalence/order evidence, tied/cyclic exclusions, zero-origin assumption, fork handling, mixed last-only exclusions, and metadata conflicts. This is an accounting issue layer; general ingestion completeness/recovery/time remains S03. Unknown excluded work stays null.
+- Files changed: `windows/usage_reconciliation.py`, `windows/usage_observations.py`, `windows/usage_reports.py`, `windows/tests/test_reconciliation.py`, `windows/tests/test_observations.py`, `windows/README.md`, `docs/s02-reconciliation.md`, `docs/s01-observation-contracts.md`, and this ledger.
+- Regression sequence: two mandatory tests were added/run first and reproduced 300 vs 200 and the lost final reset increment. Final focused suites passed **28 reconciliation** and **16 observation** tests. The provenance-only observation fixture was made non-fork; dedicated tests now enforce missing-fork-baseline exclusions rather than preserving accidental legacy counting.
+- Full verification: **101 tests passed in 6.445 seconds** via `windows/build.ps1`; build succeeded on project Python 3.14.5 with installed pinned dependencies and `PIP_NO_INDEX=1`, using workspace-local `windows/build/s02-temp`.
+- Independent probes: **200/200**, **200/200**, **250/250**, all `matches_expected=true`; inspected output rather than relying on zero exit.
+- Packaged acceptance: fresh executable read controlled synthetic overlapping/reset logs in text and HTML modes; each exited 0 with **250** tokens, rounded **USD 0.0006**, and a reset notice, without demo substitution. Separate demo remained **108,000** tokens / **USD 0.2658**, clearly labeled. No user logs/credentials or live providers were used.
+- Gate evidence: copies/root orders/reimports are invariant; reset-to-repeated values and fork baselines retain supported increments; ambiguous ties/conflicts are deterministic and visible; legacy report/provider suites have no unexplained regression. Documentation links/fences/whitespace and `git diff --check` passed.
+- Remaining limits: conservative exclusions do not certify full histories; file generation/recovery/mtime filtering, structured scan completeness, named-zone boundaries, and exact versioned valuation remain later gates. No interactive tray/lifecycle, real-account/history, macOS, Figma, or CI check. Original checkout untouched; no merge or remote publication.
+- Next ready: **S03 source quality, recovery, and time**, preserving S02 accounting invariants. Shared-checkout integration still needs an explicit owner and combined validation.
+
 ## 11. Completion and reassessment
 
 - **Core complete:** S00–S09 gates pass; terminal functionality remains available; known accounting defects have regression coverage and correct outcomes.
@@ -462,4 +476,4 @@ Do not include raw source lines, transcript text, credentials, or identifying us
 - **Hub complete:** the explicitly scoped S11–S14 gates pass; plans/Figma alone do not count as runtime integration.
 - **Factor reassessment:** revisit F1–F10 using linked tests, runtime checks, and remaining limitations. Keep weights stable or explain a scope-driven change. Do not raise the score just to hit a target number.
 
-Recommended next implementation unit in this worktree: **S02**. S00/S01 are complete here; do not start by restyling the report or creating a database around the current reconciliation defects.
+Recommended next implementation unit in this worktree: **S03**. S00–S02 are complete here; do not start by restyling the report or creating a database around the current reconciliation defects.

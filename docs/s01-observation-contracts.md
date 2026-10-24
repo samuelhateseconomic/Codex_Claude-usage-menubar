@@ -4,6 +4,8 @@ Status: **complete in the isolated S01 worktree**. Integration into the concurre
 
 This session prepares the [S02 accounting fixes](project-refinement-plan.md) without changing the active legacy reconciliation policy. It follows the [S00 baseline](s00-baseline.md) and the [integration contract](usage-hub-integration-plan.md). No database, API, dashboard, configuration migration, or new pricing policy is introduced.
 
+S02 now activates this extraction seam in the report readers; see the [reconciliation handoff](s02-reconciliation.md). The S01 behavior and results below are historical session evidence.
+
 ## Ownership and compatibility
 
 S00 was committed as `854ac73`. During S01, concurrent work changed the shared checkout's readers, valuation, and dashboard files, including a call to an incompatible `reconcile_codex` contract. The first shared-checkout focused run passed 13 tests and failed one on that missing import. Those edits were preserved; this session did not overwrite the other implementation to make its tests pass.

@@ -1,7 +1,7 @@
 """Metadata-only extraction contracts. No filesystem, provider, pricing, or GUI I/O.
 
 Observations are evidence, not accepted billable events. In particular, an absent
-counter is never normalized to zero here. S02 owns reconciliation and acceptance.
+counter is never normalized to zero here. The pure reconciliation module owns acceptance.
 """
 from __future__ import annotations
 
@@ -81,6 +81,7 @@ class Observation:
     model: str
     effort: str
     effort_source: str
+    effort_is_explicit: bool = False
     turn_id: str | None = None
     message_id: str | None = None
     request_id: str | None = None
@@ -128,7 +129,7 @@ def group_observations(observations: Iterable[Observation]) -> tuple[Conversatio
 
 @dataclass(frozen=True)
 class CanonicalEvent:
-    """Accepted-event contract for S02; legacy readers do not emit these yet.
+    """Accepted-event contract emitted by observation-first reconciliation.
 
     Anchors must come from reconciled evidence, including the reset epoch, never
     just a file position or cumulative numeric tuple. Provenance is not identity.
@@ -305,7 +306,7 @@ def extract_codex(entries: Iterable[tuple[int, dict]], source_id: str,
                 provider="Codex", source=source, conversation_id=conversation,
                 timestamp=when, timestamp_state=state, kind="codex_token_count",
                 project=project, project_kind=project_kind, model=model,
-                effort=effort, effort_source=effort_source, turn_id=turn_id,
+                effort=effort, effort_source=effort_source, effort_is_explicit=effort_source != "not recorded", turn_id=turn_id,
                 message_id=_text(payload.get("message_id")), request_id=_text(payload.get("request_id")),
                 cumulative=cumulative, last_usage=last, session_created_at=created,
                 fork_parent_id=fork_parent, context_source=context_source, session_source=session_source,
@@ -359,6 +360,7 @@ def extract_claude(entries: Iterable[tuple[int, dict]], source_id: str,
             timestamp=when, timestamp_state=state, kind="claude_message",
             project=project or source_label, project_kind="path" if project else "source_label",
             model=_text(message.get("model")) or "unknown", effort=effort, effort_source=effort_source,
+            effort_is_explicit=explicit_effort is not None,
             turn_id=turn_id, message_id=message_id, request_id=_text(entry.get("requestId")),
             message_usage=_counters(message, "usage", "Claude"), context_source=context_source,
             issues=issues,
