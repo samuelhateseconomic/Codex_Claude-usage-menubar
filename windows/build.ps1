@@ -9,6 +9,7 @@ if (-not (Test-Path ".venv\Scripts\python.exe")) {
 if ($LASTEXITCODE -ne 0) { throw "Dependency installation failed." }
 & .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 if ($LASTEXITCODE -ne 0) { throw "Tests failed." }
-& .\.venv\Scripts\python.exe -m PyInstaller --noconfirm --clean --onefile --windowed --name UsageTray usage_tray.py
+$buildWorkspace = Join-Path $PSScriptRoot ("build\release-" + [guid]::NewGuid().ToString("N"))
+& .\.venv\Scripts\python.exe -m PyInstaller --noconfirm --clean --onefile --windowed --workpath $buildWorkspace --name UsageTray usage_tray.py
 if ($LASTEXITCODE -ne 0) { throw "Packaging failed." }
 Write-Host "Built $PSScriptRoot\dist\UsageTray.exe"

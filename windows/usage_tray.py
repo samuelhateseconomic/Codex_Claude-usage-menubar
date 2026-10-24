@@ -4,14 +4,17 @@ from __future__ import annotations
 import argparse
 from datetime import datetime
 import json
+import math
 from pathlib import Path
 import threading
 import time
 import webbrowser
 import os
+import subprocess
+import sys
 
 from usage_core import RateLimited, UsageError, demo_snapshot, fetch_claude, fetch_codex
-from usage_reports import collect_report, load_prices, report_directory, save_report
+from usage_reports import collect_report, load_prices, render_text_report, report_directory, save_report
 
 
 PROVIDERS = {"Codex": fetch_codex, "Claude": fetch_claude}
@@ -22,6 +25,21 @@ def open_local(path):
         os.startfile(str(path))
     else:
         webbrowser.open(path.as_uri())
+
+
+def open_report(path, format):
+    if format == "html":
+        open_local(path)
+    elif os.name == "nt":
+        # Pass the path as data, never interpolate it into PowerShell code.
+        environment = dict(os.environ, USAGE_TRAY_REPORT=str(path))
+        subprocess.Popen(
+            ["powershell.exe", "-NoLogo", "-NoProfile", "-NoExit", "-Command",
+             "Get-Content -LiteralPath $env:USAGE_TRAY_REPORT -Encoding UTF8"],
+            env=environment, creationflags=subprocess.CREATE_NEW_CONSOLE,
+        )
+    else:
+        print(path.read_text(encoding="utf-8"))
 
 
 class ProviderState:
@@ -74,7 +92,7 @@ class ProviderState:
             return lines
 
 
-def run_tray(demo=False, selected="both", prices=None):
+def run_tray(demo=False, selected="both", prices=None, report_format="text", plan_costs=None):
     try:
         import pystray
         from PIL import Image, ImageDraw
@@ -101,10 +119,10 @@ def run_tray(demo=False, selected="both", prices=None):
                 for state in states:
                     with state.lock:
                         snapshots[state.provider] = state.snapshot
-                report = collect_report(period, [s.provider for s in states], snapshots, prices=prices, demo=demo)
-                path = save_report(report)
+                report = collect_report(period, [s.provider for s in states], snapshots, prices=prices, demo=demo, plan_costs=plan_costs)
+                path = save_report(report, format=report_format)
                 report_status[0] = "Report saved — select a report to refresh it"
-                open_local(path)
+                open_report(path, report_format)
             except Exception:
                 report_status[0] = "Report failed — check local log and report-folder permissions"
             finally:
@@ -129,9 +147,10 @@ def run_tray(demo=False, selected="both", prices=None):
             for line in state.lines():
                 yield pystray.MenuItem(line, None, enabled=False)
             yield pystray.Menu.SEPARATOR
-        yield pystray.MenuItem("Current session token & cost report…", lambda icon, item: make_report("session"), enabled=lambda item: not report_lock.locked())
-        yield pystray.MenuItem("Today's token & cost report…", lambda icon, item: make_report("today"), enabled=lambda item: not report_lock.locked())
-        yield pystray.MenuItem("Last 7 days token & cost report…", lambda icon, item: make_report("week"), enabled=lambda item: not report_lock.locked())
+        yield pystray.MenuItem("This month: API value & plan savings…", lambda icon, item: make_report("month"), enabled=lambda item: not report_lock.locked())
+        yield pystray.MenuItem("Current session estimated API value…", lambda icon, item: make_report("session"), enabled=lambda item: not report_lock.locked())
+        yield pystray.MenuItem("Today's estimated API value…", lambda icon, item: make_report("today"), enabled=lambda item: not report_lock.locked())
+        yield pystray.MenuItem("Last 7 days estimated API value…", lambda icon, item: make_report("week"), enabled=lambda item: not report_lock.locked())
         yield pystray.MenuItem("Open saved reports folder…", open_reports)
         if report_status[0]:
             yield pystray.MenuItem(report_status[0], None, enabled=False)
@@ -190,11 +209,17 @@ def main():
     parser.add_argument("--provider", choices=("both", "codex", "claude"), default="both")
     parser.add_argument("--demo", action="store_true", help="Use clearly labeled sample data without reading credentials")
     parser.add_argument("--once", action="store_true", help="Print one usage snapshot as JSON, without a tray")
-    parser.add_argument("--report", choices=("session", "today", "week"), help="Generate an HTML token/cost report from local CLI logs; no sign-in request")
-    parser.add_argument("--output", type=Path, help="HTML report destination (used with --report)")
-    parser.add_argument("--open-report", action="store_true", help="Open the generated report in a browser")
+    parser.add_argument("--report", choices=("session", "today", "week", "month"), help="Estimate API-equivalent value from local tokens; month also compares plan fees")
+    parser.add_argument("--report-format", choices=("text", "html"), default="text", help="Report display format (default: text in a terminal)")
+    parser.add_argument("--output", type=Path, help="Report destination (used with --report)")
+    parser.add_argument("--open-report", action="store_true", help="Open the report in a terminal (or browser for HTML)")
     parser.add_argument("--prices", type=Path, help="JSON file of exact-model USD prices per million tokens")
+    parser.add_argument("--codex-plan-usd", type=float, default=20.0, help="Codex monthly subscription price in USD (default: 20)")
+    parser.add_argument("--claude-plan-usd", type=float, default=20.0, help="Claude monthly subscription price in USD (default: 20)")
     args = parser.parse_args()
+    plan_costs = {"Codex": args.codex_plan_usd, "Claude": args.claude_plan_usd}
+    if any(not math.isfinite(value) or value < 0 for value in plan_costs.values()):
+        parser.error("Monthly plan prices must be finite, nonnegative USD amounts")
     if args.once and args.report:
         parser.error("--once and --report cannot be used together")
     if (args.output or args.open_report) and not args.report:
@@ -211,12 +236,17 @@ def main():
     if args.report:
         providers = [p for p in PROVIDERS if args.provider in ("both", p.lower())]
         try:
-            path = save_report(collect_report(args.report, providers, prices=prices, demo=args.demo), args.output)
+            report = collect_report(args.report, providers, prices=prices, demo=args.demo, plan_costs=plan_costs)
+            if args.report_format == "text" and not args.output and not args.open_report and sys.stdout is not None:
+                print(render_text_report(report))
+                return 0
+            path = save_report(report, args.output, format=args.report_format)
         except (OSError, ValueError):
             parser.exit(1, "Cannot create the report. Check local log and output-folder permissions.\n")
-        print(str(path))
-        if args.open_report:
-            open_local(path)
+        if sys.stdout is not None:
+            print(str(path))
+        if args.open_report or (sys.stdout is None and not args.output):
+            open_report(path, args.report_format)
         return 0
     if args.once:
         results = []
@@ -233,7 +263,7 @@ def main():
                 results.append({"provider": name, "error": message})
         print(json.dumps(results, indent=2, ensure_ascii=False))
         return 1 if failed else 0
-    run_tray(args.demo, args.provider, prices)
+    run_tray(args.demo, args.provider, prices, args.report_format, plan_costs)
     return 0
 
 

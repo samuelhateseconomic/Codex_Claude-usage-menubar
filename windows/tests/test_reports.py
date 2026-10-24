@@ -224,12 +224,45 @@ class ReportTests(unittest.TestCase):
         self.assertIsNone(reports.estimate(report.records[0]))
         html = reports.render_report(report)
         self.assertIn("1,100", html)
-        self.assertIn("unpriced usage", html)
+        self.assertIn("Unavailable (all usage unpriced)", html)
         self.assertIn("dollar subtotal incomplete", html)
 
     def test_long_context_price_threshold(self):
         record = reports.Record("Codex", NOW, "s", "p", "gpt-5.4", reports.Tokens(250000, 1000, 30000))
         self.assertAlmostEqual(reports.estimate(record), (250000 * 5 + 1000 * 22.5 + 30000 * .5) / 1e6)
+
+    def test_current_official_model_prices_and_context_tier(self):
+        record = reports.Record("Codex", NOW, "s", "p", "gpt-6.1-sol", reports.Tokens(100000, 10000, 100000))
+        self.assertAlmostEqual(reports.estimate(record), .31)
+        self.assertAlmostEqual(reports.estimate(replace(record, tokens=reports.Tokens(200000, 10000, 100000))), .97)
+        claude = reports.Record("Claude", NOW, "c", "p", "claude-opus-5-5", reports.Tokens(1000000, 1000000, 1000000, 1000000, 1000000))
+        self.assertAlmostEqual(reports.estimate(claude), 37.2)
+        self.assertIsNone(reports.price_for("codex-auto-review"))
+
+    def test_400_million_tokens_have_nonzero_correct_value(self):
+        # 2,000 short-context calls: 20M uncached + 2M output + 378M cached.
+        record = reports.Record("Codex", NOW, "s", "p", "gpt-6.1-sol", reports.Tokens(10000, 1000, 189000))
+        report = reports.Report([record] * 2000, {"Codex": (NOW - 100, "Month to date")}, NOW, period="month")
+        self.assertEqual(sum(r.tokens.total for r in report.records), 400_000_000)
+        # 20 * $2 + 2 * $10 + 378 * $0.10 = $97.80; monthly fee $20.
+        self.assertAlmostEqual(sum(reports.estimate(r) for r in report.records), 97.8)
+        self.assertIn("$97.8000", reports.render_text_report(report))
+        self.assertIn("$97.8000", reports.render_report(report))
+        self.assertIn("Estimated savings so far: $77.80", "\n".join(reports.plan_comparison(report)))
+
+    def test_all_unpriced_tokens_never_show_zero_or_false_plan_savings(self):
+        record = reports.Record("Codex", NOW, "s", "p", "no-published-rate", reports.Tokens(cached=400_000_000))
+        report = reports.Report([record], {"Codex": (NOW - 100, "Month to date")}, NOW, period="month")
+        for renderer in (reports.render_text_report, reports.render_report):
+            rendered = renderer(report)
+            self.assertIn("Unavailable (all usage unpriced)", rendered)
+            self.assertNotIn("$0.0000", rendered)
+            self.assertNotIn("Below monthly fee", rendered)
+            self.assertNotIn("Estimated savings so far", rendered)
+        report.records.append(replace(record, model="gpt-6.1-sol", tokens=reports.Tokens(10000)))
+        comparison = "\n".join(reports.plan_comparison(report))
+        self.assertIn("Priced subtotal minus monthly fee: -$19.98", comparison)
+        self.assertNotIn("Below monthly fee", comparison)
 
     def test_provider_session_boundaries_and_trailing_fallback(self):
         snapshot = Snapshot("Claude", [Window("Session (5h)", 20, NOW + 3600, 300)])
@@ -309,10 +342,78 @@ class ReportTests(unittest.TestCase):
         output = self.base / "report.html"
         script = Path(__file__).resolve().parents[1] / "usage_tray.py"
         environment = dict(os.environ, CLAUDE_CONFIG_DIR=str(self.base), CODEX_HOME=str(self.base / "no-codex"), LOCALAPPDATA=str(self.base / "appdata"))
-        result = subprocess.run([sys.executable, str(script), "--report", "session", "--output", str(output)], capture_output=True, text=True, env=environment, check=True)
+        result = subprocess.run([sys.executable, str(script), "--report", "session", "--report-format", "html", "--output", str(output)], capture_output=True, text=True, env=environment, check=True)
         self.assertEqual(Path(result.stdout.strip()), output)
         self.assertIn("3,800", output.read_text())
         self.assertNotIn("PRIVATE PROMPT CONTENT", output.read_text())
+
+    def test_text_report_totals_and_unpriced_usage(self):
+        report = reports.collect_report(now=NOW, demo=True)
+        report.records.append(reports.Record("Codex", NOW, "s", "p\x1b[2J", "unknown-model", reports.Tokens(10)))
+        rendered = reports.render_text_report(report)
+        self.assertIn("108,010", rendered)
+        self.assertIn("DEMO", rendered)
+        self.assertIn("unpriced usage", rendered)
+        self.assertIn("unknown-model", rendered)
+        self.assertNotIn("\x1b", rendered)
+        self.assertNotIn("<html", rendered)
+
+    def test_cli_defaults_to_terminal_text(self):
+        script = Path(__file__).resolve().parents[1] / "usage_tray.py"
+        result = subprocess.run([sys.executable, str(script), "--report", "session", "--demo"], capture_output=True, text=True, check=True)
+        self.assertIn("USAGE TRAY - ESTIMATED API VALUE", result.stdout)
+        self.assertIn("108,000", result.stdout)
+
+    def test_monthly_api_value_minus_plan_fees(self):
+        report = reports.collect_report(period="month", now=NOW, demo=True)
+        report.records = [
+            reports.Record("Codex", NOW, "s", "p", "gpt-5.4", reports.Tokens(output=10_000_000)),
+            reports.Record("Claude", NOW, "c", "p", "claude-sonnet-4-6", reports.Tokens(output=1_000_000)),
+        ]
+        comparison = "\n".join(reports.plan_comparison(report))
+        self.assertIn("Codex: Estimated API value $150.00 | Monthly plan $20.00", comparison)
+        self.assertIn("Estimated savings so far: $130.00", comparison)
+        self.assertIn("Below monthly fee by: $5.00", comparison)
+        self.assertIn("Combined: API value $165.00 | Monthly plans $40.00", comparison)
+        self.assertIn("Estimated savings so far: $125.00", reports.render_text_report(report))
+        self.assertIn("Estimated savings so far: $125.00", reports.render_report(report))
+
+    def test_comparison_respects_selected_providers_and_unknown_prices(self):
+        report = reports.collect_report(period="month", providers=["Codex"], now=NOW, demo=True, plan_costs={"Codex": 10})
+        report.records.append(reports.Record("Codex", NOW, "s", "p", "unpriced", reports.Tokens(100)))
+        comparison = "\n".join(reports.plan_comparison(report))
+        self.assertIn("Monthly plan $10.00", comparison)
+        self.assertIn("Monthly plans $10.00", comparison)
+        self.assertIn("priced usage only", comparison)
+        self.assertNotIn("Claude", comparison)
+        report.records.clear()
+        comparison = "\n".join(reports.plan_comparison(report))
+        self.assertIn("comparison unavailable", comparison)
+        self.assertNotIn("Estimated savings so far", comparison)
+        report.period = "today"
+        self.assertEqual(reports.plan_comparison(report), [])
+
+    def test_month_bounds_and_cli_fee_validation(self):
+        start, _ = reports.period_bounds("month", NOW)
+        local = datetime.fromtimestamp(start)
+        self.assertEqual((local.day, local.hour, local.minute, local.second), (1, 0, 0, 0))
+        script = Path(__file__).resolve().parents[1] / "usage_tray.py"
+        for invalid in ("-1", "nan", "inf"):
+            result = subprocess.run([sys.executable, str(script), "--report", "month", "--demo", "--codex-plan-usd", invalid], capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Monthly plan prices must be", result.stderr)
+
+    @unittest.skipUnless(os.name == "nt", "Windows terminal popup")
+    def test_text_popup_uses_terminal_without_browser(self):
+        import usage_tray
+        path = self.base / "report with spaces.txt"
+        with patch.object(usage_tray.subprocess, "Popen") as launch, patch.object(usage_tray, "open_local", side_effect=AssertionError):
+            usage_tray.open_report(path, "text")
+        args, kwargs = launch.call_args
+        self.assertEqual(args[0][0], "powershell.exe")
+        self.assertIn("-NoExit", args[0])
+        self.assertEqual(kwargs["env"]["USAGE_TRAY_REPORT"], str(path))
+        self.assertEqual(kwargs["creationflags"], subprocess.CREATE_NEW_CONSOLE)
 
 
 if __name__ == "__main__":

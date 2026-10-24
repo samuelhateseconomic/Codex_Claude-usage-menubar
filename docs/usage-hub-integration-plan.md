@@ -732,3 +732,16 @@ Deferred: hosted dashboard access, cross-device sync, automatic multi-account at
 - [Figma desktop prototype](https://www.figma.com/proto/6Axot2OcYiKcSfGYcLh3Jh?node-id=2-43&starting-point-node-id=2%3A43).
 
 This is the current proposed handoff. Confirm the database choices in section 13, keep Figma repairs reviewable, and use the acceptance checklist before connecting the production interface to imported totals.
+
+## 15. Confirmed token formatting and chart-axis rules
+
+- Display token values below one million as comma-separated integers: `190,000`, not `190K`.
+- Use `M` for millions and `B` for billions, with at most two decimal places and no trailing zeros: `2.84M`, `8.92M`, `5B`.
+- Abbreviations are rounded presentation values. Keep exact integer counts in database fields, API contracts, calculations, and aggregation. Never replace a stored count with a string such as `2.84M`.
+- Apply the display rule consistently to summary cards, model/project groups, conversation rows, token breakdowns, and token-axis labels.
+- Both chart metrics require a visible Y-axis and horizontal gridlines. API value uses USD ticks; recorded tokens use the token formatting above.
+- Start the Y-axis at zero. Choose a readable scale from the largest matched daily column, using the selected metric and filters; do not scale from the all-period summary total or reuse one numeric range for both units.
+- Keep bar height proportional to its value and the labeled axis maximum. Zero-value bars are hidden rather than assigned an artificial minimum height.
+- The revised Figma demo uses five equal grid intervals. Its default API-value axis is USD 0–50 and its token axis is 0–5M. Other provider/date/metadata filters select the appropriate smaller range.
+
+See [the Figma test report](usage-hub-figma-test-report.md) for prototype validation and playback limits. This revision changes presentation, not the database/API token contract.

@@ -40,9 +40,9 @@ For Claude, the app reads `%USERPROFILE%\.claude\.credentials.json` (or `CLAUDE_
 
 Credentials are used locally and sent only by the provider's normal authentication route. Claude redirects are rejected to prevent forwarding bearer tokens. No credentials, raw server error bodies, or conversation text are logged or copied into reports. Live limit snapshots exist only in memory. Reports read existing local CLI logs and save token aggregates, model names, project names, and conversation IDs locally. The app respects existing proxy and TLS settings.
 
-## Session token and dollar-value reports
+## Estimated API value and plan comparison
 
-Right-click the tray icon and choose **Current session token & cost report…**, **Today's token & cost report…**, or **Last 7 days token & cost report…**. An HTML report opens in your browser showing:
+Right-click the tray icon and choose **This month: API value & plan savings…**, **Current session estimated API value…**, **Today's estimated API value…**, or **Last 7 days estimated API value…**. By default, a text report opens in a PowerShell window that stays open until you close it. No browser is needed. It shows totals and breakdowns by provider, model and effort, project, conversation, and day. To use the full HTML report instead, start the tray with `--report-format html`. The HTML report includes:
 
 - Total recorded tokens and estimated API-equivalent USD value.
 - Uncached input, cache reads, cache writes, and output (including reasoning).
@@ -54,7 +54,7 @@ For the session report, a recent provider reset time anchors the current five-ho
 
 Codex records come from `%USERPROFILE%\.codex\sessions` and `archived_sessions` (or `CODEX_HOME`). Claude Code records come from `%USERPROFILE%\.claude\projects` (or `CLAUDE_CONFIG_DIR`). Completed responses and recorded counters are counted; ongoing responses may not appear until their CLI writes usage. Repeated cumulative Codex counters and streamed Claude message updates are deduplicated. Cached Codex input is a subset of input, and reasoning is a subset of output: neither is counted twice. Claude cache writes distinguish 5-minute and 1-hour prices when the logs provide those details; legacy writes without TTL details are labeled as an estimate at the 5-minute rate.
 
-**Dollar values are estimates at standard API list prices, not subscription charges or a conversion of your quota percentage.** Browser chat, cloud/remote tasks, other devices, and missing local logs cannot be counted. Counts can therefore differ from provider-wide usage. Unknown models remain in token totals but are marked unpriced, making the dollar subtotal explicitly incomplete. Bundled rates and their source are listed in the report. Discounts, priority/flex pricing, tools, taxes, and unrecorded billing adjustments are excluded. The GPT-5.4 long-context price tier is applied when the recorded request input exceeds 272,000 tokens.
+**Dollar values estimate what your recorded tokens would cost at API token prices, not an actual bill or a conversion of your quota percentage.** The month-to-date report compares that estimated API value with your full monthly plan fees: **$20 for Codex and $20 for Claude** by default. Estimated savings so far = estimated API value minus the monthly fee. If value is below the fee, the report shows how far below rather than claiming savings. Unpriced models make the comparison incomplete; missing local usage records leave the comparison unavailable. The period starts on the first day of the calendar month, not your subscription renewal date, and does not project future usage. Use `--codex-plan-usd 20 --claude-plan-usd 20` to change the comparison prices when starting the tray or generating a report. Browser chat, cloud/remote tasks, other devices, and missing local logs cannot be counted. Counts can therefore differ from provider-wide usage. Unknown models remain in token totals but are marked unpriced, making the dollar subtotal explicitly incomplete. Bundled rates and their source are listed in the report. Discounts, priority/flex pricing, tools, taxes, and unrecorded billing adjustments are excluded. The GPT-5.4 long-context price tier is applied when the recorded request input exceeds 272,000 tokens.
 
 Reports are saved under `%LOCALAPPDATA%\UsageTray\Reports`. They contain local project names and conversation IDs, so review before sharing. Delete files there when no longer needed.
 
@@ -62,9 +62,11 @@ You can also generate reports without starting the tray, without API access, and
 
 ```powershell
 .\.venv\Scripts\python.exe usage_tray.py --report session --open-report
-.\.venv\Scripts\python.exe usage_tray.py --report today --output .\today.html
+.\.venv\Scripts\python.exe usage_tray.py --report today
+.\.venv\Scripts\python.exe usage_tray.py --report month
+.\.venv\Scripts\python.exe usage_tray.py --report today --report-format html --output .\today.html
 .\.venv\Scripts\python.exe usage_tray.py --report week --provider codex --open-report
-.\.venv\Scripts\python.exe usage_tray.py --report session --demo --output .\demo.html
+.\.venv\Scripts\python.exe usage_tray.py --report session --demo --output .\demo.txt
 ```
 
 Offline commands do not fetch a provider reset time, so `--report session` uses the last five hours. `--demo` uses clearly labeled samples and reads no logs. For updated or new models, copy `prices.example.json` to `%LOCALAPPDATA%\UsageTray\prices.json` and edit exact model rates in **USD per million tokens**. The app loads that file at startup; `--prices .\my-prices.json` selects another file. Each model requires `input`, `output`, and `cached`; Claude cache writes also use `write5m` and `write1h`. Restart the tray after changing prices.
@@ -93,3 +95,9 @@ The script installs pinned dependencies, runs tests, and bundles Python into `di
 Alternatively, push the changes to GitHub and run **Actions → Build Windows Usage Tray → Run workflow**. The workflow uses a Windows runner, runs the tests, and uploads an artifact named `UsageTray-Windows` containing the executable. It also runs when changes to `windows/` are pushed or proposed in a pull request. The workflow has been added but has not been run from this Linux development environment.
 
 Windows packaging and native tray behavior must be checked on Windows. A Linux test run validates adapters and protocol behavior, not a Windows executable. Before distribution, run the app on Windows with both real accounts, check remaining percentages against each provider's usage page, confirm reset times, test expired/missing logins, and quit/relaunch it.
+
+### Current-model price coverage
+
+The bundled rates include GPT-6.1 Sol (input $2, output $10, cached input $0.10 per million tokens; higher context tier above 272,000 input tokens) and Claude Opus 5.5 (input $4, output $20, cache reads $0.20, 5-minute cache writes $5, 1-hour cache writes $8 per million tokens). Sources: https://developers.openai.com/api/docs/models/gpt-6.1-sol and https://platform.claude.com/docs/en/models/opus-5-5/overview, checked October 23, 2026.
+
+Models without a configured public API rate, including `codex-auto-review`, retain their token counts and appear as **unpriced**, never as a zero-dollar API estimate. Partial comparisons show only the priced subtotal minus the plan fee. Text reports list the rates used and their sources. Standard API-equivalent estimates exclude service-tier premiums.

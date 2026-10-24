@@ -408,6 +408,16 @@ Decisions requiring an entry when implemented: canonical observation/epoch ident
 
 Do not include raw source lines, transcript text, credentials, or identifying user-history examples in the ledger. Use synthetic fixtures and sanitized summaries.
 
+### Publication verification — existing Windows updates and Figma handoff
+
+- Scope: publish previously completed local terminal-report, monthly comparison, model-rate, packaging, and Figma documentation changes. This is not completion of S00–S14.
+- Starting commit: `0dde414`, with the Windows changes and Figma documentation still local.
+- Files: `windows/usage_reports.py`, `windows/usage_tray.py`, `windows/tests/test_reports.py`, `windows/build.ps1`, `windows/README.md`, `docs/usage-hub-integration-plan.md`, `docs/usage-hub-figma-test-report.md`, and this ledger.
+- Checks: the full `unittest discover -s windows/tests` suite passed all 57 tests using workspace-local TEMP/TMP. Documentation links, JSON examples, code fences, whitespace, and `git diff --check` passed.
+- Packaging: `powershell -NoProfile -ExecutionPolicy Bypass -File .\windows\build.ps1` succeeded using installed dependencies with `PIP_NO_INDEX=1`. The packaged executable's hidden offline `--report month --demo --output ...` smoke check passed: 108,000 tokens, USD 0.2658 estimated API value, and the month-to-date comparison. Generated binaries remain outside the source commit.
+- Limits: the independent accounting probes still produce 300 instead of 200 for truncated-first overlap and 200 instead of 250 for the reset case. These remain open S02 gates. The Figma report is carried forward from its authoring work; this publication check did not repeat its Figma inspection/playback.
+- Next: S00 baseline/decision capture, then S01/S02 reconciliation; no refinement-session gate is marked complete by publication alone.
+
 ## 11. Completion and reassessment
 
 - **Core complete:** S00–S09 gates pass; terminal functionality remains available; known accounting defects have regression coverage and correct outcomes.
