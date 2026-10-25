@@ -15,4 +15,8 @@ $buildWorkspace = Join-Path $PSScriptRoot ("build\release-" + [guid]::NewGuid().
 if ($LASTEXITCODE -ne 0) { throw "Packaging failed." }
 & .\.venv\Scripts\python.exe tools/release_smoke.py --exe dist/UsageTray.exe
 if ($LASTEXITCODE -ne 0) { throw "Packaged release smoke checks failed." }
-Write-Host "Built and smoke-tested $PSScriptRoot\dist\UsageTray.exe"
+& .\.venv\Scripts\python.exe -m PyInstaller --noconfirm --clean --onefile --windowed --workpath "$buildWorkspace-setup" --add-data "dist/UsageTray.exe;." --name UsageTraySetup setup_usage_tray.py
+if ($LASTEXITCODE -ne 0) { throw "Installer packaging failed." }
+& .\.venv\Scripts\python.exe tools/installer_smoke.py --setup dist/UsageTraySetup.exe --app dist/UsageTray.exe
+if ($LASTEXITCODE -ne 0) { throw "Packaged installer acceptance failed." }
+Write-Host "Built and smoke-tested $PSScriptRoot\dist\UsageTray.exe and UsageTraySetup.exe"

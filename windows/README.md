@@ -2,6 +2,16 @@
 
 Codex + Claude usage estimates, live limits, terminal reports, and an optional local dashboard. [Project overview and macOS setup](../README.md).
 
+## Install without a terminal
+
+Download and extract a successful [Windows build artifact](https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar/actions/workflows/windows-usage-tray.yml), then double-click **UsageTraySetup.exe**. Source builds place it in `windows/dist`. It installs the app for your Windows account, adds Start menu and sign-in shortcuts, and starts the background tray with live checks enabled. No administrator access, separate Python install, terminal or browser is required. Provider CLI sign-ins remain necessary for live limits.
+
+Open the dashboard from the tray when needed. Closing its browser tab leaves monitoring running; **Quit** stops it until the next launch/sign-in. If an older owner is already running, Quit it and reopen **Usage Tray** from the Start menu to use the new installation.
+
+Installed binaries live in `%LOCALAPPDATA%\Programs\UsageTray\versions`; upgrades retain old binaries rather than overwriting a running app. Settings/history remain in `%LOCALAPPDATA%\UsageTray`. To disable sign-in startup, remove **Usage Tray.lnk** from the folder opened by `Win+R` → `shell:startup`. To remove the installation, Quit it, remove its Start menu/startup shortcuts, and remove the app's Programs folder; settings/history are separate.
+
+The installer and executable are unsigned. Windows may require approval for a downloaded build. [Windows startup folders](https://support.microsoft.com/en-gb/windows/experience/startup-boot/configure-startup-applications-in-windows).
+
 ## Run on Windows
 
 Requires Windows 10/11; source setup needs Python 3.11–3.14 with pip. Use the current `main` branch.
@@ -89,7 +99,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 .\dist\UsageTray.exe
 ```
 
-Build runs the Python suite, packages Python/local assets/timezone data, then performs 18 offline executable checks. Provider CLIs remain separate. Node.js is needed only for frontend tests. The executable is unsigned; startup registration is manual.
+Build runs the Python suite, packages the windowed app/local assets/timezone data, and performs 18 offline executable checks. It also creates **dist/UsageTraySetup.exe** and tests installation in isolated user folders, including exact payload identity, valid Start menu/startup shortcuts, repeat install and preserved settings/index. CI artifacts include both executables. Provider CLIs remain separate; Node.js is needed only for frontend tests. Portable app launches do not register startup; explicit setup does.
 
 ### Repeat release checks
 
@@ -103,6 +113,7 @@ $env:TMP = $refinementTemp
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 node --test dashboard/tests/*.test.mjs
 .\.venv\Scripts\python.exe tools/release_smoke.py --exe dist/UsageTray.exe
+.\.venv\Scripts\python.exe tools/installer_smoke.py --setup dist/UsageTraySetup.exe --app dist/UsageTray.exe
 .\.venv\Scripts\python.exe tests/packaged_hub_release.py --exe dist/UsageTray.exe --measurements build/hub-release-measurements.json
 ```
 

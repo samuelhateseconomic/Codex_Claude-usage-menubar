@@ -28,7 +28,7 @@
 <hr>
 
 > [!WARNING]
-> **Unsigned builds.** Windows has no signed installer. The macOS app is not Developer ID signed or notarized; first launch may require **Open** or approval under **Privacy & Security**.
+> **Unsigned builds.** The Windows installer and app are unsigned. The macOS app is not Developer ID signed or notarized; first launch may require **Open** or approval under **Privacy & Security**.
 
 > [!NOTE]
 > Unofficial; unaffiliated with OpenAI or Anthropic. API-equivalent value is an estimate, not a bill or realized savings. Provider usage interfaces may change.
@@ -37,6 +37,7 @@
 
 - **Live tray limits.** Remaining Codex/Claude capacity and reset times, with independent refresh, backoff, and stale-state labels.
 - **Local dashboard.** Daily token/value charts, provider/date filters, searchable projects and conversations, detail/Back navigation, and saved fee/timezone settings.
+- **One-click Windows setup.** Installs for your account, starts the tray, and runs it automatically at sign-in without a terminal.
 - **Terminal reports.** Compact summaries, ranked details, full audit output, and optional HTML. Normal tray startup opens no browser.
 - **Reliable accounting.** Reconciles supported duplicate histories, resets, forks, and streamed updates. Unknown models stay unpriced; reasoning is included in output once.
 - **Persistent local service.** Shared settings, recoverable SQLite storage, and authenticated browser access. Version 0.13.0 improves query reuse and honors saved report formats in explicit dashboard/API tray launches.
@@ -46,9 +47,9 @@
 
 ### Windows
 
-Use the [validated Windows build artifacts](https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar/actions/runs/40141823025) or build below. Run **UsageTray.exe** and find it under **Show hidden icons**.
+Download a successful [Windows build](https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar/actions/workflows/windows-usage-tray.yml) artifact, extract it, and double-click **UsageTraySetup.exe**. Building from source places it in **windows/dist**. It installs and starts Usage Tray, adds a Start menu shortcut, and enables automatic startup at Windows sign-in. No administrator access or terminal is needed to install. Portable use is still available with **UsageTray.exe**.
 
-For live limits, sign in through Codex CLI (`codex login`) and Windows-native Claude Code (`/login`). Right-click the tray for reports, **Open usage dashboard...**, or **Quit**.
+Find the tray under **Show hidden icons**. For live limits, sign in through Codex CLI (`codex login`) and Windows-native Claude Code (`/login`). Right-click the tray for reports, **Open usage dashboard...**, or **Quit**.
 
 ```powershell
 # From the windows folder after building:
@@ -79,7 +80,7 @@ Already have this repository on `main`? Check `git status`, preserve local edits
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\windows\build.ps1
-.\windows\dist\UsageTray.exe
+.\windows\dist\UsageTraySetup.exe
 ```
 
 For source-only setup and launch, see the [Windows guide](windows/README.md#run-on-windows).
