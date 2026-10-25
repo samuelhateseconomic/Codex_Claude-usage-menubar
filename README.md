@@ -20,7 +20,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Windows_version-0.13.0-e8775a" alt="Windows version 0.13.0">
   <img src="https://img.shields.io/badge/Windows-10%2F11-0078D4" alt="Windows 10/11">
-  <img src="https://img.shields.io/badge/Python-3.11%E2%80%933.14-3776AB?logo=python&logoColor=white" alt="Python 3.11–3.14">
+  <a href="#build-from-source"><img src="https://img.shields.io/badge/Python-3.11%E2%80%933.14-3776AB?logo=python&logoColor=white" alt="Python 3.11–3.14"></a>
   <img src="https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
 </p>
