@@ -66,14 +66,14 @@ Standalone dashboard mode does not poll providers. Closing the browser leaves th
 
 ## Build from source
 
-The current Windows version is on `codex/s01-observation-contracts`; main integration is pending.
+The current Windows version is included on `main`.
 
 ```bash
-git clone --branch codex/s01-observation-contracts https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar.git
+git clone https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar.git
 cd Codex_Claude-usage-menubar
 ```
 
-Already on this branch? Check `git status`, preserve local edits, then `git pull --ff-only`.
+Already have this repository on `main`? Check `git status`, preserve local edits, then `git pull --ff-only`.
 
 **Windows:** Python 3.11–3.14 with pip. From the repository root:
 

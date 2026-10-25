@@ -4,7 +4,7 @@ Codex + Claude usage estimates, live limits, terminal reports, and an optional l
 
 ## Run on Windows
 
-Requires Windows 10/11; source setup needs Python 3.11–3.14 with pip. Use branch `codex/s01-observation-contracts` until main integration is complete.
+Requires Windows 10/11; source setup needs Python 3.11–3.14 with pip. Use the current `main` branch.
 
 Run these commands from this `windows` folder, reusing `.venv` if present:
 
