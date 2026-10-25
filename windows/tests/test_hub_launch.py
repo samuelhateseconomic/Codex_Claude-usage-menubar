@@ -326,9 +326,11 @@ class NativeLaunch(ApiFixture):
             destinations.append(url)
             opened.set()
             return True
-        with patch.dict(sys.modules, {'pystray':fake}), patch.object(launch.webbrowser, 'open', side_effect=open_browser):
+        with patch.dict(sys.modules, {'pystray':fake}), patch.object(launch.webbrowser, 'open', side_effect=open_browser), \
+             patch.object(tray, 'menu_icon_class', wraps=tray.menu_icon_class) as input_class:
             self.assertEqual(launch.run_host(config_path=self.config, index_path=self.path,
                 owner_path=self.base/'menu.lock', port=0, tray=True), 0)
+        input_class.assert_called_once_with(Icon)
         self.assertEqual(len(destinations), 1)
         self.assertFalse((self.base/'menu.api.json').exists())
 

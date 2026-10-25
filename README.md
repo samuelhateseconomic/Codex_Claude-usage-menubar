@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Windows_version-0.13.0-e8775a" alt="Windows version 0.13.0">
+  <img src="https://img.shields.io/badge/Windows_version-0.13.1-e8775a" alt="Windows version 0.13.1">
   <img src="https://img.shields.io/badge/Windows-10%2F11-0078D4" alt="Windows 10/11">
   <a href="#build-from-source"><img src="https://img.shields.io/badge/Python-3.11%E2%80%933.14-3776AB?logo=python&logoColor=white" alt="Python 3.11–3.14"></a>
   <img src="https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white" alt="macOS 13+">
@@ -35,7 +35,7 @@
 
 ## Features
 
-- **Live tray limits.** Remaining Codex/Claude capacity and reset times, with independent refresh, backoff, and stale-state labels.
+- **Live tray limits.** Remaining Codex/Claude capacity and reset times, with independent refresh, backoff, and stale-state labels. Left- or right-click the icon for options.
 - **Local dashboard.** Daily token/value charts, provider/date filters, searchable projects and conversations, detail/Back navigation, and saved fee/timezone settings.
 - **One-click Windows setup.** Installs for your account, starts the tray, and runs it automatically at sign-in without a terminal.
 - **Terminal reports.** Compact summaries, ranked details, full audit output, and optional HTML. Normal tray startup opens no browser.
@@ -49,7 +49,7 @@
 
 Download a successful [Windows build](https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar/actions/workflows/windows-usage-tray.yml) artifact, extract it, and double-click **UsageTraySetup.exe**. Building from source places it in **windows/dist**. It installs and starts Usage Tray, adds a Start menu shortcut, and enables automatic startup at Windows sign-in. No administrator access or terminal is needed to install. Portable use is still available with **UsageTray.exe**.
 
-Find the tray under **Show hidden icons**. For live limits, sign in through Codex CLI (`codex login`) and Windows-native Claude Code (`/login`). Right-click the tray for reports, **Open usage dashboard...**, or **Quit**.
+Find the tray under **Show hidden icons**. For live limits, sign in through Codex CLI (`codex login`) and Windows-native Claude Code (`/login`). Left- or right-click the tray for reports, **Open usage dashboard...**, or **Quit**.
 
 ```powershell
 # From the windows folder after building:

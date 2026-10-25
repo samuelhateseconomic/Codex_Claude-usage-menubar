@@ -1,4 +1,4 @@
-# Usage Tray / Usage Hub for Windows — 0.13.0
+# Usage Tray / Usage Hub for Windows — 0.13.1
 
 Codex + Claude usage estimates, live limits, terminal reports, and an optional local dashboard. [Project overview and macOS setup](../README.md).
 
@@ -26,7 +26,7 @@ py -3 -m venv .venv
 
 For live limits, install/sign in through [Codex CLI](https://github.com/openai/codex) (`codex login`) and [Claude Code](https://code.claude.com/docs/en/setup) (`/login`). API-key accounts do not provide subscription limits. Claude needs Windows-native credentials; WSL/Keychain credentials are not imported. Renew expired credentials through the CLI.
 
-Find the icon under **Show hidden icons**. Right-click for limits, reports, dashboard, or Quit. `--provider codex` or `--provider claude` selects one provider. Checks run independently every five minutes with cooldown/backoff; failures retain labeled last-successful readings. Local usage can span unmatched accounts; live limits describe the active CLI account.
+Find the icon under **Show hidden icons**. Left- or right-click to open options, then left-click a menu item. Hover shows the standard tooltip. The menu includes limits, reports, dashboard, and Quit. `--provider codex` or `--provider claude` selects one provider. Checks run independently every five minutes with cooldown/backoff; failures retain labeled last-successful readings. Local usage can span unmatched accounts; live limits describe the active CLI account.
 
 ## Explicit local usage dashboard
 

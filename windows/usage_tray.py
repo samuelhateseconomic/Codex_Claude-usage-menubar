@@ -13,6 +13,7 @@ import subprocess
 import sys
 
 from usage_core import UsageError, demo_snapshot, fetch_claude, fetch_codex
+from usage_tray_input import menu_icon_class
 from usage_failures import report_failure
 from usage_privacy import display_text
 from usage_diagnostics import Operation, report_counts, write_diagnostic
@@ -214,7 +215,8 @@ def run_tray(demo=False, selected="both", prices=None, report_format="text", pla
                 draw.ellipse((12, y + 2, 20, y + 10), fill=color)
         return img
 
-    icon = pystray.Icon("UsageTray", image(), "Usage Tray" + (" — DEMO" if demo else ""), pystray.Menu(menu_items))
+    icon_type = menu_icon_class(pystray.Icon)
+    icon = icon_type("UsageTray", image(), "Usage Tray" + (" — DEMO" if demo else ""), pystray.Menu(menu_items))
 
     def redraw():
         while not stop.is_set():
