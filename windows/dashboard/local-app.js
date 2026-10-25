@@ -1,6 +1,6 @@
 import {createLocalClient} from './v1-client.js';
 import {createLocalSession,defaultSelection,observeLocalJob} from './local-session.js';
-import {renderLocal,renderChrome,drawLocalChart,button,escape} from './local-view.js';
+import {renderLocal,renderChrome,drawLocalChart,renderOperationFeedback,button,escape} from './local-view.js';
 
 const defaults=()=>({...defaultSelection(),view:'overview',metric:'value',table:'conversations',sort:'value_desc',pageSize:50,conversation:''});
 export function readLocation(location){
@@ -13,11 +13,29 @@ const hash=s=>{const p=new URLSearchParams();for(const [k,v]of Object.entries(s)
 
 export function mountLocalDashboard({document=globalThis.document,window=globalThis.window,location=globalThis.location,history=globalThis.history,client=createLocalClient()}={}){
   const $=s=>document.querySelector(s),content=$('#content'),session=createLocalSession(client);
-  let state=readLocation(location),bundle=null,navigation=null,parent=null,published=null,retry=null,sequence=0,debounce,draft=null,jobAbort=null,operation=0,operationBusy=false,notificationTimer;
+  let state=readLocation(location),bundle=null,navigation=null,parent=null,published=null,retry=null,sequence=0,debounce,draft=null,draftVersion=null,jobAbort=null,operation=0,operationBusy=false,notificationTimer,feedback=null;
   const snapshot=()=>({usageHub:1,state:structuredClone(state),navigation:structuredClone(navigation),parent:structuredClone(parent),scroll:window.scrollY});
   const notify=message=>{$('#notification').textContent=message;window.clearTimeout(notificationTimer);notificationTimer=window.setTimeout(()=>{$('#notification').textContent='';},6000);};
-  function syncOperationControls(){for(const node of document.querySelectorAll('[data-action="refresh"], [data-action="save-settings"]'))node.disabled=operationBusy;}
-  function render(){renderChrome(document,bundle,state);content.innerHTML=renderLocal(bundle,state,{draft});syncOperationControls();if(state.view==='overview')drawLocalChart(document,bundle,state);}
+  function syncOperationControls(){for(const node of document.querySelectorAll('[data-action="refresh"], [data-action="save-settings"], [data-action="check-job"], [data-setting]'))node.disabled=operationBusy;}
+  // Operation feedback survives transient notifications and view changes. A
+  // reopened page recovers pending work from the owner's durable status.
+  function setFeedback(state,message,extra={}){
+    feedback={...feedback,state,message,checkable:false,...extra};
+    const node=$('#operation-status');if(node){node.hidden=false;node.innerHTML=renderOperationFeedback(feedback);syncOperationControls();}
+  }
+  function recoverFeedback(){
+    const s=bundle.status.data,j=s.last_job;
+    if(!operationBusy&&!s.configuration_pending&&j?.status==='succeeded'&&feedback?.kind==='settings'&&feedback.jobId===j.id&&
+       ['pending','unconfirmed','applying'].includes(feedback.state)&&j.resulting_versions?.configuration_version===s.configuration_version&&
+       (!bundle.overview||bundle.overview.configuration_version===s.configuration_version)){
+      setFeedback('applied','Settings applied. This view uses the active configuration.');return;
+    }
+    if(operationBusy||!s.configuration_pending||!j||j.requested_configuration_version!==s.requested_configuration_version)return;
+    const checkable=['queued','running'].includes(j.status);
+    setFeedback(checkable?'pending':'failed',checkable?'Settings saved; application is pending. Previous committed usage remains active.':
+      'Saved settings have not been applied. Previous committed usage remains active. Open Settings and Save settings to retry.',{kind:'settings',jobId:j.id,checkable});
+  }
+  function render(){renderChrome(document,bundle,state);content.innerHTML=renderLocal(bundle,state,{draft,operation:feedback});syncOperationControls();if(state.view==='overview')drawLocalChart(document,bundle,state);}
   function cancelSearch(){window.clearTimeout(debounce);}
   function focus({scroll=0,conversation=null}={}){
     if($('#shortcuts').open)return;
@@ -31,7 +49,7 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
     try{
       const result=await session.load(state,{navigation,fresh});
       if(current!==sequence||result.state==='superseded')return 'superseded';
-      bundle=result.bundle;navigation=bundle.navigation;
+      bundle=result.bundle;navigation=bundle.navigation;recoverFeedback();
       if(result.refreshed){parent=null;notify('The complete query was refreshed. Pagination restarted at the first page.');}
       retry=null;render();published=snapshot();history.replaceState(published,'',hash(state));
       if(focusView)focus({scroll:result.refreshed?0:restore?.scroll??0,conversation:restore?.conversation});
@@ -65,36 +83,60 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
   }
   async function checkJob(id){
     jobAbort?.abort();jobAbort=new AbortController();const active=jobAbort;
+    const kind=feedback?.kind??'refresh',label=kind==='settings'?'Settings':'Local operation';
     try{
-      const result=await observeLocalJob(client,id,{signal:active.signal,onUpdate:j=>notify(`Local ${j.kind}: ${j.status} · ${j.phase}`)});
+      const result=await observeLocalJob(client,id,{signal:active.signal,onUpdate:j=>{
+        setFeedback('applying',`${label}: ${j.status} · ${j.phase}. Previous committed usage remains active until publication.`,{kind,jobId:id});
+      }});
       if(active.signal.aborted)return;
       if(result.state==='succeeded'){
         // Publication is complete; capture all report widgets together.
+        setFeedback('refreshing',`${label} applied. Refreshing the complete view…`);
         const outcome=await navigate({},{fresh:true,replace:true});
-        if(outcome==='accepted')notify('Local operation completed. The complete view has been refreshed.');
-        else if(outcome==='failed')notify('Local operation completed, but this view could not refresh. Previous results are retained.');
-      }else notify(result.state==='pending'?'The operation is still running. Check service status or refresh later.':`Local operation ${result.state}. Previous committed usage is retained.`);
-    }catch(e){if(!active.signal.aborted)notify(e.message);}
+        if(outcome==='accepted'){
+          if(kind==='settings'&&bundle.status.data.configuration_pending){
+            setFeedback('pending','The operation completed; a newer saved configuration is pending. Refresh the view to check its status.');
+          }else setFeedback('applied',kind==='settings'?'Settings applied. The complete view has been refreshed.':'Local operation completed. The complete view has been refreshed.');
+          notify(feedback.message);
+        }else if(outcome==='failed'){
+          setFeedback('unconfirmed',`${label} applied, but this view could not refresh. Previous results are retained. Use Refresh view to retry.`);notify(feedback.message);
+        }else if(outcome==='superseded'){
+          setFeedback('applied',`${label} applied. Navigation changed while refreshing; use Refresh view to capture the latest usage.`);
+        }
+      }else{
+        setFeedback(result.state,result.state==='pending'?`${label}${kind==='settings'?' saved;':' is'} still running. Check progress to resume observation.`:
+          `${label} could not be applied (${result.state}). Previous committed usage is retained. ${kind==='settings'?'Reload Settings before retrying Save settings.':'Retry Rescan local logs.'}`,{jobId:id,checkable:result.state==='pending'});
+        notify(feedback.message);
+      }
+    }catch(e){if(!active.signal.aborted){setFeedback('unconfirmed',`${label} progress could not be confirmed. ${e.message} Check progress to retry.`,{jobId:id,checkable:true});notify(feedback.message);}}
   }
   async function operationAction(kind,body){
     if(operationBusy)return;
     operationBusy=true;syncOperationControls();const current=++operation;
+    setFeedback('saving',kind==='settings'?'Saving settings…':'Requesting local rescan…',{kind,jobId:null});
     try{
       const response=await client.mutate(kind,body);
       if(current!==operation)return;
       if(kind==='settings'){
-        draft=null;
+        draft=null;draftVersion=null;
         if(state.view==='settings'&&bundle?.wire){bundle.wire.data.configuration_version=response.data.configuration_version;bundle.wire.data.settings=response.data.settings;render();}
         const job=response.data.jobs.find(j=>['queued','running'].includes(j.status));
+        setFeedback(response.data.pending?'applying':'applied',response.data.pending?'Settings saved. Applying them to usage comparisons…':'Settings applied.');
         notify(response.data.pending?'Settings saved; computation is pending.':'Settings saved.');
         if(job)await checkJob(job.id);else await navigate({},{fresh:true,replace:true});
       }else await checkJob(response.data.id);
     }catch(error){
       // Preserve the typed draft and loaded expected version on conflicts.
-      if(current===operation){notify(error.message);if(state.view==='settings')$('#settings-result').textContent=error.message+' Your draft is retained.';}
+      if(current===operation){
+        setFeedback('unconfirmed',kind==='settings'?`Settings update was not confirmed. ${error.message} Your draft is retained. Reload settings to check saved values before retrying.`:`Rescan was not confirmed. ${error.message}`);
+        notify(error.message);if(state.view==='settings')$('#settings-result').textContent=error.message+' Your draft is retained.';
+      }
     }finally{if(current===operation){operationBusy=false;syncOperationControls();}}
   }
-  const beginDraft=()=>draft??(draft={Codex:bundle.wire.data.settings.plan_fees_usd.Codex??'',Claude:bundle.wire.data.settings.plan_fees_usd.Claude??'',timezone:bundle.wire.data.settings.timezone});
+  const beginDraft=()=>{
+    if(!draft){draftVersion=bundle.wire.data.configuration_version;draft={Codex:bundle.wire.data.settings.plan_fees_usd.Codex??'',Claude:bundle.wire.data.settings.plan_fees_usd.Claude??'',timezone:bundle.wire.data.settings.timezone};}
+    return draft;
+  };
   async function back(){
     if(parent){const saved=structuredClone(parent),id=state.conversation;return navigate(saved.state,{replace:true,restore:{...saved,conversation:id}});}
     return navigate({view:'explore',conversation:''},{replace:true});
@@ -112,6 +154,11 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
     }
     if(action==='retry'){if(retry){({state,navigation,parent}=structuredClone(retry));return load();}return load();}
     if(action==='refresh')return operationAction('refresh',{});
+    if(action==='check-job'){
+      if(operationBusy||!feedback?.jobId)return;
+      operationBusy=true;syncOperationControls();
+      try{await checkJob(feedback.jobId);}finally{operationBusy=false;syncOperationControls();}return;
+    }
     if(action==='refresh-query')return navigate({},{fresh:true,replace:true});
     if(action==='metric'){
       if(!bundle?.overview)return;
@@ -139,17 +186,17 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
     }
     if(action==='detail'){parent=snapshot();return navigate({view:'detail',conversation:id});}
     if(action==='back')return back();
-    if(action==='cancel-settings'){draft=null;render();notify('Draft cancelled.');return;}
-    if(action==='reload-settings'){draft=null;return navigate({},{replace:true});}
+    if(action==='cancel-settings'){draft=null;draftVersion=null;if(!operationBusy&&!feedback?.jobId)feedback=null;render();notify('Draft cancelled.');return;}
+    if(action==='reload-settings'){draft=null;draftVersion=null;if(!operationBusy&&!feedback?.jobId)feedback=null;return navigate({},{replace:true});}
     if(action==='save-settings'){
-      const d=beginDraft();return operationAction('settings',{expected_configuration_version:bundle.wire.data.configuration_version,changes:{plan_fees_usd:{Codex:d.Codex.trim()===''?null:d.Codex.trim(),Claude:d.Claude.trim()===''?null:d.Claude.trim()},timezone:d.timezone.trim()}});
+      const d=beginDraft();return operationAction('settings',{expected_configuration_version:draftVersion,changes:{plan_fees_usd:{Codex:d.Codex.trim()===''?null:d.Codex.trim(),Claude:d.Claude.trim()===''?null:d.Claude.trim()},timezone:d.timezone.trim()}});
     }
   });
   document.addEventListener('change',event=>{
     if(['period','project','model','effort','sort','pageSize'].includes(event.target.id))return navigate({[event.target.id]:event.target.id==='pageSize'?Number(event.target.value):event.target.value,conversation:'',...(event.target.id==='period'?{day:''}:{})});
   });
   document.addEventListener('input',event=>{
-    if(event.target.dataset?.setting){beginDraft()[event.target.dataset.setting]=event.target.value;return;}
+    if(event.target.dataset?.setting){beginDraft()[event.target.dataset.setting]=event.target.value;$('#settings-result').textContent='Unsaved changes. Choose Save settings to apply them to comparisons.';return;}
     if(event.target.id!=='search')return;
     const q=event.target.value;cancelSearch();debounce=window.setTimeout(async()=>{
       const focused=document.activeElement?.id==='search',outcome=await navigate({q,conversation:''},{replace:true,focus:false});

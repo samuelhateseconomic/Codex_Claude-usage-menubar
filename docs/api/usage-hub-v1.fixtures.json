@@ -325,7 +325,149 @@
           "efforts": [
             "high",
             "unknown"
-          ]
+          ],
+          "pricing": {
+            "group_count": 2,
+            "total_record_count": 2,
+            "shown_record_count": 2,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "20000",
+                  "cache_read_tokens": "30000",
+                  "cache_write_5m_tokens": "5000",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "65000",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.471000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-claude",
+                  "matched_model": "fixture-claude",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:1e323d5c1b5f8d6397469e71ce9d0505c67696db0da1297a30737657bf29991a",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [
+                    "legacy_cache_ttl_assumed"
+                  ],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "4",
+                      "unrounded_usd": "0.04"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "20000",
+                      "rate_usd_per_million": "20",
+                      "unrounded_usd": "0.4"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "30000",
+                      "rate_usd_per_million": "0.2",
+                      "unrounded_usd": "0.006"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "5000",
+                      "rate_usd_per_million": "5",
+                      "unrounded_usd": "0.025"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": "8",
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              },
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "1830000",
+                  "cache_read_tokens": "1000000",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "2840000",
+                  "reasoning_tokens": "1260000"
+                },
+                "pricing_state": "complete",
+                "amount_usd": "18.420000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-model",
+                  "matched_model": "fixture-model",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "2",
+                      "unrounded_usd": "0.02"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "1830000",
+                      "rate_usd_per_million": "10",
+                      "unrounded_usd": "18.3"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "1000000",
+                      "rate_usd_per_million": "0.1",
+                      "unrounded_usd": "0.1"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ],
       "recent_conversations": [
@@ -369,7 +511,81 @@
           ],
           "efforts": [
             "high"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "1830000",
+                  "cache_read_tokens": "1000000",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "2840000",
+                  "reasoning_tokens": "1260000"
+                },
+                "pricing_state": "complete",
+                "amount_usd": "18.420000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-model",
+                  "matched_model": "fixture-model",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "2",
+                      "unrounded_usd": "0.02"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "1830000",
+                      "rate_usd_per_million": "10",
+                      "unrounded_usd": "18.3"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "1000000",
+                      "rate_usd_per_million": "0.1",
+                      "unrounded_usd": "0.1"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         },
         {
           "id": "conversation-v1:06e0d60ec342fb78857e904ef8d138e7bb53d5bb4db5287a337f50eafd69aec9",
@@ -413,7 +629,83 @@
           ],
           "efforts": [
             "unknown"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "20000",
+                  "cache_read_tokens": "30000",
+                  "cache_write_5m_tokens": "5000",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "65000",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.471000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-claude",
+                  "matched_model": "fixture-claude",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:1e323d5c1b5f8d6397469e71ce9d0505c67696db0da1297a30737657bf29991a",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [
+                    "legacy_cache_ttl_assumed"
+                  ],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "4",
+                      "unrounded_usd": "0.04"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "20000",
+                      "rate_usd_per_million": "20",
+                      "unrounded_usd": "0.4"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "30000",
+                      "rate_usd_per_million": "0.2",
+                      "unrounded_usd": "0.006"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "5000",
+                      "rate_usd_per_million": "5",
+                      "unrounded_usd": "0.025"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": "8",
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -520,7 +812,81 @@
           ],
           "efforts": [
             "high"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "1830000",
+                  "cache_read_tokens": "1000000",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "2840000",
+                  "reasoning_tokens": "1260000"
+                },
+                "pricing_state": "complete",
+                "amount_usd": "18.420000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-model",
+                  "matched_model": "fixture-model",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "2",
+                      "unrounded_usd": "0.02"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "1830000",
+                      "rate_usd_per_million": "10",
+                      "unrounded_usd": "18.3"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "1000000",
+                      "rate_usd_per_million": "0.1",
+                      "unrounded_usd": "0.1"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         },
         {
           "id": "conversation-v1:06e0d60ec342fb78857e904ef8d138e7bb53d5bb4db5287a337f50eafd69aec9",
@@ -564,7 +930,83 @@
           ],
           "efforts": [
             "unknown"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "20000",
+                  "cache_read_tokens": "30000",
+                  "cache_write_5m_tokens": "5000",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "65000",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.471000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-claude",
+                  "matched_model": "fixture-claude",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:1e323d5c1b5f8d6397469e71ce9d0505c67696db0da1297a30737657bf29991a",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [
+                    "legacy_cache_ttl_assumed"
+                  ],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "4",
+                      "unrounded_usd": "0.04"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "20000",
+                      "rate_usd_per_million": "20",
+                      "unrounded_usd": "0.4"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "30000",
+                      "rate_usd_per_million": "0.2",
+                      "unrounded_usd": "0.006"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "5000",
+                      "rate_usd_per_million": "5",
+                      "unrounded_usd": "0.025"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": "8",
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ],
       "pagination": {
@@ -681,7 +1123,149 @@
           "efforts": [
             "high",
             "unknown"
-          ]
+          ],
+          "pricing": {
+            "group_count": 2,
+            "total_record_count": 2,
+            "shown_record_count": 2,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "20000",
+                  "cache_read_tokens": "30000",
+                  "cache_write_5m_tokens": "5000",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "65000",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.471000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-claude",
+                  "matched_model": "fixture-claude",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:1e323d5c1b5f8d6397469e71ce9d0505c67696db0da1297a30737657bf29991a",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [
+                    "legacy_cache_ttl_assumed"
+                  ],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "4",
+                      "unrounded_usd": "0.04"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "20000",
+                      "rate_usd_per_million": "20",
+                      "unrounded_usd": "0.4"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "30000",
+                      "rate_usd_per_million": "0.2",
+                      "unrounded_usd": "0.006"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "5000",
+                      "rate_usd_per_million": "5",
+                      "unrounded_usd": "0.025"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": "8",
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              },
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "1830000",
+                  "cache_read_tokens": "1000000",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "2840000",
+                  "reasoning_tokens": "1260000"
+                },
+                "pricing_state": "complete",
+                "amount_usd": "18.420000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-model",
+                  "matched_model": "fixture-model",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "2",
+                      "unrounded_usd": "0.02"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "1830000",
+                      "rate_usd_per_million": "10",
+                      "unrounded_usd": "18.3"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "1000000",
+                      "rate_usd_per_million": "0.1",
+                      "unrounded_usd": "0.1"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ],
       "pagination": {
@@ -833,7 +1417,81 @@
       ],
       "efforts": [
         "high"
-      ]
+      ],
+      "pricing": {
+        "group_count": 1,
+        "total_record_count": 1,
+        "shown_record_count": 1,
+        "truncated": false,
+        "groups": [
+          {
+            "record_count": 1,
+            "tokens": {
+              "uncached_input_tokens": "10000",
+              "output_tokens": "1830000",
+              "cache_read_tokens": "1000000",
+              "cache_write_5m_tokens": "0",
+              "cache_write_1h_tokens": "0",
+              "total_tokens": "2840000",
+              "reasoning_tokens": "1260000"
+            },
+            "pricing_state": "complete",
+            "amount_usd": "18.420000000000",
+            "explanation": {
+              "state": "available",
+              "reason": null,
+              "currency": "USD",
+              "rate_unit_tokens": "1000000",
+              "requested_model": "fixture-model",
+              "matched_model": "fixture-model",
+              "model_mapping": "exact",
+              "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+              "tier": "standard",
+              "source": "custom configuration",
+              "checked_date": null,
+              "custom": true,
+              "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+              "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+              "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+              "policy_version": "decimal12-event-tier-compat-v1",
+              "assumptions": [],
+              "categories": [
+                {
+                  "category": "uncached_input_tokens",
+                  "tokens": "10000",
+                  "rate_usd_per_million": "2",
+                  "unrounded_usd": "0.02"
+                },
+                {
+                  "category": "output_tokens",
+                  "tokens": "1830000",
+                  "rate_usd_per_million": "10",
+                  "unrounded_usd": "18.3"
+                },
+                {
+                  "category": "cache_read_tokens",
+                  "tokens": "1000000",
+                  "rate_usd_per_million": "0.1",
+                  "unrounded_usd": "0.1"
+                },
+                {
+                  "category": "cache_write_5m_tokens",
+                  "tokens": "0",
+                  "rate_usd_per_million": null,
+                  "unrounded_usd": "0"
+                },
+                {
+                  "category": "cache_write_1h_tokens",
+                  "tokens": "0",
+                  "rate_usd_per_million": null,
+                  "unrounded_usd": "0"
+                }
+              ],
+              "rounding_adjustment_usd": "0.000000000000"
+            }
+          }
+        ]
+      }
     },
     "query_context_id": "VEBZXo9f7YX8sWHFH6JB8JNnBDtXhuvs",
     "usage_revision": "2",
@@ -923,7 +1581,59 @@
             "request_context_tokens": null,
             "request_context_source": "not recorded",
             "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
-            "policy_version": "decimal12-event-tier-compat-v1"
+            "policy_version": "decimal12-event-tier-compat-v1",
+            "explanation": {
+              "state": "available",
+              "reason": null,
+              "currency": "USD",
+              "rate_unit_tokens": "1000000",
+              "requested_model": "fixture-model",
+              "matched_model": "fixture-model",
+              "model_mapping": "exact",
+              "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+              "tier": "standard",
+              "source": "custom configuration",
+              "checked_date": null,
+              "custom": true,
+              "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+              "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+              "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+              "policy_version": "decimal12-event-tier-compat-v1",
+              "assumptions": [],
+              "categories": [
+                {
+                  "category": "uncached_input_tokens",
+                  "tokens": "10000",
+                  "rate_usd_per_million": "2",
+                  "unrounded_usd": "0.02"
+                },
+                {
+                  "category": "output_tokens",
+                  "tokens": "1830000",
+                  "rate_usd_per_million": "10",
+                  "unrounded_usd": "18.3"
+                },
+                {
+                  "category": "cache_read_tokens",
+                  "tokens": "1000000",
+                  "rate_usd_per_million": "0.1",
+                  "unrounded_usd": "0.1"
+                },
+                {
+                  "category": "cache_write_5m_tokens",
+                  "tokens": "0",
+                  "rate_usd_per_million": null,
+                  "unrounded_usd": "0"
+                },
+                {
+                  "category": "cache_write_1h_tokens",
+                  "tokens": "0",
+                  "rate_usd_per_million": null,
+                  "unrounded_usd": "0"
+                }
+              ],
+              "rounding_adjustment_usd": "0.000000000000"
+            }
           }
         }
       ],
@@ -1333,7 +2043,81 @@
           ],
           "efforts": [
             "high"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "1830000",
+                  "cache_read_tokens": "1000000",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "2840000",
+                  "reasoning_tokens": "1260000"
+                },
+                "pricing_state": "complete",
+                "amount_usd": "18.420000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-model",
+                  "matched_model": "fixture-model",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "2",
+                      "unrounded_usd": "0.02"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "1830000",
+                      "rate_usd_per_million": "10",
+                      "unrounded_usd": "18.3"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "1000000",
+                      "rate_usd_per_million": "0.1",
+                      "unrounded_usd": "0.1"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ],
       "recent_conversations": [
@@ -1377,7 +2161,81 @@
           ],
           "efforts": [
             "high"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "1830000",
+                  "cache_read_tokens": "1000000",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "2840000",
+                  "reasoning_tokens": "1260000"
+                },
+                "pricing_state": "complete",
+                "amount_usd": "18.420000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-model",
+                  "matched_model": "fixture-model",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "2",
+                      "unrounded_usd": "0.02"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "1830000",
+                      "rate_usd_per_million": "10",
+                      "unrounded_usd": "18.3"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "1000000",
+                      "rate_usd_per_million": "0.1",
+                      "unrounded_usd": "0.1"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -1640,7 +2498,83 @@
           ],
           "efforts": [
             "unknown"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "20000",
+                  "cache_read_tokens": "30000",
+                  "cache_write_5m_tokens": "5000",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "65000",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.471000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-claude",
+                  "matched_model": "fixture-claude",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:1e323d5c1b5f8d6397469e71ce9d0505c67696db0da1297a30737657bf29991a",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [
+                    "legacy_cache_ttl_assumed"
+                  ],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "4",
+                      "unrounded_usd": "0.04"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "20000",
+                      "rate_usd_per_million": "20",
+                      "unrounded_usd": "0.4"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "30000",
+                      "rate_usd_per_million": "0.2",
+                      "unrounded_usd": "0.006"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "5000",
+                      "rate_usd_per_million": "5",
+                      "unrounded_usd": "0.025"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": "8",
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ],
       "recent_conversations": [
@@ -1686,7 +2620,83 @@
           ],
           "efforts": [
             "unknown"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "20000",
+                  "cache_read_tokens": "30000",
+                  "cache_write_5m_tokens": "5000",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "65000",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.471000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-claude",
+                  "matched_model": "fixture-claude",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:1e323d5c1b5f8d6397469e71ce9d0505c67696db0da1297a30737657bf29991a",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [
+                    "legacy_cache_ttl_assumed"
+                  ],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "4",
+                      "unrounded_usd": "0.04"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "20000",
+                      "rate_usd_per_million": "20",
+                      "unrounded_usd": "0.4"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "30000",
+                      "rate_usd_per_million": "0.2",
+                      "unrounded_usd": "0.006"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "5000",
+                      "rate_usd_per_million": "5",
+                      "unrounded_usd": "0.025"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": "8",
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -2351,7 +3361,184 @@
           "efforts": [
             "high",
             "unknown"
-          ]
+          ],
+          "pricing": {
+            "group_count": 3,
+            "total_record_count": 3,
+            "shown_record_count": 3,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "20000",
+                  "cache_read_tokens": "30000",
+                  "cache_write_5m_tokens": "5000",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "65000",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.471000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-claude",
+                  "matched_model": "fixture-claude",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:1e323d5c1b5f8d6397469e71ce9d0505c67696db0da1297a30737657bf29991a",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [
+                    "legacy_cache_ttl_assumed"
+                  ],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "4",
+                      "unrounded_usd": "0.04"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "20000",
+                      "rate_usd_per_million": "20",
+                      "unrounded_usd": "0.4"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "30000",
+                      "rate_usd_per_million": "0.2",
+                      "unrounded_usd": "0.006"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "5000",
+                      "rate_usd_per_million": "5",
+                      "unrounded_usd": "0.025"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": "8",
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              },
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "1830000",
+                  "cache_read_tokens": "1000000",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "2840000",
+                  "reasoning_tokens": "1260000"
+                },
+                "pricing_state": "complete",
+                "amount_usd": "18.420000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-model",
+                  "matched_model": "fixture-model",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "2",
+                      "unrounded_usd": "0.02"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "1830000",
+                      "rate_usd_per_million": "10",
+                      "unrounded_usd": "18.3"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "1000000",
+                      "rate_usd_per_million": "0.1",
+                      "unrounded_usd": "0.1"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              },
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10",
+                  "output_tokens": "0",
+                  "cache_read_tokens": "0",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "10",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "unpriced",
+                "amount_usd": null,
+                "explanation": {
+                  "state": "unavailable",
+                  "reason": "model_rate_unavailable",
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "unpriced-model",
+                  "matched_model": null,
+                  "model_mapping": null,
+                  "rate_id": null,
+                  "tier": null,
+                  "source": null,
+                  "checked_date": null,
+                  "custom": false,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [],
+                  "rounding_adjustment_usd": null
+                }
+              }
+            ]
+          }
         }
       ],
       "recent_conversations": [
@@ -2395,7 +3582,81 @@
           ],
           "efforts": [
             "high"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "1830000",
+                  "cache_read_tokens": "1000000",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "2840000",
+                  "reasoning_tokens": "1260000"
+                },
+                "pricing_state": "complete",
+                "amount_usd": "18.420000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-model",
+                  "matched_model": "fixture-model",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:9e0cd84a3b102f989c9b627107f420c1f971a2157dc3e5e716d181211b319297",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "2",
+                      "unrounded_usd": "0.02"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "1830000",
+                      "rate_usd_per_million": "10",
+                      "unrounded_usd": "18.3"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "1000000",
+                      "rate_usd_per_million": "0.1",
+                      "unrounded_usd": "0.1"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         },
         {
           "id": "conversation-v1:e255b0a077a32263a57ef96b32b253088c58628186dcea3cd9061bd7fc74f144",
@@ -2437,7 +3698,50 @@
           ],
           "efforts": [
             "high"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10",
+                  "output_tokens": "0",
+                  "cache_read_tokens": "0",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "10",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "unpriced",
+                "amount_usd": null,
+                "explanation": {
+                  "state": "unavailable",
+                  "reason": "model_rate_unavailable",
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "unpriced-model",
+                  "matched_model": null,
+                  "model_mapping": null,
+                  "rate_id": null,
+                  "tier": null,
+                  "source": null,
+                  "checked_date": null,
+                  "custom": false,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [],
+                  "rounding_adjustment_usd": null
+                }
+              }
+            ]
+          }
         },
         {
           "id": "conversation-v1:06e0d60ec342fb78857e904ef8d138e7bb53d5bb4db5287a337f50eafd69aec9",
@@ -2481,7 +3785,83 @@
           ],
           "efforts": [
             "unknown"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "20000",
+                  "cache_read_tokens": "30000",
+                  "cache_write_5m_tokens": "5000",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "65000",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.471000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-claude",
+                  "matched_model": "fixture-claude",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:1e323d5c1b5f8d6397469e71ce9d0505c67696db0da1297a30737657bf29991a",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [
+                    "legacy_cache_ttl_assumed"
+                  ],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "4",
+                      "unrounded_usd": "0.04"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "20000",
+                      "rate_usd_per_million": "20",
+                      "unrounded_usd": "0.4"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "30000",
+                      "rate_usd_per_million": "0.2",
+                      "unrounded_usd": "0.006"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "5000",
+                      "rate_usd_per_million": "5",
+                      "unrounded_usd": "0.025"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": "8",
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -2757,7 +4137,50 @@
           ],
           "efforts": [
             "high"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10",
+                  "output_tokens": "0",
+                  "cache_read_tokens": "0",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "10",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "unpriced",
+                "amount_usd": null,
+                "explanation": {
+                  "state": "unavailable",
+                  "reason": "model_rate_unavailable",
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "unpriced-model",
+                  "matched_model": null,
+                  "model_mapping": null,
+                  "rate_id": null,
+                  "tier": null,
+                  "source": null,
+                  "checked_date": null,
+                  "custom": false,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [],
+                  "rounding_adjustment_usd": null
+                }
+              }
+            ]
+          }
         }
       ],
       "recent_conversations": [
@@ -2801,7 +4224,50 @@
           ],
           "efforts": [
             "high"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10",
+                  "output_tokens": "0",
+                  "cache_read_tokens": "0",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "10",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "unpriced",
+                "amount_usd": null,
+                "explanation": {
+                  "state": "unavailable",
+                  "reason": "model_rate_unavailable",
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "unpriced-model",
+                  "matched_model": null,
+                  "model_mapping": null,
+                  "rate_id": null,
+                  "tier": null,
+                  "source": null,
+                  "checked_date": null,
+                  "custom": false,
+                  "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+                  "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+                  "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [],
+                  "rounding_adjustment_usd": null
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -3157,7 +4623,149 @@
           "efforts": [
             "high",
             "unknown"
-          ]
+          ],
+          "pricing": {
+            "group_count": 2,
+            "total_record_count": 2,
+            "shown_record_count": 2,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "20000",
+                  "cache_read_tokens": "30000",
+                  "cache_write_5m_tokens": "5000",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "65000",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.000000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-claude",
+                  "matched_model": "fixture-claude",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:82ce09c48674a2569cd163d4a5c4a8b89fcaadba662a4911d4eaa8ba20edd4fe",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:fc42034d7b9d49e7d932111e721bb9785cd4d15231e51fd9bebf334000166207",
+                  "catalog_version": "rates-v1:104a036dc59ec1eb472c2917234ba7d6bc38c3f42b678f8d95233391420c8012",
+                  "override_version": "overrides-v1:9e7bd4b4b10381fcd1c7c3e2472aa228740b87fc1ffe25c1f9bc77ab3eb979bf",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [
+                    "legacy_cache_ttl_assumed"
+                  ],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "20000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "30000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "5000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              },
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "1830000",
+                  "cache_read_tokens": "1000000",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "2840000",
+                  "reasoning_tokens": "1260000"
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.000000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-model",
+                  "matched_model": "fixture-model",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:1e4e9917afbdbd04f336311f8d5e4e0a1d700592704a7505108e163de1d725c6",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:fc42034d7b9d49e7d932111e721bb9785cd4d15231e51fd9bebf334000166207",
+                  "catalog_version": "rates-v1:104a036dc59ec1eb472c2917234ba7d6bc38c3f42b678f8d95233391420c8012",
+                  "override_version": "overrides-v1:9e7bd4b4b10381fcd1c7c3e2472aa228740b87fc1ffe25c1f9bc77ab3eb979bf",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "1830000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "1000000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ],
       "recent_conversations": [
@@ -3201,7 +4809,81 @@
           ],
           "efforts": [
             "high"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "1830000",
+                  "cache_read_tokens": "1000000",
+                  "cache_write_5m_tokens": "0",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "2840000",
+                  "reasoning_tokens": "1260000"
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.000000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-model",
+                  "matched_model": "fixture-model",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:1e4e9917afbdbd04f336311f8d5e4e0a1d700592704a7505108e163de1d725c6",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:fc42034d7b9d49e7d932111e721bb9785cd4d15231e51fd9bebf334000166207",
+                  "catalog_version": "rates-v1:104a036dc59ec1eb472c2917234ba7d6bc38c3f42b678f8d95233391420c8012",
+                  "override_version": "overrides-v1:9e7bd4b4b10381fcd1c7c3e2472aa228740b87fc1ffe25c1f9bc77ab3eb979bf",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "1830000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "1000000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": null,
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         },
         {
           "id": "conversation-v1:06e0d60ec342fb78857e904ef8d138e7bb53d5bb4db5287a337f50eafd69aec9",
@@ -3245,7 +4927,83 @@
           ],
           "efforts": [
             "unknown"
-          ]
+          ],
+          "pricing": {
+            "group_count": 1,
+            "total_record_count": 1,
+            "shown_record_count": 1,
+            "truncated": false,
+            "groups": [
+              {
+                "record_count": 1,
+                "tokens": {
+                  "uncached_input_tokens": "10000",
+                  "output_tokens": "20000",
+                  "cache_read_tokens": "30000",
+                  "cache_write_5m_tokens": "5000",
+                  "cache_write_1h_tokens": "0",
+                  "total_tokens": "65000",
+                  "reasoning_tokens": null
+                },
+                "pricing_state": "complete",
+                "amount_usd": "0.000000000000",
+                "explanation": {
+                  "state": "available",
+                  "reason": null,
+                  "currency": "USD",
+                  "rate_unit_tokens": "1000000",
+                  "requested_model": "fixture-claude",
+                  "matched_model": "fixture-claude",
+                  "model_mapping": "exact",
+                  "rate_id": "rate-v1:82ce09c48674a2569cd163d4a5c4a8b89fcaadba662a4911d4eaa8ba20edd4fe",
+                  "tier": "standard",
+                  "source": "custom configuration",
+                  "checked_date": null,
+                  "custom": true,
+                  "pricing_version": "pricing-v1:fc42034d7b9d49e7d932111e721bb9785cd4d15231e51fd9bebf334000166207",
+                  "catalog_version": "rates-v1:104a036dc59ec1eb472c2917234ba7d6bc38c3f42b678f8d95233391420c8012",
+                  "override_version": "overrides-v1:9e7bd4b4b10381fcd1c7c3e2472aa228740b87fc1ffe25c1f9bc77ab3eb979bf",
+                  "policy_version": "decimal12-event-tier-compat-v1",
+                  "assumptions": [
+                    "legacy_cache_ttl_assumed"
+                  ],
+                  "categories": [
+                    {
+                      "category": "uncached_input_tokens",
+                      "tokens": "10000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "output_tokens",
+                      "tokens": "20000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_read_tokens",
+                      "tokens": "30000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_5m_tokens",
+                      "tokens": "5000",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    },
+                    {
+                      "category": "cache_write_1h_tokens",
+                      "tokens": "0",
+                      "rate_usd_per_million": "0",
+                      "unrounded_usd": "0"
+                    }
+                  ],
+                  "rounding_adjustment_usd": "0.000000000000"
+                }
+              }
+            ]
+          }
         }
       ]
     },
@@ -3285,5 +5043,437 @@
       }
     },
     "request_id": "synthetic-request"
+  },
+  "events_unpriced": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:cc576381bdf925d2ac8c7d5f9261e3c23f90e76d8d00ecad138a3c2bdb8655f1",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "4df057f230f3447a864f75a226c4bbd1",
+    "kind": "events",
+    "data": {
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "10",
+          "output_tokens": "0",
+          "cache_read_tokens": "0",
+          "cache_write_5m_tokens": "0",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "10",
+          "reasoning_tokens": null
+        },
+        "reasoning": {
+          "known_records": 0,
+          "unknown_records": 1
+        },
+        "record_count": 1,
+        "conversation_count": 1,
+        "project_count": 1,
+        "value": {
+          "state": "unpriced",
+          "amount_usd": null,
+          "priced_records": 0,
+          "unpriced_records": 1,
+          "priced_tokens": "0",
+          "unpriced_tokens": "10",
+          "assumed_records": 0,
+          "assumptions": []
+        }
+      },
+      "items": [
+        {
+          "id": "95cbbf76bdfb5d484d2c23be474f39f2cf8c7cb3f18790be089c22408a236e73",
+          "occurred_at": "2026-10-23T20:00:10.000000Z",
+          "provider": "codex",
+          "project_id": "project-v1:0b12c462d840275f973c8bdbaae9996d57881bf779a7074e7396cfecc2b6e08b",
+          "model": "unpriced-model",
+          "effort": "high",
+          "effort_source": "Codex turn_context.effort",
+          "tokens": {
+            "uncached_input_tokens": "10",
+            "output_tokens": "0",
+            "cache_read_tokens": "0",
+            "cache_write_5m_tokens": "0",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "10",
+            "reasoning_tokens": null
+          },
+          "value": {
+            "state": "unpriced",
+            "amount_usd": null,
+            "unpriced_reason": "model_rate_unavailable",
+            "rate_id": null,
+            "tier": null,
+            "assumptions": [],
+            "request_context_tokens": null,
+            "request_context_source": "not recorded",
+            "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+            "policy_version": "decimal12-event-tier-compat-v1",
+            "explanation": {
+              "state": "unavailable",
+              "reason": "model_rate_unavailable",
+              "currency": "USD",
+              "rate_unit_tokens": "1000000",
+              "requested_model": "unpriced-model",
+              "matched_model": null,
+              "model_mapping": null,
+              "rate_id": null,
+              "tier": null,
+              "source": null,
+              "checked_date": null,
+              "custom": false,
+              "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+              "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+              "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+              "policy_version": "decimal12-event-tier-compat-v1",
+              "assumptions": [],
+              "categories": [],
+              "rounding_adjustment_usd": null
+            }
+          }
+        }
+      ],
+      "pagination": {
+        "page_size": 50,
+        "sort": "events",
+        "next_cursor": null,
+        "matched_count": 1
+      }
+    },
+    "query_context_id": "3vXiKyQ9rpZ6JcHR4MAN0dq3IioSjrEU",
+    "usage_revision": "3",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:d99a06ce76704bc43b6362c3f56f6908d6a0f4710b38671f1b651ced6d9c5cb6",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [
+        "unpriced-model"
+      ],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "events_claude": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:cc576381bdf925d2ac8c7d5f9261e3c23f90e76d8d00ecad138a3c2bdb8655f1",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "a4572c89179b4e669babbfbc1436e0cd",
+    "kind": "events",
+    "data": {
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "10000",
+          "output_tokens": "20000",
+          "cache_read_tokens": "30000",
+          "cache_write_5m_tokens": "5000",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "65000",
+          "reasoning_tokens": null
+        },
+        "reasoning": {
+          "known_records": 0,
+          "unknown_records": 1
+        },
+        "record_count": 1,
+        "conversation_count": 1,
+        "project_count": 1,
+        "value": {
+          "state": "complete",
+          "amount_usd": "0.471000000000",
+          "priced_records": 1,
+          "unpriced_records": 0,
+          "priced_tokens": "65000",
+          "unpriced_tokens": "0",
+          "assumed_records": 1,
+          "assumptions": [
+            "legacy_cache_ttl_assumed"
+          ]
+        }
+      },
+      "items": [
+        {
+          "id": "869f839f1ceacddc9202257e65b424e57049638c2ede78f874f605aec0e39553",
+          "occurred_at": "2026-10-23T20:00:00.000000Z",
+          "provider": "claude",
+          "project_id": "project-v1:0b12c462d840275f973c8bdbaae9996d57881bf779a7074e7396cfecc2b6e08b",
+          "model": "fixture-claude",
+          "effort": "unknown",
+          "effort_source": "not recorded",
+          "tokens": {
+            "uncached_input_tokens": "10000",
+            "output_tokens": "20000",
+            "cache_read_tokens": "30000",
+            "cache_write_5m_tokens": "5000",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "65000",
+            "reasoning_tokens": null
+          },
+          "value": {
+            "state": "priced",
+            "amount_usd": "0.471000000000",
+            "unpriced_reason": null,
+            "rate_id": "rate-v1:1e323d5c1b5f8d6397469e71ce9d0505c67696db0da1297a30737657bf29991a",
+            "tier": "standard",
+            "assumptions": [
+              "legacy_cache_ttl_assumed"
+            ],
+            "request_context_tokens": null,
+            "request_context_source": "not recorded",
+            "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+            "policy_version": "decimal12-event-tier-compat-v1",
+            "explanation": {
+              "state": "available",
+              "reason": null,
+              "currency": "USD",
+              "rate_unit_tokens": "1000000",
+              "requested_model": "fixture-claude",
+              "matched_model": "fixture-claude",
+              "model_mapping": "exact",
+              "rate_id": "rate-v1:1e323d5c1b5f8d6397469e71ce9d0505c67696db0da1297a30737657bf29991a",
+              "tier": "standard",
+              "source": "custom configuration",
+              "checked_date": null,
+              "custom": true,
+              "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+              "catalog_version": "rates-v1:0206373a03d20a7c455a8a2de80a5ede57fa3d3864ff1362ef129aef03e949a3",
+              "override_version": "overrides-v1:1f9beec7e10eecfb7b19a832e92131d64bd39478eaa97f67928f0601673cb6ea",
+              "policy_version": "decimal12-event-tier-compat-v1",
+              "assumptions": [
+                "legacy_cache_ttl_assumed"
+              ],
+              "categories": [
+                {
+                  "category": "uncached_input_tokens",
+                  "tokens": "10000",
+                  "rate_usd_per_million": "4",
+                  "unrounded_usd": "0.04"
+                },
+                {
+                  "category": "output_tokens",
+                  "tokens": "20000",
+                  "rate_usd_per_million": "20",
+                  "unrounded_usd": "0.4"
+                },
+                {
+                  "category": "cache_read_tokens",
+                  "tokens": "30000",
+                  "rate_usd_per_million": "0.2",
+                  "unrounded_usd": "0.006"
+                },
+                {
+                  "category": "cache_write_5m_tokens",
+                  "tokens": "5000",
+                  "rate_usd_per_million": "5",
+                  "unrounded_usd": "0.025"
+                },
+                {
+                  "category": "cache_write_1h_tokens",
+                  "tokens": "0",
+                  "rate_usd_per_million": "8",
+                  "unrounded_usd": "0"
+                }
+              ],
+              "rounding_adjustment_usd": "0.000000000000"
+            }
+          }
+        }
+      ],
+      "pagination": {
+        "page_size": 50,
+        "sort": "events",
+        "next_cursor": null,
+        "matched_count": 1
+      }
+    },
+    "query_context_id": "JXMDUjT703748OgICysMMxjO6kTaRVEH",
+    "usage_revision": "3",
+    "pricing_version": "pricing-v1:991e6281de952fee49525cb9d1931c29f7f6687f6ce11621edf931158fbfecf0",
+    "configuration_version": "settings-v1:d99a06ce76704bc43b6362c3f56f6908d6a0f4710b38671f1b651ced6d9c5cb6",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude"
+      ],
+      "project_id": [],
+      "model": [],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
+  },
+  "events_zero": {
+    "contract_version": "usage-hub-v1",
+    "dataset_id": "dataset-v1:cc576381bdf925d2ac8c7d5f9261e3c23f90e76d8d00ecad138a3c2bdb8655f1",
+    "mode": "real",
+    "generated_at": "2026-10-24T20:00:00.000000Z",
+    "request_id": "ee067eb19a9f4d3da19e4044179835a7",
+    "kind": "events",
+    "data": {
+      "summary": {
+        "tokens": {
+          "uncached_input_tokens": "10000",
+          "output_tokens": "1830000",
+          "cache_read_tokens": "1000000",
+          "cache_write_5m_tokens": "0",
+          "cache_write_1h_tokens": "0",
+          "total_tokens": "2840000",
+          "reasoning_tokens": "1260000"
+        },
+        "reasoning": {
+          "known_records": 1,
+          "unknown_records": 0
+        },
+        "record_count": 1,
+        "conversation_count": 1,
+        "project_count": 1,
+        "value": {
+          "state": "complete",
+          "amount_usd": "0.000000000000",
+          "priced_records": 1,
+          "unpriced_records": 0,
+          "priced_tokens": "2840000",
+          "unpriced_tokens": "0",
+          "assumed_records": 0,
+          "assumptions": []
+        }
+      },
+      "items": [
+        {
+          "id": "1699ba8e951b15dbb05d52baa1bad631801b0e35ca60eb2119b4211d235e044b",
+          "occurred_at": "2026-10-23T20:00:10.000000Z",
+          "provider": "codex",
+          "project_id": "project-v1:0b12c462d840275f973c8bdbaae9996d57881bf779a7074e7396cfecc2b6e08b",
+          "model": "fixture-model",
+          "effort": "high",
+          "effort_source": "Codex turn_context.effort",
+          "tokens": {
+            "uncached_input_tokens": "10000",
+            "output_tokens": "1830000",
+            "cache_read_tokens": "1000000",
+            "cache_write_5m_tokens": "0",
+            "cache_write_1h_tokens": "0",
+            "total_tokens": "2840000",
+            "reasoning_tokens": "1260000"
+          },
+          "value": {
+            "state": "priced",
+            "amount_usd": "0.000000000000",
+            "unpriced_reason": null,
+            "rate_id": "rate-v1:1e4e9917afbdbd04f336311f8d5e4e0a1d700592704a7505108e163de1d725c6",
+            "tier": "standard",
+            "assumptions": [],
+            "request_context_tokens": null,
+            "request_context_source": "not recorded",
+            "pricing_version": "pricing-v1:fc42034d7b9d49e7d932111e721bb9785cd4d15231e51fd9bebf334000166207",
+            "policy_version": "decimal12-event-tier-compat-v1",
+            "explanation": {
+              "state": "available",
+              "reason": null,
+              "currency": "USD",
+              "rate_unit_tokens": "1000000",
+              "requested_model": "fixture-model",
+              "matched_model": "fixture-model",
+              "model_mapping": "exact",
+              "rate_id": "rate-v1:1e4e9917afbdbd04f336311f8d5e4e0a1d700592704a7505108e163de1d725c6",
+              "tier": "standard",
+              "source": "custom configuration",
+              "checked_date": null,
+              "custom": true,
+              "pricing_version": "pricing-v1:fc42034d7b9d49e7d932111e721bb9785cd4d15231e51fd9bebf334000166207",
+              "catalog_version": "rates-v1:104a036dc59ec1eb472c2917234ba7d6bc38c3f42b678f8d95233391420c8012",
+              "override_version": "overrides-v1:9e7bd4b4b10381fcd1c7c3e2472aa228740b87fc1ffe25c1f9bc77ab3eb979bf",
+              "policy_version": "decimal12-event-tier-compat-v1",
+              "assumptions": [],
+              "categories": [
+                {
+                  "category": "uncached_input_tokens",
+                  "tokens": "10000",
+                  "rate_usd_per_million": "0",
+                  "unrounded_usd": "0"
+                },
+                {
+                  "category": "output_tokens",
+                  "tokens": "1830000",
+                  "rate_usd_per_million": "0",
+                  "unrounded_usd": "0"
+                },
+                {
+                  "category": "cache_read_tokens",
+                  "tokens": "1000000",
+                  "rate_usd_per_million": "0",
+                  "unrounded_usd": "0"
+                },
+                {
+                  "category": "cache_write_5m_tokens",
+                  "tokens": "0",
+                  "rate_usd_per_million": null,
+                  "unrounded_usd": "0"
+                },
+                {
+                  "category": "cache_write_1h_tokens",
+                  "tokens": "0",
+                  "rate_usd_per_million": null,
+                  "unrounded_usd": "0"
+                }
+              ],
+              "rounding_adjustment_usd": "0.000000000000"
+            }
+          }
+        }
+      ],
+      "pagination": {
+        "page_size": 50,
+        "sort": "events",
+        "next_cursor": null,
+        "matched_count": 1
+      }
+    },
+    "query_context_id": "lsoT44co71ZFPTdbCNpSoGKG_3v3SWBB",
+    "usage_revision": "3",
+    "pricing_version": "pricing-v1:fc42034d7b9d49e7d932111e721bb9785cd4d15231e51fd9bebf334000166207",
+    "configuration_version": "settings-v1:7573dde9a225a9735ccc02630fd90878ff56b2bfdf488847dab6d9880da5c5b1",
+    "range": {
+      "preset": "month",
+      "timezone": "UTC",
+      "start_at": "2026-10-01T00:00:00.000000Z",
+      "end_at": "2026-10-24T20:00:00.000000Z",
+      "effective_start_at": "2026-10-01T00:00:00.000000Z",
+      "effective_end_at": "2026-10-24T20:00:00.000000Z"
+    },
+    "applied_filters": {
+      "provider": [
+        "claude",
+        "codex"
+      ],
+      "project_id": [],
+      "model": [
+        "fixture-claude",
+        "fixture-model"
+      ],
+      "effort": [],
+      "q": "",
+      "selected_day": null
+    }
   }
 }

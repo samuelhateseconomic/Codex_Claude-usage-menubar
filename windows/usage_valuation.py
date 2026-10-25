@@ -226,6 +226,14 @@ class EventValuation:
     assumptions: tuple[str, ...]
 
 
+def applied_rates(price, tier):
+    """The five selected category rates; tier selection remains event evidence."""
+    if tier not in ("standard", "high_context") or (tier == "high_context" and price.high is None):
+        raise ValueError("Unsupported applied price tier.")
+    leading = price.high if tier == "high_context" else (price.input, price.output, price.cached)
+    return (*leading, price.write5m, price.write1h)
+
+
 def value_event(event, catalog=DEFAULT_CATALOG):
     canonical = isinstance(event, CanonicalEvent)
     record = event.record if canonical else event
@@ -243,7 +251,6 @@ def value_event(event, catalog=DEFAULT_CATALOG):
         assumptions.append("legacy_cache_ttl_assumed")
     if selected:
         price = selected.price
-        inp, out, cached = price.input, price.output, price.cached
         tier = "standard"
         if price.threshold is not None:
             tier_context = context
@@ -251,8 +258,8 @@ def value_event(event, catalog=DEFAULT_CATALOG):
                 tier_context = record.tokens.input + record.tokens.cached
                 assumptions.append("event_input_tier_compatibility")
             if tier_context > price.threshold:
-                inp, out, cached = price.high
                 tier = "high_context"
+        inp, out, cached, _, _ = applied_rates(price, tier)
         tokens = record.tokens
         if (tokens.write5m and price.write5m is None) or (tokens.write1h and price.write1h is None):
             unpriced_reason = "cache_write_rate_unavailable"

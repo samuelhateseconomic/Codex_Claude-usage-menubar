@@ -19,7 +19,7 @@ export function validateV1(kind,value){
     const type=Array.isArray(item)?'array':item===null?'null':typeof item;
     if(spec.type&&(spec.type==='integer'?!Number.isSafeInteger(item):spec.type!==type))fail();
     if(type==='number'&&(!Number.isFinite(item)||item<(spec.minimum??-Infinity)||item>(spec.maximum??Infinity)))fail();
-    if(type==='string'&&([...item].length<(spec.minLength??0)||[...item].length>(spec.maxLength??Infinity)||spec.pattern&&!new RegExp(spec.pattern,'u').test(item)))fail();
+    if(type==='string'&&([...item].length<(spec.minLength??0)||[...item].length>(spec.maxLength??Infinity)||spec.pattern&&!new RegExp(`^(?:${spec.pattern})$`,'u').test(item)))fail();
     if(type==='array'){if(item.length<(spec.minItems??0)||item.length>(spec.maxItems??Infinity))fail();for(const x of item)visit(spec.items??{},x,depth+1);}
     if(type==='object'){
       if((spec.required??[]).some(k=>!Object.hasOwn(item,k)))fail();
@@ -35,7 +35,16 @@ export function validateV1(kind,value){
   function semantics(item,key=''){
     if(!item||typeof item!=='object')return;
     if(key==='tokens')for(const value of Object.values(item))if(value!==null&&BigInt(value)>9223372036854775807n)fail();
+    if(key==='explanation'&&item.pricing_version!==value.pricing_version)fail();
+    if(key==='explanation'&&item.state==='available'){
+      const categories=['uncached_input_tokens','output_tokens','cache_read_tokens','cache_write_5m_tokens','cache_write_1h_tokens'];
+      if(item.categories.some((c,i)=>c.category!==categories[i]))fail();
+    }
+    if(key==='pricing'&&(item.group_count<item.groups.length||item.shown_record_count>item.total_record_count||
+      item.truncated!==(item.shown_record_count<item.total_record_count)||
+      item.groups.reduce((n,g)=>n+g.record_count,0)!==item.shown_record_count))fail();
     for(const [k,v]of Object.entries(item)){
+      if(k==='tokens'&&typeof v==='string'&&BigInt(v)>9223372036854775807n)fail();
       if(v!==null&&typeof v==='string'&&k.endsWith('_at')&&!Number.isFinite(Date.parse(v)))fail();
       if(typeof v==='object')semantics(v,k);
     }

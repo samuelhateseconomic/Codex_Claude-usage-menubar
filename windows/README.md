@@ -1,4 +1,4 @@
-# Usage Tray / Usage Hub for Windows — 0.13.1
+# Usage Tray / Usage Hub for Windows — 0.14.0
 
 Codex + Claude usage estimates, live limits, terminal reports, and an optional local dashboard. [Project overview and macOS setup](../README.md).
 
@@ -38,9 +38,9 @@ Find the icon under **Show hidden icons**. Left- or right-click to open options,
 
 Or choose **Open usage dashboard...** from the ordinary live tray to share its cached limits. Standalone dashboard launch imports local metadata without polling providers. Normal tray startup opens no browser.
 
-- **Overview:** provider/period selection, daily token/value charts, and qualified plan comparisons.
-- **Explore:** metadata search, project/model/effort filters, conversation details, and Back with retained page/filter state.
-- **Settings & data:** save fees and timezone; pending computation and concurrent edits are labeled.
+- **Overview:** provider/period selection, daily charts, two-decimal fee comparisons with exact amounts, and collapsed **Data details**. Important unpriced/stale warnings stay visible. **Live limits** uses 12px remaining-capacity bars.
+- **Explore:** search/filter usage and open conversation details; Back retains the page/filters. Expand **Rates** beneath an entry for USD/1M rates, exact category charges, rounding and pricing sources. Mixed previews show up to eight rate groups; event pages expose the rest.
+- **Settings & data:** save fees and timezone; **Applying / Applied** feedback stays visible. Use **Check progress** for a long-running job. Failed/conflicting changes retain the draft; reload to resolve concurrent edits.
 
 Repeated launches reuse one owner's mode and port. Close browser tabs freely; tray **Quit** stops the packaged service, while Ctrl+C stops the source dashboard. Quit/relaunch to change modes or load updates. Launch through the application to authenticate; a plain loopback URL grants no private access. `--no-browser` suppresses browser launch.
 

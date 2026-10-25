@@ -85,3 +85,81 @@ test('preset changes clear the selected day and production toolbar coalesces pen
   api.job=async()=>{const done=copy(fixtures.job_succeeded);done.data.id=fixtures.job_queued.data.id;return done;};
   const pending=app.click('refresh');await app.click('refresh');assert.equal(calls,1);release(copy(fixtures.job_queued));await pending;app.app.dispose();
 });
+
+test('settings rejection stays visible after the notification expires and retains the draft',async()=>{
+  const api=fakeApi();api.mutate=async()=>{throw new LocalApiError('session_required',403);};
+  const app=await localDashboard(api,{hash:'#view=settings'});
+  await app.setting('Claude','100');await app.click('save-settings');
+  await app.expireNotifications();
+  assert.equal(app.nodes.get('#notification').textContent,'');
+  assert.match(app.nodes.get('#operation-status')?.innerHTML??'',/not confirmed/);
+  assert.match(app.nodes.get('#operation-status')?.innerHTML??'',/Open the dashboard again through Usage Tray/);
+  await app.nav('overview');await app.nav('settings');
+  assert.match(app.html,/value="100"/);assert.match(app.html,/not confirmed/);app.app.dispose();
+});
+
+test('reopened settings exposes the pending job and a user can recheck publication',async()=>{
+  const api=fakeApi(),queued=copy(fixtures.job_queued.data);
+  queued.kind='reprice';queued.requested_configuration_version=fixtures.settings.data.configuration_version;
+  const pending=copy(fixtures.status);
+  Object.assign(pending.data,{configuration_pending:true,configuration_state:'pending',requested_configuration_version:queued.requested_configuration_version,last_job:queued});
+  let applied=false,calls=0;
+  api.read=async kind=>copy(kind==='status'&&!applied?pending:fixtures[kind]);
+  api.job=async()=>{calls++;applied=true;const done=copy(fixtures.job_succeeded);done.data.id=queued.id;return done;};
+  const app=await localDashboard(api,{hash:'#view=settings'});
+  assert.match(app.html,/Check progress/);
+  await app.click('check-job');assert.equal(calls,1);
+  assert.match(app.html,/Settings applied/);assert.equal(app.app.accepted.status.data.configuration_pending,false);app.app.dispose();
+});
+
+test('a settings job beyond the observation bound remains recheckable after navigation',async t=>{
+  t.mock.timers.enable({apis:['setTimeout']});
+  const api=fakeApi(),queued=copy(fixtures.job_queued);queued.data.kind='reprice';
+  const saved=copy(fixtures.settings_saved);saved.data.jobs=[queued.data];saved.data.pending=true;
+  api.mutate=async()=>saved;let done=false,calls=0;
+  api.job=async()=>{calls++;if(!done)return copy(queued);const completed=copy(fixtures.job_succeeded);completed.data.id=queued.data.id;return completed;};
+  const app=await localDashboard(api,{hash:'#view=settings'});t.after(()=>app.app.dispose());
+  await app.setting('Claude','100');const saving=app.click('save-settings');
+  for(let i=0;i<31;i++){await new Promise(setImmediate);t.mock.timers.tick(1000);}
+  await saving;assert.equal(calls,30);
+  assert.match(app.nodes.get('#operation-status').innerHTML,/still running/);
+  await app.nav('overview');assert.match(app.html,/Check progress/);
+  done=true;await app.click('check-job');assert.equal(calls,31);
+  assert.match(app.nodes.get('#operation-status').innerHTML,/Settings applied/);
+  assert.equal(app.app.snapshot.state.view,'overview');
+});
+
+test('a fee save can finish after navigating away without restoring an obsolete Settings page',async()=>{
+  const api=fakeApi(),saved=copy(fixtures.settings_saved);let release;
+  api.mutate=()=>new Promise(resolve=>{release=resolve;});
+  api.job=async()=>{const done=copy(fixtures.job_succeeded);done.data.id=saved.data.jobs[0].id;return done;};
+  const app=await localDashboard(api,{hash:'#view=settings'});
+  await app.setting('Claude','100');const saving=app.click('save-settings');
+  await app.nav('overview');release(saved);await saving;
+  assert.equal(app.app.snapshot.state.view,'overview');
+  assert.match(app.nodes.get('#operation-status').innerHTML,/Settings applied/);app.app.dispose();
+});
+
+test('a failed settings publication remains explicit after notification expiry and navigation',async()=>{
+  const api=fakeApi(),saved=copy(fixtures.settings_saved);
+  api.mutate=async()=>saved;
+  api.job=async()=>{const failed=copy(fixtures.job_queued);failed.data.id=saved.data.jobs[0].id;failed.data.status='failed';return failed;};
+  const app=await localDashboard(api,{hash:'#view=settings'});
+  await app.setting('Claude','100');await app.click('save-settings');await app.expireNotifications();
+  assert.match(app.nodes.get('#operation-status').innerHTML,/could not be applied \(failed\)/);
+  await app.nav('overview');assert.match(app.html,/Previous committed usage is retained/);
+  assert.doesNotMatch(app.html,/Settings applied/);app.app.dispose();
+});
+
+test('a retained draft keeps its original expected version across navigation after an external edit',async()=>{
+  const api=fakeApi(),settings=copy(fixtures.settings),original=settings.data.configuration_version,calls=[];
+  api.read=async kind=>copy(kind==='settings'?settings:fixtures[kind]);
+  api.mutate=async(kind,body)=>{calls.push(body);throw new LocalApiError('configuration_changed',409);};
+  const app=await localDashboard(api,{hash:'#view=settings'});
+  await app.setting('Claude','100');settings.data.configuration_version='new-external-version';
+  await app.nav('overview');await app.nav('settings');await app.click('save-settings');
+  assert.equal(calls[0].expected_configuration_version,original);
+  assert.equal(calls[0].changes.plan_fees_usd.Claude,'100');
+  await app.click('reload-settings');await app.setting('Claude','100');await app.click('save-settings');
+  assert.equal(calls[1].expected_configuration_version,'new-external-version');app.app.dispose();
+});

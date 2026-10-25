@@ -50,6 +50,25 @@ def summary(value):
                  'assumed_records':v.assumed_records,'assumptions':list(v.assumptions)}}
 
 
+def pricing_explanation(value, explanation):
+    return {'state':explanation.state,'reason':explanation.reason,'currency':'USD','rate_unit_tokens':'1000000',
+        'requested_model':value.requested_model,'matched_model':value.matched_model,'model_mapping':value.model_mapping,
+        'rate_id':value.rate_id,'tier':value.tier,'source':value.source,'checked_date':value.checked_date,'custom':value.custom,
+        'pricing_version':value.pricing_version,'catalog_version':value.catalog_version,'override_version':value.override_version,
+        'policy_version':value.policy_version,'assumptions':list(value.assumptions),
+        'categories':[{'category':c.category,'tokens':str(c.tokens),'rate_usd_per_million':money(c.rate_usd_per_million),
+                       'unrounded_usd':money(c.unrounded_usd)} for c in explanation.categories],
+        'rounding_adjustment_usd':money(explanation.rounding_adjustment_usd)}
+
+
+def pricing_breakdown(value):
+    return {'group_count':value.group_count,'total_record_count':value.total_record_count,
+        'shown_record_count':value.shown_record_count,'truncated':value.shown_record_count < value.total_record_count,
+        'groups':[{'record_count':g.summary.priced_records + g.summary.unpriced_records,
+                   'tokens':tokens(g.summary.tokens,g.reasoning_tokens),'pricing_state':g.summary.state,'amount_usd':money(g.summary.amount_usd),
+                   'explanation':pricing_explanation(g.representative,g.explanation)} for g in value.groups]}
+
+
 def comparison(value):
     return {'provider':value.provider.lower(),'available':value.available,'reason':value.reason,
             'pricing_state':value.pricing_state,'value_usd':money(value.value_usd),'fee_usd':money(value.fee_usd),

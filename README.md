@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Windows_version-0.13.1-e8775a" alt="Windows version 0.13.1">
+  <img src="https://img.shields.io/badge/Windows_version-0.14.0-e8775a" alt="Windows version 0.14.0">
   <img src="https://img.shields.io/badge/Windows-10%2F11-0078D4" alt="Windows 10/11">
   <a href="#build-from-source"><img src="https://img.shields.io/badge/Python-3.11%E2%80%933.14-3776AB?logo=python&logoColor=white" alt="Python 3.11–3.14"></a>
   <img src="https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white" alt="macOS 13+">
@@ -36,11 +36,11 @@
 ## Features
 
 - **Live tray limits.** Remaining Codex/Claude capacity and reset times, with independent refresh, backoff, and stale-state labels. Left- or right-click the icon for options.
-- **Local dashboard.** Daily token/value charts, provider/date filters, searchable projects and conversations, detail/Back navigation, and saved fee/timezone settings.
+- **Local dashboard.** Daily token/value charts, provider/date filters, searchable projects and conversations, detail/Back navigation, and saved fee/timezone settings. Expand **Rates** below a usage entry to inspect applied token rates and exact charges.
 - **One-click Windows setup.** Installs for your account, starts the tray, and runs it automatically at sign-in without a terminal.
 - **Terminal reports.** Compact summaries, ranked details, full audit output, and optional HTML. Normal tray startup opens no browser.
 - **Reliable accounting.** Reconciles supported duplicate histories, resets, forks, and streamed updates. Unknown models stay unpriced; reasoning is included in output once.
-- **Persistent local service.** Shared settings, recoverable SQLite storage, and authenticated browser access. Version 0.13.0 improves query reuse and honors saved report formats in explicit dashboard/API tray launches.
+- **Persistent local service.** Shared settings, recoverable SQLite storage, and authenticated browser access. Version 0.14.0 adds durable settings feedback, clearer fee comparisons, 12px limit bars, and collapsed data details.
 - **Original macOS app.** Multiple Claude accounts, menu-bar styles, weekly reports, Keychain login, and launch at login. Windows Codex/Usage Hub features have not been ported to Mac.
 
 ## Getting started
@@ -102,6 +102,6 @@ The Mac build creates Apple silicon/Intel binaries and **replaces any existing `
 - **Windows data:** settings and metadata stay under `%LOCALAPPDATA%\UsageTray`. The index/reports exclude prompts and responses; project names and IDs can still be sensitive. Dashboard assets and its authenticated API run locally.
 - **Mac data:** logins use Keychain; reports live in `~/Library/Application Support/ClaudeUsageBar/Reports`, with about four weeks retained.
 
-Recorded Windows acceptance: **378 Python tests, 79 frontend tests, and 18 executable checks** per Python 3.11–3.14 CI job, plus packaged recovery checks. Native tray/report/Quit sign-off, clean-machine delivery, signing, and Mac verification remain pending. [Release evidence](docs/s14-hub-release.md).
+Recorded Windows acceptance: **378 Python tests, 79 frontend tests, and 18 executable checks** per Python 3.11–3.14 CI job, plus packaged recovery checks. Native tray/report/Quit sign-off, clean-machine delivery, signing, and Mac verification remain pending. [Release evidence](docs/s14-hub-release.md) · [0.14.0 dashboard checks](docs/dashboard-refinement-sessions.md).
 
 [Contributing instructions](AGENTS.md) · [Refinement plan](docs/project-refinement-plan.md) · [Original Claude Usage Bar](https://github.com/jiachengw-sf/claude-usage-menubar)

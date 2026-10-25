@@ -123,6 +123,7 @@ def check(executable):
             for name in ('local-app.js','local-session.js','local-view.js','v1-client.js','v1-schema.js','format.js','style.css','assets/Geist.woff2','assets/GeistMono.woff2'):
                 code,_,raw=request('GET','/'+name)
                 require(code==200 and len(raw)>100, 'Packaged local asset unavailable: '+name)
+                require(raw==(Path(__file__).resolve().parents[1]/'dashboard'/name).read_bytes(), 'Packaged asset differs from reviewed source: '+name)
             deadline=time.monotonic()+20
             while True:
                 code,_,status=api('GET','/api/v1/status',auth=True)
@@ -143,6 +144,15 @@ def check(executable):
             identity=quote(listing['data']['items'][0]['id'],safe='')
             code,_,detail=api('GET','/api/v1/conversations/'+identity+'?query_context_id='+context,auth=True)
             require(code==200 and detail['data']['summary']==summary, 'Packaged detail reconciliation failed.')
+            pricing=detail['data']['pricing']
+            require(pricing['total_record_count']==summary['record_count'] and not pricing['truncated'], 'Packaged rate preview scope differs.')
+            code,_,events=api('GET','/api/v1/conversations/'+identity+'/events?query_context_id='+context,auth=True)
+            require(code==200 and events['data']['summary']==summary, 'Packaged event explanation query failed.')
+            for event in events['data']['items']:
+                e=event['value']['explanation']
+                require(e['state']=='available' and e['pricing_version']==overview['pricing_version'], 'Packaged pricing evidence differs.')
+                require([c['rate_usd_per_million'] for c in e['categories']]==['2','10','0.1',None,None], 'Packaged applied rates differ.')
+                require(sum(Decimal(c['unrounded_usd']) for c in e['categories'])+Decimal(e['rounding_adjustment_usd'])==Decimal(event['value']['amount_usd']), 'Packaged category charges fail exact reconciliation.')
             code,_,limits=api('GET','/api/v1/limits',auth=True)
             require(code==200 and all(p['phase']=='disabled' and p['snapshot'] is None for p in limits['data']['providers']), 'Dashboard-only launch unexpectedly enabled provider checks.')
             require(api('GET','/api/v1/session',auth=True)[2]['data']['csrf_token']==csrf, 'Packaged session resume failed.')

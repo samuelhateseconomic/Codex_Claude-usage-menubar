@@ -11,9 +11,10 @@ import threading
 import time
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from usage_api_contract import ApiError, invalid, envelope, summary, comparison, tokens, money, utc, PROVIDERS
+from usage_api_contract import ApiError, invalid, envelope, summary, comparison, tokens, money, utc, PROVIDERS, pricing_explanation, pricing_breakdown
 from usage_service import QueryContext, UsageFilters, summarize_details, _conversation_id
 from usage_time import resolve_range
+from usage_pricing_explanation import explain_event, explain_values
 
 FILTERS = ('provider','project_id','model','effort','q','selected_day')
 SCALARS = ('dataset_id','period','timezone','q','selected_day','sort','page_size','cursor','query_context_id','base_query_context_id')
@@ -247,10 +248,11 @@ class QueryService:
         return (value is None,value.copy_negate() if value is not None else 0,row['id'])
 
     @staticmethod
-    def row_dto(row):
+    def row_dto(row, snapshot):
         return {'id':row['id'],'label':row['label'],'summary':summary(row['summary']),
                 'last_activity_at':utc(row['last_activity']),'project_ids':row['project_ids'],
-                'models':row['models'],'efforts':row['efforts']}
+                'models':row['models'],'efforts':row['efforts'],
+                'pricing':pricing_breakdown(explain_values((d.valuation for d in row['members']),snapshot.catalog))}
 
     def _cursor(self, data):
         raw=json.dumps(data,sort_keys=True,separators=(',',':')).encode()
@@ -308,12 +310,12 @@ class QueryService:
                   'comparisons':[comparison(c) for c in result.comparisons],'combined_comparison':comparison(result.combined_comparison),
                   'days':[{'day':g.key[0],'summary':summary(g.summary)} for g in result.groups_for('day')],
                   'providers':[{'provider':g.key[0].lower(),'summary':summary(g.summary)} for g in result.groups_for('provider')],
-                  'models':model_rows,'top_projects':[self.row_dto(row) for row in sorted(projects,key=lambda r:self.sort_key(r,'value_desc'))[:10]],
-                  'recent_conversations':[self.row_dto(row) for row in sorted(conversations,key=lambda r:self.sort_key(r,'last_activity_desc'))[:10]]}
+                  'models':model_rows,'top_projects':[self.row_dto(row,snapshot) for row in sorted(projects,key=lambda r:self.sort_key(r,'value_desc'))[:10]],
+                  'recent_conversations':[self.row_dto(row,snapshot) for row in sorted(conversations,key=lambda r:self.sort_key(r,'last_activity_desc'))[:10]]}
             kind='overview'
         elif path in ('/usage/conversations','/usage/projects'):
             rows,pagination=self.page(self._groups(result,snapshot,'conversations' if path.endswith('conversations') else 'projects'),params,frozen,path)
-            data={'summary':summary(result.total),'items':[self.row_dto(row) for row in rows],'pagination':pagination};kind='list'
+            data={'summary':summary(result.total),'items':[self.row_dto(row,snapshot) for row in rows],'pagination':pagination};kind='list'
         elif path=='/usage/facets':
             data={}
             for field,dimension in (('project_id','projects'),('model','models'),('effort','efforts')):
@@ -341,7 +343,8 @@ class QueryService:
                 data={'id':conversation,'label':label,'summary':summary(scoped.total),
                       'lifetime_first_at':utc(min(e.record.timestamp for e in lifetime)),'lifetime_last_at':utc(max(e.record.timestamp for e in lifetime)),
                       'lifetime_scope':'all_retained_accepted_usage','project_ids':sorted({dict(snapshot.event_project_ids)[d.detail_id] for d in scoped.details}),
-                      'models':sorted({d.record.model for d in scoped.details}),'efforts':sorted({d.record.effort for d in scoped.details})};kind='conversation'
+                      'models':sorted({d.record.model for d in scoped.details}),'efforts':sorted({d.record.effort for d in scoped.details}),
+                      'pricing':pricing_breakdown(explain_values((d.valuation for d in scoped.details),snapshot.catalog))};kind='conversation'
             else:
                 rows=[{'id':detail.detail_id,'timestamp':detail.record.timestamp,'detail':detail} for detail in scoped.details]
                 page,pagination=self.page(rows,params,frozen,path,event=True)
@@ -353,7 +356,8 @@ class QueryService:
                         'effort_source':d.record.effort_source,'tokens':tokens(d.record.tokens,d.record.reasoning_tokens),
                         'value':{'state':v.state,'amount_usd':money(v.amount_usd),'unpriced_reason':v.unpriced_reason,'rate_id':v.rate_id,
                                  'tier':v.tier,'assumptions':list(v.assumptions),'request_context_tokens':None if v.request_context_tokens is None else str(v.request_context_tokens),
-                                 'request_context_source':v.request_context_source,'pricing_version':v.pricing_version,'policy_version':v.policy_version}})
+                                 'request_context_source':v.request_context_source,'pricing_version':v.pricing_version,'policy_version':v.policy_version,
+                                 'explanation':pricing_explanation(v,explain_event(v,snapshot.catalog))}})
                 data={'summary':summary(scoped.total),'items':items,'pagination':pagination};kind='events'
         else:
             raise ApiError(404,'not_found','Unknown API route.')

@@ -43,7 +43,7 @@ test('production rendering distinguishes empty, partial, unpriced, zero, stale a
   assert.match(render(fixtures.empty),/No recorded activity matches/);
   assert.match(render(fixtures.partial),/Priced subtotal/);
   assert.match(render(fixtures.unpriced),/API value is unavailable/);
-  assert.match(render(fixtures.priced_zero),/0\.000/);
+  assert.match(render(fixtures.priced_zero),/0\.00/);
   const stale=structuredClone(fixtures.overview);stale.data.freshness='stale';assert.match(render(stale),/Retained local usage is stale/);
   const status=structuredClone(fixtures.status);status.data.configuration_pending=true;status.data.last_job={status:'failed'};
   assert.match(renderLocal({overview:fixtures.overview,status},state),/last local operation failed/);

@@ -83,3 +83,22 @@ test('actual settings publication invalidates old contexts; one full refresh cle
   const refreshed=await session.load(s,{navigation:nav});assert.equal(refreshed.refreshed,true);assert.equal(refreshed.bundle.navigation.cursor,null);assert.deepEqual(refreshed.bundle.navigation.previous,[]);assert.notEqual(refreshed.bundle.overview.configuration_version,old.bundle.overview.configuration_version);
   assert.ok(requestLog.every(r=>!r.path.includes('/preview')));assert.ok(csrf); // No provider call is configured in the real test runtime.
 });
+
+test('production Settings saves fee100 and Overview uses the published fee without changing usage',async()=>{
+  const app=await localDashboard(client,{hash:'#view=settings'});
+  const before=await client.usage('overview',{query:{period:'month'}});
+  try{
+    await app.setting('Claude','100');await app.click('save-settings');
+    assert.equal((await client.read('settings')).data.settings.plan_fees_usd.Claude,'100');
+    await app.nav('overview');
+    const after=app.app.accepted.overview;
+    assert.deepEqual(after.data.summary,before.data.summary);
+    const comparison=after.data.comparisons.find(c=>c.provider==='claude');
+    assert.equal(comparison.fee_usd,'100');assert.equal(comparison.difference_usd,'-99.529000000000');
+    assert.equal(after.configuration_version,(await client.read('settings')).data.configuration_version);
+  }finally{
+    app.app.dispose();const current=await client.read('settings');
+    const restored=await client.mutate('settings',{expected_configuration_version:current.data.configuration_version,changes:{plan_fees_usd:{Codex:'20.00',Claude:'20.00'}}});
+    if(restored.data.jobs.length)assert.equal((await observeLocalJob(client,restored.data.jobs[0].id,{signal:new AbortController().signal,wait:()=>new Promise(r=>setTimeout(r,25))})).state,'succeeded');
+  }
+});

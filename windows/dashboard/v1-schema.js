@@ -359,6 +359,9 @@ export const v1Schema = {
             "maxLength": 80
           },
           "maxItems": 1000
+        },
+        "pricing": {
+          "$ref": "#/$defs/pricing_breakdown"
         }
       },
       "required": [
@@ -368,7 +371,8 @@ export const v1Schema = {
         "last_activity_at",
         "project_ids",
         "models",
-        "efforts"
+        "efforts",
+        "pricing"
       ],
       "additionalProperties": false
     },
@@ -639,6 +643,9 @@ export const v1Schema = {
         "policy_version": {
           "type": "string",
           "maxLength": 100
+        },
+        "explanation": {
+          "$ref": "#/$defs/pricing_explanation"
         }
       },
       "required": [
@@ -651,7 +658,8 @@ export const v1Schema = {
         "request_context_tokens",
         "request_context_source",
         "pricing_version",
-        "policy_version"
+        "policy_version",
+        "explanation"
       ],
       "additionalProperties": false
     },
@@ -1615,6 +1623,9 @@ export const v1Schema = {
                 "maxLength": 80
               },
               "maxItems": 1000
+            },
+            "pricing": {
+              "$ref": "#/$defs/pricing_breakdown"
             }
           },
           "required": [
@@ -1626,7 +1637,8 @@ export const v1Schema = {
             "lifetime_scope",
             "project_ids",
             "models",
-            "efforts"
+            "efforts",
+            "pricing"
           ],
           "additionalProperties": false
         },
@@ -2375,6 +2387,336 @@ export const v1Schema = {
         "request_id"
       ],
       "additionalProperties": false
+    },
+    "explanation_money": {
+      "type": "string",
+      "pattern": "-?(0|[1-9][0-9]{0,23})(\\.[0-9]{1,18})?",
+      "maxLength": 44
+    },
+    "applied_rate": {
+      "type": "string",
+      "pattern": "((0|[1-9][0-9]{0,8})(\\.[0-9]{1,12})?|1000000000(\\.0{1,12})?)",
+      "maxLength": 23
+    },
+    "category_charge": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "enum": [
+            "uncached_input_tokens",
+            "output_tokens",
+            "cache_read_tokens",
+            "cache_write_5m_tokens",
+            "cache_write_1h_tokens"
+          ]
+        },
+        "tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "rate_usd_per_million": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/applied_rate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unrounded_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/category_money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "category",
+        "tokens",
+        "rate_usd_per_million",
+        "unrounded_usd"
+      ],
+      "additionalProperties": false
+    },
+    "pricing_explanation": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "enum": [
+            "available",
+            "unavailable"
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "pricing_provenance_unavailable",
+                "model_rate_unavailable",
+                "valuation_evidence_mismatch"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "const": "USD"
+        },
+        "rate_unit_tokens": {
+          "const": "1000000"
+        },
+        "requested_model": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "matched_model": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1024
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model_mapping": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 80
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rate_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tier": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 32767
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "checked_date": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/day"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "custom": {
+          "type": "boolean"
+        },
+        "pricing_version": {
+          "$ref": "#/$defs/id"
+        },
+        "catalog_version": {
+          "$ref": "#/$defs/id"
+        },
+        "override_version": {
+          "$ref": "#/$defs/id"
+        },
+        "policy_version": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "maxItems": 100
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/category_charge"
+          },
+          "maxItems": 5
+        },
+        "rounding_adjustment_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/explanation_money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "state",
+        "reason",
+        "currency",
+        "rate_unit_tokens",
+        "requested_model",
+        "matched_model",
+        "model_mapping",
+        "rate_id",
+        "tier",
+        "source",
+        "checked_date",
+        "custom",
+        "pricing_version",
+        "catalog_version",
+        "override_version",
+        "policy_version",
+        "assumptions",
+        "categories",
+        "rounding_adjustment_usd"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "properties": {
+            "state": {
+              "const": "available"
+            },
+            "reason": {
+              "type": "null"
+            },
+            "categories": {
+              "minItems": 5
+            }
+          }
+        },
+        {
+          "properties": {
+            "state": {
+              "const": "unavailable"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "categories": {
+              "maxItems": 0
+            },
+            "rounding_adjustment_usd": {
+              "type": "null"
+            }
+          }
+        }
+      ]
+    },
+    "pricing_group": {
+      "type": "object",
+      "properties": {
+        "record_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "tokens": {
+          "$ref": "#/$defs/tokens"
+        },
+        "pricing_state": {
+          "enum": [
+            "complete",
+            "unpriced"
+          ]
+        },
+        "amount_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "explanation": {
+          "$ref": "#/$defs/pricing_explanation"
+        }
+      },
+      "required": [
+        "record_count",
+        "tokens",
+        "pricing_state",
+        "amount_usd",
+        "explanation"
+      ],
+      "additionalProperties": false
+    },
+    "pricing_breakdown": {
+      "type": "object",
+      "properties": {
+        "group_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "total_record_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "shown_record_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pricing_group"
+          },
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "group_count",
+        "total_record_count",
+        "shown_record_count",
+        "truncated",
+        "groups"
+      ],
+      "additionalProperties": false
+    },
+    "category_money": {
+      "type": "string",
+      "pattern": "(0|[1-9][0-9]{0,23})(\\.[0-9]{1,18})?",
+      "maxLength": 43
     }
   }
 };

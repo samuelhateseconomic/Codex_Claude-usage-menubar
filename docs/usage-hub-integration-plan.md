@@ -223,6 +223,7 @@ These are logical entities. Map names and physical types to your database rather
 - Rate fields: exact model key, currency (`USD` initially), rates for each token category per million, optional tier threshold and high-context rates, source reference, and custom/bundled status.
 - Valuation uniqueness: `(event_id, pricing_version)`.
 - Valuation fields: amount nullable, state (`priced` or `unpriced`), applied rate reference, tier selection, assumption flags, and computation version.
+- D03 implementation handoff: [applied pricing explanation contract](d03-applied-pricing.md) defines frozen event evidence and bounded mixed-rate previews. Existing event amounts retain twelve-place rounding; unrounded explanation charges/adjustments use up to eighteen fractional digits to reconcile exactly. No competing storage schema is introduced.
 - Store money/rates as exact decimals. Proposed scale: 12 fractional USD digits, rounding half-even once per event valuation; sum those persisted values and round only for display. The compatibility test must allow at most that per-event quantization difference from existing float estimates.
 - On SQLite, use validated decimal text with Python `Decimal` calculations or a documented scaled-integer design; do not assume a `DECIMAL` declaration gives exact decimal arithmetic. On engines with exact numeric types, use a bounded exact numeric type.
 - Require safe bounds on counts and money. Reject overflow; do not silently truncate.

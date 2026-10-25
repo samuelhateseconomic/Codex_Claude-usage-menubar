@@ -41,8 +41,8 @@ export function formatMoney(value, digits=3){
   return `${negative&&units!==0n?'-':''}${grouped}${displayedFraction}`;
 }
 
-export function formatDifference(value){
-  const formatted=formatMoney(value);
+export function formatDifference(value,digits=3){
+  const formatted=formatMoney(value,digits);
   if(formatted==='Unavailable')return 'comparison unavailable';
   // Preserve the exact difference's sign even if display rounding reaches zero.
   const negative=value.startsWith('-')&&/[1-9]/.test(value.split(/[eE]/)[0]);
