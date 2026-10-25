@@ -1,78 +1,106 @@
 <p align="center">
-  <img src="assets/icon.png" width="128" alt="Claude Usage Bar icon">
+  <img src="assets/icon.png" width="128" alt="Usage Tray icon">
 </p>
 
-<h1 align="center">Claude Usage Bar</h1>
+<h1 align="center">Usage Tray / Usage Hub</h1>
 
 <p align="center">
-  <b>See how much of your Claude limits you have left.</b><br>
-  Your 5-hour and weekly usage, for every Claude account you use,<br>
-  right in the Mac menu bar.
+  <b>See your usage. Estimate its value.</b><br>
+  Codex and Claude limits, token reports, and a local dashboard on Windows.<br>
+  Original Claude menu-bar app included for macOS.
 </p>
 
 <p align="center">
-  <a href="https://github.com/jiachengw-sf/claude-usage-menubar/releases/latest">⬇️ <b>Download</b></a> ·
+  <a href="#getting-started">⬇️ <b>Download / setup</b></a> ·
   <a href="#features">Features</a> ·
-  <a href="#getting-started">Getting started</a> ·
   <a href="#build-from-source">Build from source</a> ·
   <a href="#how-it-works">How it works</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/jiachengw-sf/claude-usage-menubar/releases/latest"><img src="https://img.shields.io/github/v/release/jiachengw-sf/claude-usage-menubar?label=release&color=e8775a" alt="release"></a>
+  <img src="https://img.shields.io/badge/Windows_version-0.13.0-e8775a" alt="Windows version 0.13.0">
+  <img src="https://img.shields.io/badge/Windows-10%2F11-0078D4" alt="Windows 10/11">
+  <img src="https://img.shields.io/badge/Python-3.11%E2%80%933.14-3776AB?logo=python&logoColor=white" alt="Python 3.11–3.14">
   <img src="https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
-  <img src="https://img.shields.io/badge/UI-SwiftUI%20%2B%20AppKit-0A84FF" alt="SwiftUI + AppKit">
 </p>
 
 <hr>
 
 > [!WARNING]
-> **Unsigned build.** Claude Usage Bar isn't signed with an Apple Developer ID or notarized, so macOS blocks the first launch. Right-click the app and choose **Open**, or allow it under *System Settings › Privacy & Security*.
+> **Unsigned builds.** Windows has no signed installer. The macOS app is not Developer ID signed or notarized; first launch may require **Open** or approval under **Privacy & Security**.
 
 > [!NOTE]
-> This is an unofficial tool, not affiliated with Anthropic. It reads the same usage numbers as Claude Code's `/usage`, from endpoints that aren't publicly documented and may change.
+> Unofficial; unaffiliated with OpenAI or Anthropic. API-equivalent value is an estimate, not a bill or realized savings. Provider usage interfaces may change.
 
 ## Features
 
-- **Live limits in the menu bar.** Session (5-hour) and weekly limits, colored green / orange / red as they run down. Refreshes every 5 minutes and right after your Mac wakes.
-- **Multiple accounts.** Sign in with as many Claude accounts as you like (personal, work, school) and see them side by side. Give each one a short name.
-- **Stays signed in.** The app keeps its own login for each account and renews it, so it keeps working through restarts, sleep, and Claude Code logouts. Already use Claude Code? Its logins are picked up automatically.
-- **Four menu bar styles.** Names and percentages, initials only (`P 82%  W 96%`), a single icon for the account with the least left, or one account's session + week side by side.
-- **Weekly reports.** When an account's weekly limit resets you get a notification and an HTML report: how much you used vs. last week, every 5-hour session (and which ones hit the limit), Claude Code activity by day, project and model, and an estimate of how much went to chat or Cowork.
-- **Starts with your Mac**, keeps only the last 4 weeks of reports, and can stand in for the Claude app's own menu bar icon (**Open Claude**, ⌘O).
+- **Live tray limits.** Remaining Codex/Claude capacity and reset times, with independent refresh, backoff, and stale-state labels.
+- **Local dashboard.** Daily token/value charts, provider/date filters, searchable projects and conversations, detail/Back navigation, and saved fee/timezone settings.
+- **Terminal reports.** Compact summaries, ranked details, full audit output, and optional HTML. Normal tray startup opens no browser.
+- **Reliable accounting.** Reconciles supported duplicate histories, resets, forks, and streamed updates. Unknown models stay unpriced; reasoning is included in output once.
+- **Persistent local service.** Shared settings, recoverable SQLite storage, and authenticated browser access. Version 0.13.0 improves query reuse and honors saved report formats in explicit dashboard/API tray launches.
+- **Original macOS app.** Multiple Claude accounts, menu-bar styles, weekly reports, Keychain login, and launch at login. Windows Codex/Usage Hub features have not been ported to Mac.
 
 ## Getting started
 
-1. [Download the latest release](https://github.com/jiachengw-sf/claude-usage-menubar/releases/latest), unzip it, and move **ClaudeUsageBar.app** to your Applications folder.
-2. Open it (right-click → **Open** the first time, see the warning above).
-3. In the welcome window, click **Sign in with Claude** and approve in your browser.
-4. To add another account, click **Add Another Account**. Sign out of claude.ai in your browser first, or it will sign you into the same account again.
+### Windows
 
-You can get back to this window any time from the menu bar: **Accounts › Manage Accounts…** (⌘,).
+Use the [validated Windows build artifacts](https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar/actions/runs/40141823025) or build below. Run **UsageTray.exe** and find it under **Show hidden icons**.
+
+For live limits, sign in through Codex CLI (`codex login`) and Windows-native Claude Code (`/login`). Right-click the tray for reports, **Open usage dashboard...**, or **Quit**.
+
+```powershell
+# From the windows folder after building:
+.\dist\UsageTray.exe --dashboard --dashboard-port 0
+.\dist\UsageTray.exe --report month --report-format text --open-report
+```
+
+Standalone dashboard mode does not poll providers. Closing the browser leaves the tray running; **Quit** stops it. Quit/relaunch after updates or mode changes. [Full Windows guide](windows/README.md).
+
+### macOS
+
+1. Build below, then open **ClaudeUsageBar.app** from Applications.
+2. Choose **Sign in with Claude**. For another account, sign out of claude.ai or use a private browser window, then **Add Another Account**.
+3. Use **Accounts → Manage Accounts...**, **Menu Bar Style**, **Weekly Reports → This Week So Far**, and **Launch at Login** from the menu bar.
 
 ## Build from source
 
-Requires macOS 13+ and the Xcode command line tools (`xcode-select --install`).
+The current Windows version is on `codex/s01-observation-contracts`; main integration is pending.
 
 ```bash
-git clone https://github.com/jiachengw-sf/claude-usage-menubar.git
-cd claude-usage-menubar
+git clone --branch codex/s01-observation-contracts https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar.git
+cd Codex_Claude-usage-menubar
+```
+
+Already on this branch? Check `git status`, preserve local edits, then `git pull --ff-only`.
+
+**Windows:** Python 3.11–3.14 with pip. From the repository root:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\windows\build.ps1
+.\windows\dist\UsageTray.exe
+```
+
+For source-only setup and launch, see the [Windows guide](windows/README.md#run-on-windows).
+
+**macOS:** macOS 13+ and compatible Xcode command-line tools:
+
+```bash
+xcode-select --install  # Skip if already installed.
 ./build.sh
 open /Applications/ClaudeUsageBar.app
 ```
 
-`build.sh` compiles a universal (Apple silicon + Intel) app, signs it ad hoc, and installs it to `/Applications`. `./build.sh --zip` also makes the zip used for releases.
+The Mac build creates Apple silicon/Intel binaries and **replaces any existing `/Applications/ClaudeUsageBar.app`**. Add `--zip` to produce a versioned ZIP.
 
 ## How it works
 
-- **Limits** come from `api.anthropic.com/api/oauth/usage`, the endpoint behind Claude Code's `/usage`. If Anthropic asks the app to slow down, it backs off and keeps showing the last numbers.
-- **Sign-in** uses the same OAuth flow as Claude Code (PKCE, with a one-time localhost redirect). Tokens are stored in your login Keychain under `ClaudeUsageBar-login` and are only ever sent to Anthropic.
-- **Report breakdowns** read Claude Code's local session files (`~/.claude*/projects`). Chat and Cowork don't save usage on your Mac, so their share is estimated from the limit used beyond your Claude Code work, calibrated on your own history.
-- **Your data** stays on your Mac: reports in `~/Library/Application Support/ClaudeUsageBar/Reports`, a status log in `~/Library/Logs/ClaudeUsageBar.log`. Anything older than 4 weeks is deleted automatically.
+- **Value:** configured token rates applied per accepted event. Default fees are **USD 20/month per provider**. Eligible unfiltered month-to-date comparisons show estimated value minus the full monthly fee, with coverage qualifications.
+- **Scope:** local usage spans unmatched accounts; live limits describe the active CLI account. Browser/cloud activity and other devices may be absent.
+- **Windows data:** settings and metadata stay under `%LOCALAPPDATA%\UsageTray`. The index/reports exclude prompts and responses; project names and IDs can still be sensitive. Dashboard assets and its authenticated API run locally.
+- **Mac data:** logins use Keychain; reports live in `~/Library/Application Support/ClaudeUsageBar/Reports`, with about four weeks retained.
 
-"API-equivalent cost" figures in reports use public list prices for comparison only. On a subscription you aren't charged per token.
+Recorded Windows acceptance: **378 Python tests, 79 frontend tests, and 18 executable checks** per Python 3.11–3.14 CI job, plus packaged recovery checks. Native tray/report/Quit sign-off, clean-machine delivery, signing, and Mac verification remain pending. [Release evidence](docs/s14-hub-release.md).
 
-## Windows companion: Codex + Claude
-
-The [Windows Usage Tray](windows/README.md) shows remaining Codex and Claude subscription limits in the Windows system tray, with local session, daily, and weekly reports of token usage and estimated API-equivalent cost. Reports track recorded effort changes per turn and break down usage by model and effort. It reuses your existing CLI sign-ins and includes a Windows executable build script. The original macOS app above is unchanged.
+[Contributing instructions](AGENTS.md) · [Refinement plan](docs/project-refinement-plan.md) · [Original Claude Usage Bar](https://github.com/jiachengw-sf/claude-usage-menubar)
