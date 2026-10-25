@@ -279,7 +279,7 @@ class SettingsTests(unittest.TestCase):
         code = "import sys,socket;socket.socket=lambda *a,**k:(_ for _ in ()).throw(AssertionError());import usage_config;assert not any(m in sys.modules for m in ('usage_core','usage_tray','usage_reports','pystray','PIL'));print(usage_config.Settings().timezone)"
         result = subprocess.run([sys.executable,"-c",code],cwd=SCRIPT.parent, env=self.env,capture_output=True,text=True,timeout=10)
         self.assertEqual(result.returncode,0,result.stderr)
-        self.assertIn("America/Los_Angeles",result.stdout)
+        self.assertEqual(result.stdout.strip(), "auto")
 
     def test_structured_result_and_both_reports_expose_versions_without_changing_facts(self):
         result = service.query_usage(demo=True)

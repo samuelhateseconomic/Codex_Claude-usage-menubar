@@ -1775,7 +1775,15 @@
             "label": "claude [path:7714db1e]",
             "enabled": true
           }
-        ]
+        ],
+        "timezone_info": {
+          "name": "UTC",
+          "source": "manual"
+        },
+        "system_timezone_info": {
+          "name": "America/Los_Angeles",
+          "source": "system"
+        }
       },
       "bounds": {
         "monthly_fee_max_usd": "1000000000",
@@ -1816,7 +1824,11 @@
           "next_eligible_at": null,
           "snapshot": null
         }
-      ]
+      ],
+      "timezone_info": {
+        "name": "UTC",
+        "source": "manual"
+      }
     }
   },
   "overview_codex": {
@@ -2979,7 +2991,15 @@
             "label": "claude [path:7714db1e]",
             "enabled": true
           }
-        ]
+        ],
+        "timezone_info": {
+          "name": "UTC",
+          "source": "manual"
+        },
+        "system_timezone_info": {
+          "name": "America/Los_Angeles",
+          "source": "system"
+        }
       },
       "jobs": [
         {

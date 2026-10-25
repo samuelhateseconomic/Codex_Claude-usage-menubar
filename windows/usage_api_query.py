@@ -154,7 +154,7 @@ class QueryService:
         projects={row[0] for row in snapshot.projects}
         if set(filters['project_id'])-projects: raise ApiError(404,'project_not_found','Unknown project ID in this dataset.')
         period=params.get('period',[base.period if base else 'month'])[0]
-        zone=params.get('timezone',[base.timezone if base else snapshot.settings.timezone])[0]
+        zone=params.get('timezone',[base.timezone if base else snapshot.settings.resolved_timezone])[0]
         if period not in ('today','week','month'): raise invalid('period')
         try: ZoneInfo(zone)
         except (ZoneInfoNotFoundError,ValueError): raise invalid('timezone') from None

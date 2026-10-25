@@ -292,7 +292,7 @@ def main():
     parser.add_argument("--prices", type=Path, help="JSON file of exact-model USD prices per million tokens")
     parser.add_argument("--codex-plan-usd", default=None, help="Codex monthly subscription price in USD (saved value or 20)")
     parser.add_argument("--claude-plan-usd", default=None, help="Claude monthly subscription price in USD (saved value or 20)")
-    parser.add_argument("--timezone", default=None, help="IANA timezone (saved preference or America/Los_Angeles)")
+    parser.add_argument("--timezone", default=None, help="auto (system timezone) or an IANA name such as America/Los_Angeles")
     parser.add_argument("--config", type=Path, help="Settings JSON (default: local application-data UsageTray/settings.json)")
     parser.add_argument("--save-settings", action="store_true", help="Atomically persist effective settings; alone, exit without launching the tray")
     parser.add_argument("--show-settings", action="store_true", help="Print effective settings JSON, including configured root paths, and exit")
@@ -437,7 +437,7 @@ def main():
         info = version_info(dict(settings.rate_overrides))
         info.update(settings_version=settings.version, settings_file_state="present" if saved_version else "absent",
                     effective_settings_saved=settings.version == saved_version,
-                    timezone=settings.timezone, report_format=settings.report_format,
+                    timezone=settings.resolved_timezone, report_format=settings.report_format,
                     root_modes={p: "environment_defaults" if roots is None else "explicit" for p, roots in settings.log_roots},
                     explicit_root_counts={p: len(roots) for p, roots in settings.log_roots if roots is not None})
         info["operation"] = operation.finish("success", "settings", "success", scope="configuration")
@@ -450,7 +450,7 @@ def main():
     prices = dict(settings.rate_overrides)
     plan_costs = dict(settings.plan_fees_usd)
     roots = settings.roots()
-    args.timezone, args.report_format = settings.timezone, settings.report_format
+    args.timezone, args.report_format = settings.resolved_timezone, settings.report_format
     if args.dashboard and (sys.stdout is not None or args.no_browser):
         from dashboard_main import run_preview
         try:

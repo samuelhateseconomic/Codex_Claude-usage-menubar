@@ -16,7 +16,7 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
   let state=readLocation(location),bundle=null,navigation=null,parent=null,published=null,retry=null,sequence=0,debounce,draft=null,draftVersion=null,jobAbort=null,operation=0,operationBusy=false,notificationTimer,feedback=null;
   const snapshot=()=>({usageHub:1,state:structuredClone(state),navigation:structuredClone(navigation),parent:structuredClone(parent),scroll:window.scrollY});
   const notify=message=>{$('#notification').textContent=message;window.clearTimeout(notificationTimer);notificationTimer=window.setTimeout(()=>{$('#notification').textContent='';},6000);};
-  function syncOperationControls(){for(const node of document.querySelectorAll('[data-action="refresh"], [data-action="save-settings"], [data-action="check-job"], [data-setting]'))node.disabled=operationBusy;}
+  function syncOperationControls(){for(const node of document.querySelectorAll('[data-action="refresh"], [data-action="save-settings"], [data-action="check-job"], [data-setting], #settings-timezone-mode'))node.disabled=operationBusy;}
   // Operation feedback survives transient notifications and view changes. A
   // reopened page recovers pending work from the owner's durable status.
   function setFeedback(state,message,extra={}){
@@ -193,6 +193,10 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
     }
   });
   document.addEventListener('change',event=>{
+    if(event.target.id==='settings-timezone-mode'){
+      const d=beginDraft();d.timezone=event.target.value==='auto'?'auto':bundle.wire.data.settings.timezone_info.name;
+      render();($('#settings-timezone')??$('#settings-timezone-mode'))?.focus();return;
+    }
     if(['period','project','model','effort','sort','pageSize'].includes(event.target.id))return navigate({[event.target.id]:event.target.id==='pageSize'?Number(event.target.value):event.target.value,conversation:'',...(event.target.id==='period'?{day:''}:{})});
   });
   document.addEventListener('input',event=>{

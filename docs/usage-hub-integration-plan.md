@@ -10,6 +10,8 @@ Refinement: checked against the current Python collectors, report/tray code, pac
 
 ## Decision brief
 
+Implemented timezone extension (0.14.1): [system timezone follow-up](system-timezone-fix.md) defines the persisted `auto` preference, resolved metadata and consistent dashboard display. Frozen query contexts always retain their resolved IANA name and UTC boundaries; `auto` is not a query range name.
+
 The foundation is suitable for a local usage hub. The critical dependency is reconciling usage correctly before storing or displaying authoritative totals. A database makes queries persistent; it does not resolve duplicate histories by itself.
 
 Recommended first implementation: retain Python and the tray, use a local SQLite index, and expose one shared query service to the terminal and an optional local web dashboard. FastAPI and React/TypeScript are reasonable proposed web adapters, not installed dependencies or a requirement for the accounting layer. Confirm any already-started database work before introducing a competing schema or engine.

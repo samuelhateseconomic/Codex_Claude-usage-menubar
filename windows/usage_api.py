@@ -6,6 +6,7 @@ from usage_api_limits import LimitCache
 from usage_identity import APP_VERSION, BUILD_ID
 from usage_index_db import IndexUnavailable, IndexRecoveryError, IndexBusy
 from usage_config import load_settings,SettingsError
+from usage_timezone import resolve_timezone
 
 
 class ApiService:
@@ -44,7 +45,12 @@ class ApiService:
                 settings=load_settings(self.index.config_path)
                 return self.respond('settings',{'configuration_version':settings.version,'settings':self.jobs.editable(settings),
                     'bounds':{'monthly_fee_max_usd':'1000000000','decimal_places':12,'search_characters':200,'page_size_max':100}})
-            if path=='/limits': return self.respond('limits',{'providers':self.limits.read()})
+            if path=='/limits':
+                # Use the committed configuration, just like usage queries. A
+                # saved-but-pending draft must not silently change display zones.
+                settings=self.index.display_settings()
+                return self.respond('limits',{'providers':self.limits.read(),
+                    'timezone_info':resolve_timezone(settings.timezone).data()})
             identity=path.removeprefix('/jobs/')
             if '/' in identity: raise ApiError(404,'not_found','Unknown API route.')
             return self.respond('job',self.jobs.get(identity))

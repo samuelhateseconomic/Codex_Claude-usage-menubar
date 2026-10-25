@@ -8,7 +8,7 @@
     "Codex": null,
     "Claude": null
   },
-  "timezone": "America/Los_Angeles",
+  "timezone": "auto",
   "rate_catalog": "bundled",
   "rate_overrides": {},
   "report_format": "text"

@@ -1,5 +1,7 @@
 # S12: versioned local API and owner/job lifecycle
 
+0.14.1 follow-up: settings support the `auto` system-timezone preference and read-only resolved timezone metadata; cached limits expose their active display zone. See [system timezone semantics and evidence](system-timezone-fix.md). UTC wire instants and frozen range names remain unchanged.
+
 Status: implemented; local acceptance gates pass and hosted verification is recorded in the refinement ledger. S11 is the storage prerequisite; this session adds a production headless API. The existing reviewed dashboard still uses its explicit demo preview until S13. No real histories, provider credentials, authenticated accounts or external services are needed by the synthetic acceptance path.
 
 ## Start and ownership

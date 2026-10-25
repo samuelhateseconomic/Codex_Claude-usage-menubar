@@ -60,7 +60,7 @@ class HubOwner:
 
     def query_tray(self,period,snapshots,*,providers=('Codex','Claude')):
         snapshot=self.index.read_snapshot()
-        now=time.time();zone=snapshot.settings.timezone
+        now=time.time();zone=snapshot.settings.resolved_timezone
         context=QueryContext(tuple((p,resolve_range(period,now,snapshots.get(p),zone)) for p in providers),now,period,zone)
         return snapshot.query(context).result
 

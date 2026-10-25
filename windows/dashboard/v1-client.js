@@ -34,6 +34,9 @@ export function validateV1(kind,value){
   if(kind!=='error'&&value.mode!=='real')fail(); // Demo has its own explicit entry point.
   function semantics(item,key=''){
     if(!item||typeof item!=='object')return;
+    if(['timezone_info','system_timezone_info'].includes(key)){
+      try{new Intl.DateTimeFormat('en',{timeZone:item.name});}catch{fail();}
+    }
     if(key==='tokens')for(const value of Object.values(item))if(value!==null&&BigInt(value)>9223372036854775807n)fail();
     if(key==='explanation'&&item.pricing_version!==value.pricing_version)fail();
     if(key==='explanation'&&item.state==='available'){

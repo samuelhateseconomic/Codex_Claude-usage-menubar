@@ -8,7 +8,7 @@ from pathlib import Path
 import tempfile
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from usage_time import DEFAULT_TIMEZONE
+from usage_timezone import AUTO_TIMEZONE, resolve_timezone
 from usage_valuation import DEFAULT_PLAN_FEES, Price, bounded_decimal
 
 SCHEMA_VERSION = 1
@@ -88,10 +88,14 @@ def load_prices(path):
 class Settings:
     plan_fees_usd: tuple = tuple(DEFAULT_PLAN_FEES.items())
     log_roots: tuple = tuple((p, None) for p in PROVIDERS)
-    timezone: str = DEFAULT_TIMEZONE
+    timezone: str = AUTO_TIMEZONE
     rate_catalog: str = "bundled"
     rate_overrides: tuple = ()
     report_format: str = "text"
+
+    @property
+    def resolved_timezone(self):
+        return resolve_timezone(self.timezone).name
 
     @property
     def version(self):
@@ -137,7 +141,8 @@ def settings_from_data(data):
             values = tuple(dict.fromkeys(values))
         checked_roots.append((provider, values))
     _text(data["timezone"])
-    ZoneInfo(data["timezone"])
+    if data["timezone"] != AUTO_TIMEZONE:
+        ZoneInfo(data["timezone"])
     if data["rate_catalog"] != "bundled" or data["report_format"] not in ("text", "html"):
         raise ValueError("Unsupported catalog or report preference.")
     prices = prices_from_data(data["rate_overrides"])
@@ -170,7 +175,8 @@ def effective_settings(settings, *, codex_fee=None, claude_fee=None, timezone=No
     if timezone is not None:
         try:
             _text(timezone)
-            ZoneInfo(timezone)
+            if timezone != AUTO_TIMEZONE:
+                ZoneInfo(timezone)
         except (ValueError, TypeError, ZoneInfoNotFoundError):
             raise SettingsError("Unknown report timezone; use an available IANA name such as America/Los_Angeles or UTC.") from None
         data["timezone"] = timezone

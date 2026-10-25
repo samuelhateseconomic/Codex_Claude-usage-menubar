@@ -1114,6 +1114,12 @@ export const v1Schema = {
             "additionalProperties": false
           },
           "maxItems": 1024
+        },
+        "timezone_info": {
+          "$ref": "#/$defs/timezone_info"
+        },
+        "system_timezone_info": {
+          "$ref": "#/$defs/timezone_info"
         }
       },
       "required": [
@@ -1123,7 +1129,9 @@ export const v1Schema = {
         "rate_catalog",
         "rate_overrides",
         "report_format",
-        "approved_roots"
+        "approved_roots",
+        "timezone_info",
+        "system_timezone_info"
       ],
       "additionalProperties": false
     },
@@ -2152,10 +2160,14 @@ export const v1Schema = {
                 "$ref": "#/$defs/provider"
               },
               "maxItems": 2
+            },
+            "timezone_info": {
+              "$ref": "#/$defs/timezone_info"
             }
           },
           "required": [
-            "providers"
+            "providers",
+            "timezone_info"
           ],
           "additionalProperties": false
         }
@@ -2717,6 +2729,28 @@ export const v1Schema = {
       "type": "string",
       "pattern": "(0|[1-9][0-9]{0,23})(\\.[0-9]{1,18})?",
       "maxLength": 43
+    },
+    "timezone_info": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "source": {
+          "enum": [
+            "system",
+            "manual",
+            "fallback"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "source"
+      ],
+      "additionalProperties": false
     }
   }
 };

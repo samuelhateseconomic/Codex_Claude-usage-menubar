@@ -1,0 +1,40 @@
+# System timezone — 0.14.1
+
+Requested October 25, 2026. Scope: Windows Python/tray/terminal and production local dashboard. Existing Swift/macOS implementation is unchanged.
+
+## Behavior
+
+- New configurations use `timezone: "auto"`. Settings offers **Automatic — system timezone** or a manual IANA name, such as `America/Los_Angeles` or `UTC`. Existing explicit choices remain manual; choosing Automatic and saving opts an existing installation in.
+- System detection uses pinned `tzlocal==5.4.5` with the existing bundled `tzdata`. It reads OS/process timezone configuration, including Windows named-zone mapping. It does not use a location permission, IP lookup, provider request, fixed current offset or browser-only preference. See the [maintainer's documentation](https://pypi.org/project/tzlocal/5.4.5/).
+- Automatic resolves at application/query boundaries. Saved JSON and configuration identity retain `auto`. A new query resolves the current system zone; existing frozen queries, derived filters and cursors retain their captured named zone. Refresh captures the new zone after a system change. Terminal reports capture their zone when launched.
+- Usage/calendar boundaries and limit reset/attempt/success/eligibility times use the selected zone. Timestamps remain UTC instants internally; displayed times include the applicable PDT/PST (or other zone) label. Named-zone rules handle daylight-saving transitions.
+- Live limits use the committed configuration, including while a new settings job is pending. Their timezone read does not scan histories or trigger provider work. Before the first publication, saved settings supply the display zone. Read failures propagate; they do not silently substitute another configuration.
+- A detection failure yields a labeled UTC fallback in Settings/Live limits; the saved `auto` preference is retained. Manual timezone selection remains available.
+
+## Contract and decisions
+
+- `editable_settings` adds read-only `timezone_info` and `system_timezone_info`, each `{name, source}`, with source `system`, `manual`, or `fallback`. The preference remains the existing `timezone` field, now also accepting `auto`. Mutations accept only the preference, never OS metadata.
+- `/limits` adds `timezone_info`. Existing UTC wire timestamps, query `range.timezone` (always a resolved name), numeric fields and accounting rules are unchanged. Schema, frontend mirror and synthetic fixtures move together. No database migration or browser pricing/calendar arithmetic.
+- `UsageIndex.display_settings()` reads only the active configuration in a transaction and validates its identity. This avoids loading every accepted event merely to format cached provider times.
+- This is a focused follow-up to D01–D04. It preserves explicit existing timezone choices instead of guessing that a saved UTC setting was accidental. The user subsequently authorized commit/push after tests. No real installation, setting edit or provider polling was performed.
+
+## Verification ledger
+
+Verified for this scope on Windows 11 / project Python 3.14.5, October 25, 2026.
+
+- Core/configuration changes: `windows/usage_timezone.py`, `usage_config.py`, `usage_index.py`, `usage_api.py`, `usage_api_query.py`, `usage_api_runtime.py`, `usage_jobs.py`, `usage_tray.py`, `usage_identity.py`, `requirements.txt`, `settings.example.json`. Production dashboard: `local-app.js`, `local-view.js`, `style.css`, `v1-client.js`; published JSON Schema, mirror and synthetic fixtures updated together. Focused regressions: `windows/tests/test_timezone.py`, the updated headless-default assertion in `test_config.py`, and `windows/dashboard/tests/local-timezone.test.mjs`. Packaged smoke adds automatic timezone acceptance. READMEs and S06/S12/integration/main-plan references updated.
+- Focused backend: `python -m unittest discover -s windows/tests -p test_timezone.py -v` — **5 passed / 0.617s**. Covers persisted `auto`, existing manual choices, system changes, labeled failure, DST local days of 23/25 hours, month boundary, pending settings publication, frozen/derived contexts and unchanged exact summary facts. Initial config run identified its legacy fixed-LA default expectation; it now checks the new `auto` preference while retaining the headless/network-free guard.
+- Full backend: `windows/build.ps1` ran **416 Python tests / 62.759s**, all passed. Its normal packaging step then failed with WinError 5 on the locked `windows/dist/UsageTray.exe`. No process was killed and that artifact was not replaced. Used the same PyInstaller 6.16.0 onefile/windowed/assets/tzdata options with a separate workspace `--distpath`, then packaged Setup with that exact new payload.
+- Final frontend: `node --test windows/dashboard/tests/*.test.mjs` — **103 passed / 4,152.5939ms**, including actual local-API integration. Earlier focused render/contract run passed 16; one new validator test initially supplied its arguments in reverse and was corrected before the passing full suite. Keyboard focus remains on the mode selector when switching to Automatic; manual selection focuses its input.
+- Packaged acceptance against `windows/build/timezone-checks/dist/UsageTray.exe`: `windows/tools/release_smoke.py` **19/19 passed** (including `auto` with bundled detection/data); `windows/tools/installer_smoke.py` **passed** isolated per-user installation, GUI subsystem, exact payload, Start menu/startup shortcuts, repeat installation and preserved settings/index. A separate diagnostic launch with **no TZ override**, isolated appdata and no provider work resolved the laptop's actual OS timezone to **America/Los_Angeles**, version **0.14.1**.
+- `windows/tests/packaged_local_hub_smoke.py` **passed** real launcher/assets/auth/detail/reuse using synthetic **2,840,000 tokens / USD18.42**. `windows/tests/packaged_hub_release.py` **passed** local assets/auth, multiple sessions/reuse, grant expiry, schema-2 migration/backup/restore, interrupted jobs/restart, malformed-setting retention, privacy diagnostics and terminal fallback. Its 40-file/4,000-event fixture remained **4,000,000 tokens / USD8.000000000000**; Overview bundle samples **1.093719 / 0.813924 / 0.790977s**, Explore **0.522858 / 0.506517 / 0.495887s**. Local fixture observations only.
+- Actual browser, production handler with disposable synthetic settings/index: selected Automatic, saved through Applying → Applied, verified reports/chart timezone LA and cached resets/attempt/success in PDT. Selected and saved manual `Asia/Tokyo`, reloaded to confirm it remained selected, then selected Automatic using keyboard and saved again. At 390px viewport, document width **375px** equaled client width; no page overflow, focused mode selector retained. Normal and narrow screenshots reviewed; saved synthetic preview is outside Git at the task's `system-timezone.png`. Closed the browser/fixture and reset viewport after verification.
+- `git diff --check`, strict schema/mirror/fixtures tests, UTF-8 documentation, local link targets and balanced fences passed. Project-local TEMP/TMP and isolated test application/provider roots were used. The pinned dependency installation required network access; no runtime timezone lookup uses the network.
+
+Local build outputs (ignored, excluded from source commit):
+
+- `windows/build/timezone-checks/dist/UsageTray.exe` SHA-256 `f5aaf9ff6b5cb9028dff145cd4fb87980d14978049376aaae6e1ebd1e9419671`.
+- `windows/build/timezone-checks/dist/UsageTraySetup.exe` SHA-256 `24e56b8d0279554dd2cc1deeb853b8b7f5cdcd5ef4c1720d7b2139f5d0a9e15d`.
+- Logs: `windows/build/timezone-checks/{build,package,smoke,setup,installer,frontend-final,local-hub,hub-release}.log` and `timings.json`.
+
+Remaining limits: the real installed/running application and its saved timezone were not changed. Existing installations must update and select Automatic once to replace an earlier manual preference. No hosted CI, clean-machine, physical native-tray playback or macOS build was performed here; existing S14 limitations remain. No additional implementation session is required for this scoped fix. Commit/push to main follows the final diff review, as authorized by the user.

@@ -23,6 +23,8 @@ Interface redesign is a later session. The terminal remains available, and a fut
 
 ## 2. Documents and decision ownership
 
+- [System timezone follow-up](system-timezone-fix.md): automatic OS timezone preference and consistent production dashboard timestamps, requested October 25, 2026; records scope and verification separately from D01–D04.
+
 - [Dashboard refinement sessions](dashboard-refinement-sessions.md): user-requested D01–D04 follow-up for fee updates, comparison clarity, 12px live-limit bars, collapsed diagnostics and applied-rate explanations. D01–D04 implementation evidence is recorded there; existing S14 evidence and remaining checks are unchanged.
 - [AGENTS.md](../AGENTS.md): working instructions for agents implementing this refinement.
 - [Project evaluation](project-evaluation-2026-10-23.md): evidence, confirmed defects, and review limitations.

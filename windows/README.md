@@ -1,4 +1,4 @@
-# Usage Tray / Usage Hub for Windows — 0.14.0
+# Usage Tray / Usage Hub for Windows — 0.14.1
 
 Codex + Claude usage estimates, live limits, terminal reports, and an optional local dashboard. [Project overview and macOS setup](../README.md).
 
@@ -40,7 +40,7 @@ Or choose **Open usage dashboard...** from the ordinary live tray to share its c
 
 - **Overview:** provider/period selection, daily charts, two-decimal fee comparisons with exact amounts, and collapsed **Data details**. Important unpriced/stale warnings stay visible. **Live limits** uses 12px remaining-capacity bars.
 - **Explore:** search/filter usage and open conversation details; Back retains the page/filters. Expand **Rates** beneath an entry for USD/1M rates, exact category charges, rounding and pricing sources. Mixed previews show up to eight rate groups; event pages expose the rest.
-- **Settings & data:** save fees and timezone; **Applying / Applied** feedback stays visible. Use **Check progress** for a long-running job. Failed/conflicting changes retain the draft; reload to resolve concurrent edits.
+- **Settings & data:** save fees and timezone (Automatic follows your system; manual IANA names remain available); **Applying / Applied** feedback stays visible. Use **Check progress** for a long-running job. Failed/conflicting changes retain the draft; reload to resolve concurrent edits.
 
 Repeated launches reuse one owner's mode and port. Close browser tabs freely; tray **Quit** stops the packaged service, while Ctrl+C stops the source dashboard. Quit/relaunch to change modes or load updates. Launch through the application to authenticate; a plain loopback URL grants no private access. `--no-browser` suppresses browser launch.
 
@@ -68,7 +68,7 @@ Periods: `session`, `today`, `week`, `month`. Offline session uses the last five
 Settings: `%LOCALAPPDATA%\UsageTray\settings.json`. Save fees/timezone through the dashboard, or quit the active owner before saving from CLI:
 
 ```powershell
-.\.venv\Scripts\python.exe usage_tray.py --save-settings --codex-plan-usd 20 --claude-plan-usd 20 --timezone America/Los_Angeles --report-format text
+.\.venv\Scripts\python.exe usage_tray.py --save-settings --codex-plan-usd 20 --claude-plan-usd 20 --timezone auto --report-format text
 .\.venv\Scripts\python.exe usage_tray.py --diagnostics
 .\dist\UsageTray.exe --version --output .\version.json
 .\dist\UsageTray.exe --diagnostics --output .\diagnostics.json
@@ -99,7 +99,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 .\dist\UsageTray.exe
 ```
 
-Build runs the Python suite, packages the windowed app/local assets/timezone data, and performs 18 offline executable checks. It also creates **dist/UsageTraySetup.exe** and tests installation in isolated user folders, including exact payload identity, valid Start menu/startup shortcuts, repeat install and preserved settings/index. CI artifacts include both executables. Provider CLIs remain separate; Node.js is needed only for frontend tests. Portable app launches do not register startup; explicit setup does.
+Build runs the Python suite, packages the windowed app/local assets/timezone data, and performs 19 offline executable checks. It also creates **dist/UsageTraySetup.exe** and tests installation in isolated user folders, including exact payload identity, valid Start menu/startup shortcuts, repeat install and preserved settings/index. CI artifacts include both executables. Provider CLIs remain separate; Node.js is needed only for frontend tests. Portable app launches do not register startup; explicit setup does.
 
 ### Repeat release checks
 

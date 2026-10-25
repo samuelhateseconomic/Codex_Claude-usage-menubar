@@ -7,6 +7,7 @@ import uuid
 
 from usage_api_contract import ApiError, invalid
 from usage_config import load_settings, settings_data, settings_from_data, save_settings
+from usage_timezone import resolve_timezone
 from usage_index import utc_now
 from usage_privacy import metadata_label
 from usage_index_db import transaction, IndexBusy, IndexRecoveryError
@@ -130,6 +131,8 @@ class JobController:
     def editable(self, settings=None):
         settings=load_settings(self.index.config_path) if settings is None else settings
         data=settings_data(settings)
+        data['timezone_info']=resolve_timezone(settings.timezone).data()
+        data['system_timezone_info']=resolve_timezone('auto').data()
         data.pop('log_roots')
         data['approved_roots']=[{'id':key,'provider':provider.lower(),'label':metadata_label(str(path),'project'),'enabled':key in self.roots(settings)} for key,(provider,path) in sorted(self.roots(settings,include_disabled=True).items())]
         return data

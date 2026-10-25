@@ -422,6 +422,21 @@ class UsageIndex:
         self._fault(fault, 'before_commit')
         return revision
 
+    def display_settings(self):
+        """Committed settings without reading histories; no fallback after IO errors."""
+        with self.connection(True) as connection, transaction(connection):
+            dataset = self._dataset(connection)
+            if not dataset['ready']:
+                return load_settings(self.config_path)
+            row = connection.execute('SELECT payload FROM configurations WHERE dataset=? AND version=?',
+                                     (self.dataset_id, dataset['configuration'])).fetchone()
+            if row is None:
+                raise IndexRecoveryError('Committed configuration is missing; preserve the index.')
+            settings = settings_from_data(codec.loads(row[0]))
+            if settings.version != dataset['configuration']:
+                raise IndexRecoveryError('Committed configuration identity mismatch; preserve the index.')
+            return settings
+
     def read_snapshot(self, max_events=100000, max_bytes=64 * 1024 * 1024, *, _connection=None):
         """One consistent publication read, offline; never scans, polls or reprices."""
         with (self.connection(True) if _connection is None else nullcontext(_connection)) as connection, transaction(connection):

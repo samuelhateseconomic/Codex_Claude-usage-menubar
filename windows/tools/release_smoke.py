@@ -62,6 +62,14 @@ def check_executable(executable):
                 'Frozen Python does not match the project build interpreter.')
         command('bundled-named-timezone', ['--diagnostics', '--timezone', 'America/Los_Angeles', '--output', str(root/'info.json')])
         require(data('info.json')['timezone'] == 'America/Los_Angeles', 'Named timezone unavailable with host search path disabled.')
+        # Controlled OS/process timezone, isolated appdata and bundled tzlocal:
+        # automatic mode must work in the actual windowed executable too.
+        previous_tz = env.get('TZ')
+        env['TZ'] = 'America/Los_Angeles'
+        command('bundled-system-timezone', ['--diagnostics', '--timezone', 'auto', '--output', str(root/'auto-zone.json')])
+        require(data('auto-zone.json')['timezone'] == 'America/Los_Angeles', 'Packaged system timezone detection failed.')
+        if previous_tz is None: env.pop('TZ', None)
+        else: env['TZ'] = previous_tz
         command('demo-text', ['--report', 'week', '--demo', '--output', str(root/'demo.txt')])
         require(all(s in read('demo.txt') for s in ('DEMO', '108,000', '$0.2658')), 'Demo accounting differs.')
         require(20 <= len(read('demo.txt').splitlines()) <= 30 and 'RATES -' not in read('demo.txt'), 'Default terminal summary is not compact.')
