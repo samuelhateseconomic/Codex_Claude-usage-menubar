@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {formatTokens, chartScale, formatMoney, formatDifference} from '../format.js';
+import {formatTokens, chartScale, formatMoney, formatDifference, formatUsd, formatAverageTokens, formatAverageCredits} from '../format.js';
 
 test('exact integers below a million, compact millions and billions',()=>{
   const cases=[['0','0'],['999','999'],['1000','1,000'],['190000','190,000'],['999999','999,999'],
@@ -54,4 +54,19 @@ test('five-interval scales cover the largest column without negative baselines',
     assert.ok(scale>=maximum);
     assert.ok(scale/5>0);
   }
+});
+
+test('two-decimal USD display accepts exact contributions without losing signs or zero state',()=>{
+  for(const [value,expected] of [['16.224690800000','16.22'],['2','2.00'],['0','0.00'],['0.000000000000000001','<0.01'],['-0.000000000000000001','−<0.01'],['-1.015','-1.02'],['0E-8','0.00'],[null,'Unavailable']])assert.equal(formatUsd(value),expected);
+  assert.equal(formatUsd('0.0000000000000000001'),'Unavailable');
+  assert.equal(formatMoney('0.000000000000000001'),'Unavailable','existing event-money bounds remain intact');
+});
+
+
+test('average labels format service decimals without changing exact values',()=>{
+  assert.equal(formatAverageTokens('1234.125000000000000000'),'1,234.12');
+  assert.equal(formatAverageTokens('1000000.125000000000000000'),'1.00M');
+  assert.equal(formatAverageTokens('1234567890.125000000000000000'),'1.23B');
+  assert.equal(formatAverageCredits('0.000000000000000001'),'<0.01');
+  assert.equal(formatAverageCredits('0.000000000000000000'),'0.00');
 });

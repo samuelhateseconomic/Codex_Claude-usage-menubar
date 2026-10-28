@@ -7,7 +7,8 @@ import math
 from usage_observations import Counter, Counters, Observation, SourceRef, CanonicalEvent
 from usage_records import Record, Tokens
 from usage_valuation import (Price, RateCatalog, EventValuation, ARITHMETIC, MAX_TOKENS,
-                             MAX_MONEY, POLICY_VERSION, validate_record)
+                             MAX_MONEY, POLICY_VERSION, LEGACY_POLICY_VERSION,
+                             BELOW_THRESHOLD, LEGACY_CONTEXT, validate_record)
 
 COUNTS = ('input', 'output', 'cached', 'write5m', 'write1h')
 COUNTER_FIELDS = (*COUNTS, 'legacy_write', 'reasoning')
@@ -137,16 +138,17 @@ def event_from(data):
 
 
 def catalog_data(catalog):
-    return {'override_version': text(catalog.override_version), 'policy_version': POLICY_VERSION,
+    return {'override_version': text(catalog.override_version), 'policy_version': catalog.policy_version,
             'entries': [[text(name), price.payload(), text(source), text(date), custom]
                         for name, price, source, date, custom in catalog.entries]}
 
 
 def catalog_from(data):
-    if data['policy_version'] != POLICY_VERSION:
+    if data['policy_version'] not in (POLICY_VERSION, LEGACY_POLICY_VERSION):
         raise ValueError('Unsupported persisted valuation policy; explicit reindex required.')
     return RateCatalog(tuple((name, Price(*rates[:5], threshold=rates[5], high=rates[6]), source, date, custom)
-                             for name, rates, source, date, custom in data['entries']), data['override_version'])
+                             for name, rates, source, date, custom in data['entries']), data['override_version'],
+                       BELOW_THRESHOLD if data['policy_version'] == POLICY_VERSION else LEGACY_CONTEXT)
 
 
 def value_data(value):

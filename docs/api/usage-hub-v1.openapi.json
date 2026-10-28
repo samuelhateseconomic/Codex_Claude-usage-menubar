@@ -398,6 +398,38 @@
               "type": "string",
               "maxLength": 200
             }
+          },
+          {
+            "name": "projection",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "app_api_value_v1"
+              ]
+            },
+            "description": "Opt-in app credits and versioned primary-model selection; inherited by frozen contexts."
+          },
+          {
+            "name": "empty_selection",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Explicitly deselected dimensions match no usage. Omission preserves unrestricted empty-list semantics. Frozen with the query; facets retain recoverable choices.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project_id",
+                  "model",
+                  "effort"
+                ]
+              },
+              "maxItems": 3
+            }
           }
         ]
       }
@@ -692,6 +724,38 @@
             "schema": {
               "type": "string",
               "maxLength": 200
+            }
+          },
+          {
+            "name": "projection",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "app_api_value_v1"
+              ]
+            },
+            "description": "Opt-in app credits and versioned primary-model selection; inherited by frozen contexts."
+          },
+          {
+            "name": "empty_selection",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Explicitly deselected dimensions match no usage. Omission preserves unrestricted empty-list semantics. Frozen with the query; facets retain recoverable choices.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project_id",
+                  "model",
+                  "effort"
+                ]
+              },
+              "maxItems": 3
             }
           }
         ]
@@ -988,6 +1052,38 @@
               "type": "string",
               "maxLength": 200
             }
+          },
+          {
+            "name": "projection",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "app_api_value_v1"
+              ]
+            },
+            "description": "Opt-in app credits and versioned primary-model selection; inherited by frozen contexts."
+          },
+          {
+            "name": "empty_selection",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Explicitly deselected dimensions match no usage. Omission preserves unrestricted empty-list semantics. Frozen with the query; facets retain recoverable choices.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project_id",
+                  "model",
+                  "effort"
+                ]
+              },
+              "maxItems": 3
+            }
           }
         ]
       }
@@ -1282,6 +1378,38 @@
             "schema": {
               "type": "string",
               "maxLength": 200
+            }
+          },
+          {
+            "name": "projection",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "app_api_value_v1"
+              ]
+            },
+            "description": "Opt-in app credits and versioned primary-model selection; inherited by frozen contexts."
+          },
+          {
+            "name": "empty_selection",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Explicitly deselected dimensions match no usage. Omission preserves unrestricted empty-list semantics. Frozen with the query; facets retain recoverable choices.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project_id",
+                  "model",
+                  "effort"
+                ]
+              },
+              "maxItems": 3
             }
           }
         ]
@@ -1578,6 +1706,26 @@
               "type": "string",
               "maxLength": 200
             }
+          },
+          {
+            "name": "empty_selection",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Explicitly deselected dimensions match no usage. Omission preserves unrestricted empty-list semantics. Frozen with the query; facets retain recoverable choices.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project_id",
+                  "model",
+                  "effort"
+                ]
+              },
+              "maxItems": 3
+            }
           }
         ]
       }
@@ -1872,6 +2020,26 @@
             "schema": {
               "type": "string",
               "maxLength": 200
+            }
+          },
+          {
+            "name": "empty_selection",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Explicitly deselected dimensions match no usage. Omission preserves unrestricted empty-list semantics. Frozen with the query; facets retain recoverable choices.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project_id",
+                  "model",
+                  "effort"
+                ]
+              },
+              "maxItems": 3
             }
           }
         ]
@@ -2772,6 +2940,333 @@
             "schema": {
               "type": "string",
               "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/usage/analysis": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success or coalesced work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/analysis"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted work",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/analysis"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session/origin/CSRF rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/configuration conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Cooldown or queue capacity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Index/recovery/work budget unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./usage-hub-v1.schema.json#/$defs/error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "localSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "codex",
+                  "claude"
+                ]
+              },
+              "maxItems": 2,
+              "minItems": 1
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "today",
+                "week",
+                "month"
+              ]
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "effort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "maxItems": 64
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "selected_day",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "value_desc",
+                "tokens_desc",
+                "last_activity_desc",
+                "events"
+              ]
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "base_query_context_id",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "projection",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "app_api_value_v1"
+              ]
+            },
+            "description": "Opt-in app credits and versioned primary-model selection; inherited by frozen contexts."
+          },
+          {
+            "name": "empty_selection",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Explicitly deselected dimensions match no usage. Omission preserves unrestricted empty-list semantics. Frozen with the query; facets retain recoverable choices.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project_id",
+                  "model",
+                  "effort"
+                ]
+              },
+              "maxItems": 3
             }
           }
         ]

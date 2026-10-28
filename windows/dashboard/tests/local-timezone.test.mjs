@@ -14,7 +14,7 @@ test('live-limit resets and refresh timestamps use the configured LA zone with P
   p.state='available';p.last_attempt_at=p.last_success_at=p.next_eligible_at='2026-10-25T00:00:00.000000Z';
   p.snapshot={blocked:false,windows:[{label:'Summer',remaining_percent:50,resets_at:'2026-10-25T00:00:00.000000Z'},{label:'Winter',remaining_percent:75,resets_at:'2026-12-25T00:00:00.000000Z'}]};
   const html=renderLocal({wire,status:fixtures.status},state);
-  assert.match(html,/America\/Los_Angeles · Automatic \(system timezone\)/);
+  assert.doesNotMatch(html,/America\/Los_Angeles · Automatic \(system timezone\)/);
   assert.match(html,/Oct 24, 2026, 5:00 PM PDT/);
   assert.match(html,/Dec 24, 2026, 4:00 PM PST/);
   assert.match(html,/Last attempt: Oct 24, 2026, 5:00 PM PDT/);

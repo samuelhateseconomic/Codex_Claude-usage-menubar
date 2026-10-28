@@ -2,12 +2,14 @@
 
 Reviewed October 23, 2026, America/Los_Angeles.
 
+Historical report: the October 26 [desktop-only credit revision](credit-feature-figma-prototype.md) supersedes the screen inventory, shared-filter behavior and mobile playback paths below. The user removed all mobile prototype frames and selected primary-model calculations, independent Explore filters and simultaneous Overview value/credit stats. The earlier checks remain historical evidence, not acceptance of the revised design.
+
 ## Result and scope
 
 Updated the existing Figma design according to the interaction backlog in [the integration plan](usage-hub-integration-plan.md). Application code, database schema, migrations, credentials, and real account data were not changed by this work.
 
 - [Desktop prototype](https://www.figma.com/proto/6Axot2OcYiKcSfGYcLh3Jh?node-id=2-43&starting-point-node-id=2%3A43).
-- [Mobile prototype](https://www.figma.com/proto/6Axot2OcYiKcSfGYcLh3Jh?node-id=2-48&starting-point-node-id=2%3A48).
+- Mobile prototype: retired at the user's request on October 26, 2026.
 - [Editable design file](https://www.figma.com/design/6Axot2OcYiKcSfGYcLh3Jh).
 
 The prototype now has 10 product screens, seven overlays, and two shared calculation/loading frames. It remains native editable Figma content: 561 text layers and no image-filled UI layers in the product screens.

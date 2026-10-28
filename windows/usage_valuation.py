@@ -13,7 +13,10 @@ from types import MappingProxyType
 from usage_observations import CanonicalEvent
 from usage_records import Record, Tokens
 
-POLICY_VERSION = "decimal12-event-tier-compat-v1"
+LEGACY_POLICY_VERSION = "decimal12-event-tier-compat-v1"
+POLICY_VERSION = "decimal12-below-threshold-v1"
+LEGACY_CONTEXT = "event_context_compatibility"
+BELOW_THRESHOLD = "below_threshold_assumed"
 MAX_TOKENS = 2**63 - 1
 MAX_RATE = Decimal("1000000000")  # USD per million; fees share this limit.
 MAX_MONEY = Decimal("999999999999999999999999.999999999999")
@@ -146,30 +149,45 @@ class RateSelection:
 class RateCatalog:
     entries: tuple[tuple[str, Price, str, str | None, bool], ...]
     override_version: str
+    context_policy: str = BELOW_THRESHOLD
     catalog_version: str = field(init=False)
     version: str = field(init=False)
 
+    @property
+    def policy_version(self):
+        return POLICY_VERSION if self.context_policy == BELOW_THRESHOLD else LEGACY_POLICY_VERSION
+
     def __post_init__(self):
+        if self.context_policy not in (BELOW_THRESHOLD, LEGACY_CONTEXT):
+            raise ValueError("Unsupported request-context valuation policy.")
+        object.__setattr__(self, "entries", tuple(tuple(entry) for entry in self.entries))
         payload = [(name, price.payload(), source, date, custom) for name, price, source, date, custom in self.entries]
         catalog_version = "rates-v1:" + _digest(payload)
         object.__setattr__(self, "catalog_version", catalog_version)
-        object.__setattr__(self, "version", "pricing-v1:" + _digest([catalog_version, self.override_version, POLICY_VERSION]))
+        object.__setattr__(self, "version", "pricing-v1:" + _digest([catalog_version, self.override_version, self.policy_version]))
+        object.__setattr__(self, '_selections', MappingProxyType({
+            name:RateSelection(name,price,source,checked,custom,
+                'rate-v1:'+_digest([name,price.payload(),source,checked,custom]),'exact')
+            for name,price,source,checked,custom in self.entries}))
+
+    def __deepcopy__(self,memo):
+        # All catalog facts and derived selections are immutable. Keep the
+        # private lookup index outside dataclass/asdict and stored wire fields.
+        memo[id(self)]=self
+        return self
 
     def lookup(self, model):
-        by_name = {entry[0]: entry for entry in self.entries}
-        key, mapping = model, "exact"
-        if key not in by_name:
-            key = re.sub(r"-(?:\d{8}|\d{4}-\d{2}-\d{2})$", "", model)
-            mapping = "dated_snapshot"
-        entry = by_name.get(key)
-        if entry is None:
+        selected=self._selections.get(model)
+        if selected is not None:return selected
+        key=re.sub(r"-(?:\d{8}|\d{4}-\d{2}-\d{2})$", "", model)
+        selected=self._selections.get(key)
+        if selected is None:
             return None
-        name, price, source, date, custom = entry
-        return RateSelection(name, price, source, date, custom,
-                             "rate-v1:" + _digest([name, price.payload(), source, date, custom]), mapping)
+        return RateSelection(selected.model,selected.price,selected.source,selected.checked_date,
+                             selected.custom,selected.rate_id,'dated_snapshot')
 
 
-def _catalog(overrides):
+def _catalog(overrides, context_policy=BELOW_THRESHOLD):
     merged = dict(PRICES)
     for name, price in overrides.items():
         if not isinstance(name, str) or not name.strip() or not isinstance(price, Price):
@@ -178,14 +196,14 @@ def _catalog(overrides):
     override_version = "overrides-v1:" + _digest([(name, price.payload()) for name, price in sorted(overrides.items())])
     entries = tuple((name, price, "custom configuration" if name in overrides else MODEL_PRICE_SOURCES.get(name, PRICE_SOURCE),
                      None if name in overrides else PRICE_DATE, name in overrides) for name, price in sorted(merged.items()))
-    return RateCatalog(entries, override_version)
+    return RateCatalog(entries, override_version, context_policy)
 
 
 DEFAULT_CATALOG = _catalog({})
 
 
-def build_catalog(overrides=None):
-    return _catalog(dict(overrides)) if overrides else DEFAULT_CATALOG
+def build_catalog(overrides=None, *, context_policy=BELOW_THRESHOLD):
+    return _catalog(dict(overrides or {}), context_policy) if overrides or context_policy != BELOW_THRESHOLD else DEFAULT_CATALOG
 
 
 def price_for(model, overrides=None):
@@ -253,12 +271,17 @@ def value_event(event, catalog=DEFAULT_CATALOG):
         price = selected.price
         tier = "standard"
         if price.threshold is not None:
-            tier_context = context
-            if tier_context is None:
-                tier_context = record.tokens.input + record.tokens.cached
-                assumptions.append("event_input_tier_compatibility")
-            if tier_context > price.threshold:
-                tier = "high_context"
+            if catalog.context_policy == BELOW_THRESHOLD:
+                assumptions.append("below_threshold_context_assumed")
+                if context is not None and context > price.threshold:
+                    assumptions.append("recorded_context_exceeds_assumed_threshold")
+            else:
+                tier_context = context
+                if tier_context is None:
+                    tier_context = record.tokens.input + record.tokens.cached
+                    assumptions.append("event_input_tier_compatibility")
+                if tier_context > price.threshold:
+                    tier = "high_context"
         inp, out, cached, _, _ = applied_rates(price, tier)
         tokens = record.tokens
         if (tokens.write5m and price.write5m is None) or (tokens.write1h and price.write1h is None):
@@ -270,7 +293,7 @@ def value_event(event, catalog=DEFAULT_CATALOG):
                                  + tokens.write1h * (price.write1h or Decimal(0)))
                                 / Decimal(1000000)).quantize(QUANTUM, rounding=ROUND_HALF_EVEN))
     return EventValuation(record, event.event_id if canonical else None, amount,
-                          "priced" if amount is not None else "unpriced", unpriced_reason, catalog.version, catalog.catalog_version, catalog.override_version, POLICY_VERSION,
+                          "priced" if amount is not None else "unpriced", unpriced_reason, catalog.version, catalog.catalog_version, catalog.override_version, catalog.policy_version,
                           record.model, selected.model if selected else None, selected.mapping if selected else None,
                           selected.rate_id if selected else None, selected.source if selected else None,
                           selected.checked_date if selected else None, selected.custom if selected else False,
@@ -338,6 +361,10 @@ def value_text(summary, precision=4):
         result += " + unpriced usage"
     if "event_input_tier_compatibility" in summary.assumptions:
         result += " (request-context tier assumed)"
+    if "below_threshold_context_assumed" in summary.assumptions:
+        result += " (Below-threshold context assumed)"
+    if "recorded_context_exceeds_assumed_threshold" in summary.assumptions:
+        result += " (recorded context conflicts with scenario)"
     if "legacy_cache_ttl_assumed" in summary.assumptions:
         result += " (cache-write TTL assumed)"
     return result

@@ -15,6 +15,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / 'tests')]
 from test_api import ApiFixture
 from test_index import counter, claude
 from usage_api_http import handler_class, LocalSessions
+from usage_valuation import Price
 
 
 def main():
@@ -24,13 +25,16 @@ def main():
     item['payload']['info']['total_token_usage']['reasoning_output_tokens'] = 1260000
     first = counter(505000, 5, cached=500000, output=915000)
     first['payload']['info']['total_token_usage']['reasoning_output_tokens'] = 630000
-    fixture.write(events=[first, item])
-    (fixture.claude / 'a.jsonl').write_text(json.dumps(claude()) + '\n', encoding='utf-8')
+    fixture.change_settings(prices={'gpt-6.1-sol':Price(2,10,'.1'), 'claude-opus-5-5':Price(4,20,'.2',5,8)})
+    fixture.write(events=[first, item],model='gpt-6.1-sol')
+    fixture.write('zero.jsonl',events=[counter(0,10)],model='gpt-6.1-sol',session='zero-primary')
+    c=claude();c['message']['model']='claude-opus-5-5'
+    (fixture.claude / 'a.jsonl').write_text(json.dumps(c) + '\n', encoding='utf-8')
     fixture.store.import_settings()
     fixture.jobs.start()
     dashboard = ROOT / 'dashboard'
     assets = {'/' : dashboard / 'local.html'}
-    for name in ('local-app.js', 'local-session.js', 'local-view.js', 'v1-client.js', 'v1-schema.js', 'format.js', 'style.css'):
+    for name in ('local-app.js', 'local-session.js', 'local-view.js', 'local-analysis-view.js', 'local-freshness.js', 'v1-client.js', 'v1-schema.js', 'format.js', 'style.css'):
         assets['/' + name] = dashboard / name
     for path in (dashboard / 'assets').iterdir():
         if path.is_file():
@@ -65,6 +69,12 @@ def main():
                 break
             if line.strip() == 'launch':
                 print(json.dumps({'launch': server.sessions.issue()}), flush=True)
+            if line.strip() == 'history':
+                for i in range(122):
+                    fixture.write(f'history-{i}.jsonl', events=[counter(100+i, 10)],
+                                  model='gpt-6.1-sol', session=f'history-{i}')
+                fixture.store.import_settings()
+                print(json.dumps({'ok': True}), flush=True)
     finally:
         server.shutdown()
         server.server_close()

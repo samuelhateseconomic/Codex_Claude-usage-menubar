@@ -211,7 +211,7 @@ def plan_comparison(report: Report | UsageResult, view=None) -> list[str]:
 def pricing_note(report, summary):
     return (f"Pricing coverage: {summary.state}; unpriced records {summary.unpriced_records:,} / "
             f"tokens {summary.unpriced_tokens:,}; assumption-bearing records {summary.assumed_records:,}. "
-            f"Pricing version {report.catalog.version}; policy {POLICY_VERSION}. "
+            f"Pricing version {report.catalog.version}; policy {report.catalog.policy_version}. "
             f"App {report.app_version}; build {report.build_id}; parser {report.parser_version}; "
             f"reconciliation {report.reconciliation_version}; query {report.query_version}; "
             f"settings {report.settings_version or 'explicit_programmatic_inputs'}. "

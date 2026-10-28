@@ -9,7 +9,7 @@ const bundle={overview:f.overview,status:f.status,list:f.conversations,facets:f.
 test('rates sit below usage rows and start closed with explicit USD per-million units',()=>{
   const html=renderLocal(bundle,state);
   assert.match(html,/<tr class="usage-rate-row"><td colspan="6"><details class="usage-rates">/);
-  assert.match(html,/Input \$2 \/ Output \$10 \/ Cache read \$0.1 · USD per 1M tokens/);
+  assert.match(html,/Input \$2.00 \/ Output \$10.00 \/ Cache read \$0.10 · USD per 1M tokens/);
   assert.doesNotMatch(html,/<details class="usage-rates" open/);
   assert.match(html,/Category charge = tokens × rate ÷ 1,000,000/);
   assert.match(html,/Output includes reasoning once/);
@@ -21,15 +21,15 @@ test('rates sit below usage rows and start closed with explicit USD per-million 
   for(const [,inner] of projects.matchAll(/<button\b[^>]*>([\s\S]*?)<\/button>/g))assert.doesNotMatch(inner,/<details/);
 });
 
-test('18-place charges and adjustments display exactly without binary math or cent loss',()=>{
+test('18-place charges retain exact hover evidence with two-decimal USD presentation',()=>{
   const value=structuredClone(f.events.data.items[0].value);
   value.explanation.categories[0].unrounded_usd='0.000000000000000001';
   value.explanation.rounding_adjustment_usd='-0.000000000000000001';
   value.amount_usd='999999999999999999999999.999999999999';
   const html=renderEventPricing(value);
   assert.match(html,/0.000000000000000001/);
-  assert.match(html,/USD -0.000000000000000001/);
-  assert.match(html,/USD 999999999999999999999999.999999999999/);
+  assert.match(html,/title="-0.000000000000000001 exact USD">USD −&lt;0.01/);
+  assert.match(html,/title="999999999999999999999999.999999999999 exact USD">USD 1,000,000,000,000,000,000,000,000.00/);
   assert.match(html,/half-even to 12 USD decimal places/);
 });
 
@@ -39,8 +39,8 @@ test('unknown, unused missing rates, explicit zero and assumptions remain distin
   assert.match(unknown,/Estimated value unavailable/);
   assert.doesNotMatch(unknown,/<table/);
   const zero=renderEventPricing(f.events_zero.data.items[0].value);
-  assert.match(zero,/Input \$0/);assert.match(zero,/Estimated API value: <strong class="mono">USD 0/);
-  assert.match(zero,/Unconfigured/); // Inactive write rates are not configured zeroes.
+  assert.match(zero,/Input \$0/);assert.match(zero,/Estimated API value: <strong class="mono"><span[^>]*>USD 0.00/);
+  assert.doesNotMatch(zero,/Cache write|Unconfigured/); // Zero writes without a rate are omitted; priced zero remains.
   const missing=structuredClone(f.events_claude.data.items[0].value);
   missing.state='unpriced';missing.amount_usd=null;missing.explanation.rounding_adjustment_usd=null;
   Object.assign(missing.explanation.categories[3],{rate_usd_per_million:null,unrounded_usd:null});

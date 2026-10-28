@@ -6,6 +6,7 @@ from usage_privacy import display_text, metadata_label
 from usage_service import DIMENSIONS
 from usage_time import local_datetime
 from usage_valuation import ARITHMETIC, PRICE_DATE, money_text
+from usage_credits import APP_UNIT, credit_text
 
 
 def token_label(value):
@@ -50,6 +51,34 @@ def value_label(value):
     if value.state == 'unpriced':
         return 'Unavailable (all usage unpriced)'
     return money_text(value.amount_usd,4) + (' (priced subtotal only)' if value.state == 'partial' else '')
+
+
+def render_credit_summary(result, *, timezone_source='frozen_context'):
+    """Optional headless credit view; immutable facts/policy come from the service."""
+    value, usage = result.total, result.usage
+    tokens, reasoning = value.tokens, usage.total.reasoning
+    label = ('App credits - estimated API value (1 = USD0.01)' if result.unit == APP_UNIT
+             else 'Codex credits - estimated paid-credit equivalent')
+    # Disjoint input categories are grouped for display; no token is reclassified.
+    inp = tokens.input + tokens.cached + tokens.write5m + tokens.write1h
+    known = 'unavailable' if reasoning.known_tokens is None else token_label(reasoning.known_tokens)
+    lines = [f'{label}: {credit_text(value)}',
+        f'Tokens: {token_label(tokens.total)} | Input: {token_label(inp)} (cached {token_label(tokens.cached)}) | Output: {token_label(tokens.output)}',
+        f'Reasoning: {known} (subset of output; {reasoning.unknown_records:,} records lack reasoning metadata)',
+        f'Period: {usage.context.period}; timezone: {usage.context.timezone} ({timezone_source}).',
+        'Coverage: ' + value.state + '; source health: ' + ', '.join(s.provider.lower() + '=' + s.state for s in usage.sources)]
+    if result.unit == APP_UNIT:
+        lines.append('USD basis: Standard API list-price equivalent; actual speed is not inferred.')
+    if 'below_threshold_context_assumed' in value.assumptions:
+        lines.append('Context: Below-threshold context assumed.')
+    if 'recorded_context_exceeds_assumed_threshold' in value.assumptions:
+        lines.append('Recorded context conflicts with this scenario; recorded facts are preserved.')
+    if value.assumptions:
+        lines.append('Assumptions: ' + ', '.join(value.assumptions))
+    if value.reasons:
+        lines.append('Uncovered: ' + ', '.join(f'{code} ({count})' for code, count in value.reasons))
+    lines.append('Estimate only; not actual spend, included allowance consumption or a provider balance.')
+    return '\n'.join(display_text(line) for line in lines)
 
 
 REASONS = {
@@ -125,6 +154,10 @@ def render_terminal(result, *, dimension=None, page=1, page_size=10, width=80, i
     lines += [f'Tier/TTL assumptions: {value.assumed_records:,} records; unknown effort: {result.missing_effort_records:,}.',
               'Captured at range end; live limits are separate (active CLI account).',
               f'Rates snapshot {PRICE_DATE}; app {result.app_version}. Exact counts/rates: --audit.']
+    if 'below_threshold_context_assumed' in value.assumptions:
+        lines.append('Below-threshold context assumed; recorded token/context facts are preserved.')
+    if 'recorded_context_exceeds_assumed_threshold' in value.assumptions:
+        lines.append('Recorded context conflicts with the selected below-threshold scenario.')
     if dimension is not None:
         groups=result.groups_for(dimension,'value_desc')
         pages=max(1,(len(groups)+page_size-1)//page_size)

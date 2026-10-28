@@ -679,7 +679,8 @@ class ContractAndRecoveryGates(ApiFixture):
         spec=json.loads((root/'usage-hub-v1.openapi.json').read_text(encoding='utf-8'))
         schema=json.loads((root/'usage-hub-v1.schema.json').read_text(encoding='utf-8'))
         self.assertEqual(spec['openapi'],'3.1.0')
-        self.assertEqual(len(spec['paths']),14)
+        self.assertEqual(len(spec['paths']),15)
+        self.assertIn('/usage/analysis',spec['paths'])
         def walk(value):
             if isinstance(value,dict):
                 if '$ref' in value:

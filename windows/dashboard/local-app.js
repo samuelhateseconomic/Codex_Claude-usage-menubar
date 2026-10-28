@@ -1,20 +1,40 @@
 import {createLocalClient} from './v1-client.js';
 import {createLocalSession,defaultSelection,observeLocalJob} from './local-session.js';
-import {renderLocal,renderChrome,drawLocalChart,renderOperationFeedback,button,escape} from './local-view.js';
+import {renderLocal,renderChrome,drawLocalChart,renderOperationFeedback,renderPublicationStatus,renderScanStatus,renderCapacityStatus,button,escape} from './local-view.js';
+import {watchLocalPublication} from './local-freshness.js';
 
-const defaults=()=>({...defaultSelection(),view:'overview',metric:'value',table:'conversations',sort:'value_desc',pageSize:50,conversation:''});
+const defaults=()=>({...defaultSelection(),view:'overview',metric:'value',table:'conversations',sort:'value_desc',pageSize:10,conversation:''});
 export function readLocation(location){
   const p=new URLSearchParams(location.hash.slice(1)),s=defaults();
   for(const key of Object.keys(s))if(p.has(key))s[key]=key==='pageSize'?Number(p.get(key)):p.get(key);
-  for(const [key,values]of Object.entries({view:['overview','explore','detail','settings','limits'],provider:['both','codex','claude'],period:['today','week','month'],metric:['value','tokens'],table:['conversations','projects'],sort:['value_desc','tokens_desc','last_activity_desc'],pageSize:[1,25,50,100]}))if(!values.includes(s[key]))s[key]=defaults()[key];
+  for(const [key,values]of Object.entries({view:['overview','explore','detail','settings','limits'],provider:['both','codex','claude'],period:['today','week','month'],metric:['value','credits','tokens'],table:['conversations','projects'],sort:['value_desc','tokens_desc','last_activity_desc'],pageSize:[1,10,25,50,100]}))if(!values.includes(s[key]))s[key]=defaults()[key];
+  if(['overview','explore'].includes(s.view)&&!p.has('period'))s.period='week';
+  if(s.view==='explore'&&s.provider==='both')s.provider='codex';
+  if(s.view==='explore'&&!p.has('metric'))s.metric='credits';
+  for(const key of ['project','model','effort'])if(p.get(key)?.startsWith('[')){
+    try{const values=JSON.parse(p.get(key));if(!Array.isArray(values)||values.length>64||values.some(v=>typeof v!=='string'||!v||v.length>(key==='effort'?80:1024)))throw new Error();s[key]=[...new Set(values)].sort();}catch{s[key]='';}
+  }
   s.q=s.q.slice(0,200);return s;
 }
-const hash=s=>{const p=new URLSearchParams();for(const [k,v]of Object.entries(s))if(v!==null&&v!==''&&v!==defaults()[k])p.set(k,String(v));return '#'+p;};
+const pageDefault=view=>({...defaults(),view,period:['overview','explore'].includes(view)?'week':'month',provider:view==='explore'?'codex':'both',metric:view==='explore'?'credits':'value'});
+const hash=(s,pages={})=>{const p=new URLSearchParams();for(const [k,v]of Object.entries(s))if(v!==null&&v!==''&&(k==='view'?v!=='overview':v!==pageDefault(s.view)[k]))p.set(k,Array.isArray(v)?JSON.stringify(v):String(v));for(const [page,entry]of Object.entries(pages))if(page!==s.view)for(const [k,v]of Object.entries(entry.state))if(k!=='view'&&k!=='conversation'&&v!==null&&v!==''&&v!==pageDefault(page)[k])p.set(page+'.'+k,Array.isArray(v)?JSON.stringify(v):String(v));return '#'+p;};
+function pagesFromLocation(location){const p=new URLSearchParams(location.hash.slice(1)),pages={};for(const view of ['overview','explore']){const q=new URLSearchParams({view});let found=false;for(const k of Object.keys(defaults()))if(p.has(view+'.'+k)&&k!=='view'){q.set(k,p.get(view+'.'+k));found=true;}if(found)pages[view]={state:readLocation({hash:'#'+q}),navigation:null,scroll:0};}return pages;}
 
 export function mountLocalDashboard({document=globalThis.document,window=globalThis.window,location=globalThis.location,history=globalThis.history,client=createLocalClient()}={}){
-  const $=s=>document.querySelector(s),content=$('#content'),session=createLocalSession(client);
+  const $=s=>document.querySelector(s),content=$('#content'),session=createLocalSession(client,{projected:true});
   let state=readLocation(location),bundle=null,navigation=null,parent=null,published=null,retry=null,sequence=0,debounce,draft=null,draftVersion=null,jobAbort=null,operation=0,operationBusy=false,notificationTimer,feedback=null;
-  const snapshot=()=>({usageHub:1,state:structuredClone(state),navigation:structuredClone(navigation),parent:structuredClone(parent),scroll:window.scrollY});
+  let latestStatus=null,statusFailed=false;
+  let pages=pagesFromLocation(location);
+  const url=()=>hash(state,pages);
+  const publication=()=>{const node=$('#publication-status');if(node&&bundle)node.innerHTML=renderPublicationStatus(bundle,latestStatus,statusFailed);const footer=$('#scan-status');if(footer&&bundle)footer.innerHTML=renderScanStatus(bundle,latestStatus);};
+  const freshness=watchLocalPublication({client,document,window,onStatus:status=>{
+    if(!bundle||status.dataset_id!==bundle.status.dataset_id){statusFailed=true;publication();return;}
+    const changed=JSON.stringify(latestStatus?.data.providers)!==JSON.stringify(status.data.providers);
+    latestStatus=status;statusFailed=false;publication();
+    const capacity=$('#capacity-current');
+    if(changed&&capacity&&state.view==='overview'&&!capacity.contains?.(document.activeElement))capacity.innerHTML=renderCapacityStatus(status.data.providers,bundle.overview.range.timezone,status.generated_at);
+  },onFailure:()=>{statusFailed=true;publication();}});
+  const snapshot=()=>({usageHub:1,state:structuredClone(state),navigation:structuredClone(navigation),parent:structuredClone(parent),pages:structuredClone(pages),scroll:window.scrollY});
   const notify=message=>{$('#notification').textContent=message;window.clearTimeout(notificationTimer);notificationTimer=window.setTimeout(()=>{$('#notification').textContent='';},6000);};
   function syncOperationControls(){for(const node of document.querySelectorAll('[data-action="refresh"], [data-action="save-settings"], [data-action="check-job"], [data-setting], #settings-timezone-mode'))node.disabled=operationBusy;}
   // Operation feedback survives transient notifications and view changes. A
@@ -35,7 +55,7 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
     setFeedback(checkable?'pending':'failed',checkable?'Settings saved; application is pending. Previous committed usage remains active.':
       'Saved settings have not been applied. Previous committed usage remains active. Open Settings and Save settings to retry.',{kind:'settings',jobId:j.id,checkable});
   }
-  function render(){renderChrome(document,bundle,state);content.innerHTML=renderLocal(bundle,state,{draft,operation:feedback});syncOperationControls();if(state.view==='overview')drawLocalChart(document,bundle,state);}
+  function render(){renderChrome(document,bundle,state);content.innerHTML=renderLocal(bundle,state,{draft,operation:feedback,derived:state.view==='explore'&&parent?.state.view==='overview'});syncOperationControls();publication();for(const menu of document.querySelectorAll('[data-filter-menu]')){const all=menu.querySelector('[data-filter-all]'),boxes=[...menu.querySelectorAll('[data-filter-option]')];all.indeterminate=!all.checked&&boxes.some(n=>n.checked);}if(['overview','explore'].includes(state.view))drawLocalChart(document,bundle,state);}
   function cancelSearch(){window.clearTimeout(debounce);}
   function focus({scroll=0,conversation=null}={}){
     if($('#shortcuts').open)return;
@@ -49,16 +69,16 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
     try{
       const result=await session.load(state,{navigation,fresh});
       if(current!==sequence||result.state==='superseded')return 'superseded';
-      bundle=result.bundle;navigation=bundle.navigation;recoverFeedback();
+      bundle=result.bundle;navigation=bundle.navigation;latestStatus=bundle.status;statusFailed=false;freshness.restart();recoverFeedback();
       if(result.refreshed){parent=null;notify('The complete query was refreshed. Pagination restarted at the first page.');}
-      retry=null;render();published=snapshot();history.replaceState(published,'',hash(state));
+      retry=null;render();published=snapshot();history.replaceState(published,'',url());
       if(focusView)focus({scroll:result.refreshed?0:restore?.scroll??0,conversation:restore?.conversation});
       return 'accepted';
     }catch(error){
       if(current!==sequence||error.name==='AbortError')return 'superseded';
       retry=requested;
       if(published&&bundle){
-        ({state,navigation,parent}=structuredClone(published));render();history.replaceState(snapshot(),'',hash(state));
+        ({state,navigation,parent,pages}=structuredClone(published));render();history.replaceState(snapshot(),'',url());
         content.insertAdjacentHTML('afterbegin',`<section class="banner" role="alert"><p>The requested view could not be loaded. The previous accepted result and its original filters are retained.</p><p>${escape(error.message)}</p>${button('Retry requested view','retry')}</section>`);
       }else{
         $('#breadcrumb').textContent='Local usage unavailable';$('#connection').textContent='No accepted usage query';$('#capture').textContent='No snapshot displayed';
@@ -69,17 +89,31 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
   }
   async function navigate(changes={},options={}){
     cancelSearch();
-    if(published)history.replaceState(snapshot(),'',hash(state));
-    const old=state;state={...state,...changes};
-    if(options.restore){navigation=structuredClone(options.restore.navigation);parent=structuredClone(options.restore.parent);}
-    else if(navigation){
+    if(published)history.replaceState(snapshot(),'',url());
+    const old=state;
+    const switching=changes.view&&changes.view!==old.view;
+    if(['overview','explore'].includes(old.view))pages[old.view]={state:structuredClone(old),navigation:structuredClone(navigation),scroll:window.scrollY};
+    let targetRestore=null;
+    if(switching&&['overview','explore'].includes(changes.view)&&!options.restore&&!options.derived){
+      targetRestore=pages[changes.view];state={...(targetRestore?.state??pageDefault(changes.view)),...changes};navigation=structuredClone(targetRestore?.navigation??null);parent=null;
+    }else state={...state,...changes};
+    if(state.view==='explore'&&state.provider==='both')state.provider=pages.explore?.state.provider==='claude'?'claude':'codex';
+    if(options.restore){navigation=structuredClone(options.restore.navigation);parent=structuredClone(options.restore.parent);pages=structuredClone(options.restore.pages??pages);}
+    else if(navigation&&!targetRestore){
       navigation=structuredClone(navigation);
-      if(old.table!==state.table||old.sort!==state.sort||old.pageSize!==state.pageSize||old.view!==state.view&&state.view!=='detail'){navigation.cursor=null;navigation.previous=[];}
+      if(old.table!==state.table||old.sort!==state.sort||old.pageSize!==state.pageSize||old.view!==state.view&&state.view!=='detail'){navigation.cursor=null;navigation.previous=[];navigation.historyVisible=10;}
       if(old.conversation!==state.conversation){navigation.eventsCursor=null;navigation.eventPrevious=[];}
     }
     if(options.fresh)navigation=null;
-    history[options.replace?'replaceState':'pushState'](snapshot(),'',hash(state));
-    return load({fresh:options.fresh,restore:options.restore,focusView:options.focus!==false});
+    history[options.replace?'replaceState':'pushState'](snapshot(),'',url());
+    return load({fresh:options.fresh,restore:options.restore??targetRestore,focusView:options.focus!==false});
+  }
+  function drilldown(changes){
+    const saved=snapshot();
+    if(state.view==='overview')parent={...saved,parent:null};
+    const provider=changes.provider??(state.provider==='both'?(pages.explore?.state.provider??'codex'):state.provider);
+    notify('Explore scope: '+provider+' · primary model only. Overview filters are kept.');
+    return navigate({...changes,provider,view:'explore',conversation:''},{derived:true});
   }
   async function checkJob(id){
     jobAbort?.abort();jobAbort=new AbortController();const active=jobAbort;
@@ -90,6 +124,10 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
       }});
       if(active.signal.aborted)return;
       if(result.state==='succeeded'){
+        if(kind==='settings'){
+          for(const entry of Object.values(pages)){entry.navigation=null;entry.state.timezone=null;}
+          navigation=null;state.timezone=null;
+        }
         // Publication is complete; capture all report widgets together.
         setFeedback('refreshing',`${label} applied. Refreshing the complete view…`);
         const outcome=await navigate({},{fresh:true,replace:true});
@@ -142,17 +180,27 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
     return navigate({view:'explore',conversation:''},{replace:true});
   }
   document.addEventListener('click',async event=>{
+    for(const menu of document.querySelectorAll('[data-filter-menu][open], .project-path[open]'))if(!menu.contains(event.target))menu.open=false;
     const nav=event.target.closest('[data-nav]');
     if(nav){event.preventDefault();return navigate({view:nav.dataset.nav,conversation:''});}
     const target=event.target.closest('[data-action]');if(!target||target.disabled)return;
     const {action,value,id,model,effort,provider}=target.dataset;
+    if(action==='apply-filter'){
+      const menu=target.closest('[data-filter-menu]'),key=menu.dataset.filterMenu;
+      if(!['project','model','effort'].includes(key)||content.getAttribute('aria-busy')==='true')return;
+      const boxes=[...menu.querySelectorAll('[data-filter-option]')],selected=boxes.filter(n=>n.checked).map(n=>n.value);
+      const all=menu.querySelector('[data-filter-all]').checked;
+      if(!all&&selected.length>64){notify('Choose up to 64 values, or use Select all.');return;}
+      const outcome=await navigate({[key]:all?'':selected.sort(),conversation:''},{focus:false});
+      if(outcome==='accepted')$(`#${key} summary`)?.focus();return;
+    }
     if(action==='help')return $('#shortcuts').showModal();
     if(action==='close-help')return $('#shortcuts').close();
     if(action==='copy'){try{await window.navigator.clipboard.writeText(value);notify('Conversation ID copied.');}catch{notify('Select the displayed ID to copy it.');}return;}
     if(action==='status'){
       try{const s=await client.read('status');notify(s.data.ready?`Committed index: ${s.data.freshness}${s.data.indexing?' · work in progress':''}`:s.data.indexing?'Initial indexing is in progress. Retry when complete.':'No committed usage is available. Check approved local sources and settings.');}catch(e){notify(e.message);}return;
     }
-    if(action==='retry'){if(retry){({state,navigation,parent}=structuredClone(retry));return load();}return load();}
+    if(action==='retry'){if(retry){({state,navigation,parent,pages}=structuredClone(retry));return load();}return load();}
     if(action==='refresh')return operationAction('refresh',{});
     if(action==='check-job'){
       if(operationBusy||!feedback?.jobId)return;
@@ -162,27 +210,51 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
     if(action==='refresh-query')return navigate({},{fresh:true,replace:true});
     if(action==='metric'){
       if(!bundle?.overview)return;
-      state.metric=value;render();published=snapshot();history.replaceState(published,'',hash(state));return;
+      state.metric=value;render();published=snapshot();history.replaceState(published,'',url());return;
     }
     if(action==='search'){const outcome=await navigate({view:'explore',conversation:''},{focus:false});if(outcome==='accepted'&&!$('#shortcuts').open)$('#search')?.focus();return;}
     if(action==='provider')return navigate({provider:value,conversation:'',view:state.view==='detail'?'explore':state.view});
-    if(action==='provider-explore')return navigate({provider:value,view:'explore',conversation:''});
+    if(action==='provider-explore')return drilldown({provider:value});
     if(action==='view')return navigate({view:value,conversation:''});
     if(action==='table')return navigate({table:value,conversation:''});
-    if(action==='projects')return navigate({view:'explore',table:'projects',conversation:''});
-    if(action==='project')return navigate({view:'explore',table:'conversations',project:value,conversation:''});
-    if(action==='model-group')return navigate({view:'explore',model,effort,provider,conversation:''});
-    if(action==='day')return navigate({view:'explore',day:value,conversation:''});
+    if(action==='projects')return drilldown({table:'projects'});
+    if(action==='explore-matching')return drilldown({});
+    if(action==='project')return drilldown({table:'conversations',project:value});
+    if(action==='model-group')return drilldown({model,effort,provider});
+    if(action==='day')return state.view==='overview'?drilldown({day:value}):navigate({day:value,conversation:''});
     if(action==='clear-day')return navigate({day:'',conversation:''});
-    if(action==='clear')return navigate({provider:'both',project:'',model:'',effort:'',q:'',day:'',conversation:'',view:state.view==='detail'?'explore':state.view});
+    if(action==='clear')return navigate({provider:state.view==='overview'?'both':'codex',project:'',model:'',effort:'',q:'',day:'',conversation:'',view:state.view==='detail'?'explore':state.view});
+    if(['rates-next','rates-prev'].includes(action)){
+      if(!navigation||!bundle.analysis)return;
+      const next=structuredClone(navigation);
+      next.analysisExpanded=true;
+      if(action==='rates-next'){const cursor=bundle.analysis.data.pagination.next_cursor;if(!cursor)return;next.analysisPrevious.push(next.analysisCursor);next.analysisCursor=cursor;}
+      else{if(!next.analysisPrevious.length)return;next.analysisCursor=next.analysisPrevious.pop();}
+      return navigate({},{restore:{...snapshot(),navigation:next,scroll:window.scrollY},focus:false});
+    }
+    if(['load-more','load-less'].includes(action)){
+      if(state.view!=='explore'||state.table==='projects'||!navigation||content.getAttribute('aria-busy')==='true')return;
+      const visible=navigation.historyVisible??10,limit=Math.min(50,bundle.list.data.items.length);
+      if(action==='load-more'?visible>=limit:visible<=10)return;
+      const scroll=window.scrollY;
+      navigation={...navigation,historyVisible:action==='load-more'?Math.min(50,visible+10):Math.max(10,visible-10)};
+      bundle={...bundle,navigation:structuredClone(navigation)};render();published=snapshot();history.replaceState(published,'',url());
+      window.scrollTo(0,scroll);($(`[data-action="${action}"]`)??$(`[data-action="${action==='load-more'?'load-less':'load-more'}"]`))?.focus({preventScroll:true});
+      return;
+    }
     if(['next','prev','event-next','event-prev'].includes(action)){
-      if(!navigation)return;
+      if(!navigation||content.getAttribute('aria-busy')==='true')return;
       const events=action.startsWith('event-'),stack=events?'eventPrevious':'previous',cursor=events?'eventsCursor':'cursor',next=(events?bundle.events:bundle.list)?.data.pagination.next_cursor;
       if(action.endsWith('next')){if(!next)return;navigation[stack].push(navigation[cursor]);navigation[cursor]=next;}
       else {if(!navigation[stack].length)return;navigation[cursor]=navigation[stack].pop();}
       // Keep the outgoing page in its own history entry.
+      const progressive=!events&&state.view==='explore'&&state.table!=='projects';
+      if(progressive)navigation.historyVisible=10;
       const updated=structuredClone(navigation);navigation=structuredClone(published.navigation);
-      return navigate({},{restore:{...snapshot(),navigation:updated,scroll:0},focus:true});
+      const scroll=progressive?Math.max(0,window.scrollY+($('#history-heading')?.getBoundingClientRect?.().top??-window.scrollY)-20):0;
+      const outcome=await navigate({},{restore:{...snapshot(),navigation:updated,scroll},focus:!progressive});
+      if(progressive&&outcome==='accepted'){window.scrollTo(0,scroll);$('#history-heading')?.focus({preventScroll:true});}
+      return outcome;
     }
     if(action==='detail'){parent=snapshot();return navigate({view:'detail',conversation:id});}
     if(action==='back')return back();
@@ -193,6 +265,13 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
     }
   });
   document.addEventListener('change',event=>{
+    const filterMenu=event.target.closest?.('[data-filter-menu]');
+    if(filterMenu){
+      const boxes=[...filterMenu.querySelectorAll('[data-filter-option]')],all=filterMenu.querySelector('[data-filter-all]');
+      if(event.target.hasAttribute('data-filter-all'))for(const box of boxes)box.checked=all.checked;
+      else{all.checked=boxes.length>0&&boxes.every(n=>n.checked);all.indeterminate=boxes.some(n=>n.checked)&&!all.checked;}
+      return;
+    }
     if(event.target.id==='settings-timezone-mode'){
       const d=beginDraft();d.timezone=event.target.value==='auto'?'auto':bundle.wire.data.settings.timezone_info.name;
       render();($('#settings-timezone')??$('#settings-timezone-mode'))?.focus();return;
@@ -208,6 +287,7 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
     },250);
   });
   document.addEventListener('keydown',async event=>{
+    if(event.key==='Escape'){const menu=event.target.closest('[data-filter-menu], .project-path');if(menu){menu.open=false;menu.querySelector('summary').focus();return;}}
     if($('#shortcuts').open||event.target.closest('input,textarea,select'))return;
     if(event.key==='/'&&!event.ctrlKey&&!event.metaKey){event.preventDefault();const outcome=await navigate({view:'explore',conversation:''},{focus:false});if(outcome==='accepted')$('#search')?.focus();}
     if(event.key==='?'){event.preventDefault();$('#shortcuts').showModal();}
@@ -216,19 +296,19 @@ export function mountLocalDashboard({document=globalThis.document,window=globalT
   });
   window.addEventListener('popstate',async event=>{
     cancelSearch();const saved=event.state?.usageHub===1?event.state:null;
-    state=saved?structuredClone(saved.state):readLocation(location);navigation=saved?structuredClone(saved.navigation):null;parent=saved?structuredClone(saved.parent):null;
+    state=saved?structuredClone(saved.state):readLocation(location);navigation=saved?structuredClone(saved.navigation):null;parent=saved?structuredClone(saved.parent):null;pages=saved?structuredClone(saved.pages??{}):pagesFromLocation(location);
     await load({restore:saved});
   });
-  window.addEventListener('resize',()=>{if(bundle?.overview&&state.view==='overview')drawLocalChart(document,bundle,state);});
+  window.addEventListener('resize',()=>{if(bundle?.overview&&['overview','explore'].includes(state.view))drawLocalChart(document,bundle,state);});
   const ready=(async()=>{
     try{
       await client.authenticate({location,history});state=readLocation(location);
       const saved=history.state?.usageHub===1?history.state:null;
-      if(saved&&hash(saved.state)===hash(state)){navigation=structuredClone(saved.navigation);parent=structuredClone(saved.parent);}
+      if(saved&&hash(saved.state)===hash(state)){pages=structuredClone(saved.pages??pages);parent=structuredClone(saved.parent);}
       return await load({restore:saved,focusView:false});
     }catch(error){content.setAttribute('aria-busy','false');content.innerHTML=`<section class="panel"><h1>Open Usage Hub through the application</h1><p>${escape(error.message)}</p><p>This page requires an authenticated local launch. Reopen the dashboard from Usage Tray.</p></section>`;return 'failed';}
   })();
-  return {ready,navigate,get snapshot(){return snapshot();},get accepted(){return bundle?structuredClone(bundle):null;},dispose(){cancelSearch();session.cancel();jobAbort?.abort();operation++;sequence++;}};
+  return {ready,navigate,get snapshot(){return snapshot();},get accepted(){return bundle?structuredClone(bundle):null;},dispose(){freshness.dispose();cancelSearch();session.cancel();jobAbort?.abort();operation++;sequence++;}};
 }
 
 if(globalThis.document&&globalThis.window)mountLocalDashboard();

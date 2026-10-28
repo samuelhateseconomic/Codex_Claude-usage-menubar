@@ -1,5 +1,7 @@
 # Dashboard refinement: four-session plan
 
+Current follow-up (October 27): [the dashboard refresh plan](dashboard-refresh-plan.md) now owns the planned migration to the reviewed desktop design. D01–D04 below remain completed historical work to preserve, not sessions to repeat. B3-01–B3-06 are not_started; the latest request authorizes planning only.
+
 Status: **D01–D04 verified for the recorded scope**. User requested a balanced session split and confirmed **12px** live-limit bars on October 24, 2026. D04 packaging checks passed; the running installation is unchanged and the original laptop's failed-save trigger is unconfirmed.
 
 This follow-up uses D01–D04 to distinguish it from the existing S00–S14 work. It does not close S14's remaining native/distribution checks or authorize commit, push, installation, or Figma changes. The [main refinement plan](project-refinement-plan.md) owns priorities and completion evidence; the [integration contract](usage-hub-integration-plan.md) owns accounting and API semantics. Follow [AGENTS.md](../AGENTS.md).

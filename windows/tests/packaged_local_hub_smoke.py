@@ -120,7 +120,7 @@ def check(executable):
             code,headers,session=api('POST','/api/v1/session/bootstrap',body={'launch_token':grant},extra={'Origin':origin})
             require(code==200 and 'HttpOnly' in headers['Set-Cookie'] and 'SameSite=Strict' in headers['Set-Cookie'], 'Packaged session exchange failed.')
             cookie=headers['Set-Cookie'].split(';',1)[0];csrf=session['data']['csrf_token']
-            for name in ('local-app.js','local-session.js','local-view.js','v1-client.js','v1-schema.js','format.js','style.css','assets/Geist.woff2','assets/GeistMono.woff2'):
+            for name in ('local-app.js','local-session.js','local-view.js','local-freshness.js','v1-client.js','v1-schema.js','format.js','style.css','assets/Geist.woff2','assets/GeistMono.woff2'):
                 code,_,raw=request('GET','/'+name)
                 require(code==200 and len(raw)>100, 'Packaged local asset unavailable: '+name)
                 require(raw==(Path(__file__).resolve().parents[1]/'dashboard'/name).read_bytes(), 'Packaged asset differs from reviewed source: '+name)

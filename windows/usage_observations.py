@@ -17,7 +17,7 @@ from usage_records import Record
 
 
 PARSER_VERSION = "observations-v1"
-PARSER_CACHE_VERSION = PARSER_VERSION + ":project-context-2"
+PARSER_CACHE_VERSION = PARSER_VERSION + ":fork-origin-3"
 FieldState = Literal["valid", "missing", "invalid"]
 
 
@@ -276,6 +276,12 @@ def extract_codex(entries: Iterable[tuple[int, dict]], source_id: str,
         payload = object_value(entry.get("payload"))
         kind = entry.get("type")
         if kind == "session_meta":
+            # Desktop child rollouts start with their own fork header, then
+            # replay ancestor session headers as inherited context. The outer
+            # fork owns this file's identity, creation boundary and provenance;
+            # replay must not merge independent counters into the parent.
+            if session_source is not None and fork_parent is not None:
+                continue
             session_source = source
             conversation = _text(payload.get("id"))
             project = _text(payload.get("cwd")) or "Unknown project"

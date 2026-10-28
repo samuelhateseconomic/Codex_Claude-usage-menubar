@@ -46,7 +46,8 @@ class IntegrationTests(unittest.TestCase):
                                (SourceRef("fixture", 1),), request_context_tokens=1,
                                request_context_source="synthetic request context")
         prices = {"custom": Price(1, 2, 0, threshold=5, high=(2, 4, 0))}
-        self.assertEqual(estimate_exact(record, prices), Decimal("0.00002"))
+        # Compatibility adapters now share the explicitly assumed lower tier.
+        self.assertEqual(estimate_exact(record, prices), Decimal("0.00001"))
         self.assertEqual(estimate_exact(event, prices), Decimal("0.00001"))
         self.assertEqual(summarize_records([event], prices).amount, Decimal("0.00001"))
 

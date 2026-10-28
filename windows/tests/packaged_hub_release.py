@@ -60,7 +60,7 @@ def fixture(root):
     stamp = datetime.now(timezone.utc) - timedelta(microseconds=500)
     for file in range(40):
         rows = [{'type':'session_meta','payload':{'id':'release-'+str(file),'cwd':'C:/synthetic/project-'+str(file % 5)}},
-                {'type':'turn_context','payload':{'model':'release-model','effort':'high'}},
+                {'type':'turn_context','payload':{'model':'gpt-6.1-sol','effort':'high'}},
                 {'type':'response_item','payload':{'type':'message','content':SENTINEL}}]
         for number in range(1, 101):
             rows.append(counter(number * 1000, stamp + timedelta(microseconds=number)))
@@ -176,7 +176,7 @@ def security(host):
     require(status==200 and b'data-api-mode="v1"' in html and b'/local-app.js' in html, 'Real local shell unavailable.')
     require('Set-Cookie' not in headers and 'Access-Control-Allow-Origin' not in headers, 'Anonymous shell grants authority.')
     require("default-src 'none'" in headers['Content-Security-Policy'] and 'unsafe-inline' not in headers['Content-Security-Policy'], 'Unsafe CSP.')
-    for asset in ('local-app.js','local-session.js','local-view.js','v1-client.js','v1-schema.js','format.js','style.css',
+    for asset in ('local-app.js','local-session.js','local-view.js','local-analysis-view.js','local-freshness.js','v1-client.js','v1-schema.js','format.js','style.css',
                   'assets/overview.svg','assets/explore.svg','assets/limits.svg','assets/settings.svg','assets/Geist.woff2','assets/GeistMono.woff2'):
         code,_,raw = host.request('GET','/'+asset,auth=False)
         require(code==200 and len(raw)>100, 'Missing packaged local asset: '+asset)
@@ -206,12 +206,18 @@ def security(host):
 def measure(host):
     samples=[]
     for _ in range(3):
-        begin=time.perf_counter();overview=host.query();host.api('GET','/status')
+        begin=time.perf_counter();overview,_=host.api('GET','/overview?projection=app_api_value_v1');host.api('GET','/status')
         overview_seconds=time.perf_counter()-begin
         summary=overview['data']['summary']
         require(summary['tokens']['total_tokens']=='4000000' and Decimal(summary['value']['amount_usd'])==Decimal('8'), 'Benchmark accounting differs.')
+        require(Decimal(summary['app_credits']['amount'])==Decimal('800'),'Benchmark app-credit amount differs.')
         context=overview['query_context_id']
-        begin=time.perf_counter();same=host.query(context=context)
+        begin=time.perf_counter()
+        # Match the independent Explore loader's first capture, including its
+        # broad clock context followed by the explicit single-app derivation.
+        root,_=host.api('GET','/usage/projects?projection=app_api_value_v1&page_size=1')
+        same,_=host.api('GET','/overview?base_query_context_id='+root['query_context_id']+'&provider=codex')
+        context=same['query_context_id']
         with ThreadPoolExecutor(max_workers=2) as workers:
             listing=workers.submit(host.query,'/usage/conversations',context)
             facets=workers.submit(host.query,'/usage/facets',context)
@@ -219,6 +225,7 @@ def measure(host):
         host.api('GET','/status')
         explore_seconds=time.perf_counter()-begin
         require(same['data']['summary']==listing['data']['summary']==summary, 'Explore full summary differs.')
+        require(same['data']['analysis']['app_credit_amount']==summary['app_credits']['amount'] and same['data']['analysis_pagination']['page_size']==8,'Initial analysis/page metadata differs.')
         require(listing['data']['pagination']['matched_count']==40 and sum(r['record_count'] for r in facets['data']['projects'])==4000, 'Benchmark scope differs.')
         samples.append({'overview_http_bundle_seconds':round(overview_seconds,6),'explore_http_bundle_seconds':round(explore_seconds,6)})
     return samples, overview
@@ -234,7 +241,7 @@ def check(executable, measurements=None):
         host=PackagedHost(executable,root)
         from usage_valuation import Price
         settings=effective_settings(Settings(),timezone='America/Los_Angeles',codex_roots=[logs],claude_roots=[],
-            prices={'release-model':Price('2','10','.1')})
+            prices={'gpt-6.1-sol':Price('2','10','.1')})
         save_settings(settings,host.config)
         original_dataset=seed_v2(host.index,host.config)
         try:
@@ -268,7 +275,7 @@ def check(executable, measurements=None):
             require(saved['data']['jobs'],'Fee change did not schedule publication.')
             host.ready()
             host.api('GET','/overview?query_context_id='+old_context,expected=409)
-            current=host.query()
+            current,_=host.api('GET','/overview?projection=app_api_value_v1')
             require(current['data']['summary']==overview['data']['summary'],'Fee-only change altered usage facts/value.')
             # Expire a real packaged grant. Never extend session lifetime in a test.
             while time.monotonic()-issued<30.2:

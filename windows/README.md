@@ -1,4 +1,4 @@
-# Usage Tray / Usage Hub for Windows — 0.14.1
+# Usage Tray / Usage Hub for Windows — 0.16.7
 
 Codex + Claude usage estimates, live limits, terminal reports, and an optional local dashboard. [Project overview and macOS setup](../README.md).
 
@@ -7,6 +7,8 @@ Codex + Claude usage estimates, live limits, terminal reports, and an optional l
 Download and extract a successful [Windows build artifact](https://github.com/samuelhateseconomic/Codex_Claude-usage-menubar/actions/workflows/windows-usage-tray.yml), then double-click **UsageTraySetup.exe**. Source builds place it in `windows/dist`. It installs the app for your Windows account, adds Start menu and sign-in shortcuts, and starts the background tray with live checks enabled. No administrator access, separate Python install, terminal or browser is required. Provider CLI sign-ins remain necessary for live limits.
 
 Open the dashboard from the tray when needed. Closing its browser tab leaves monitoring running; **Quit** stops it until the next launch/sign-in. If an older owner is already running, Quit it and reopen **Usage Tray** from the Start menu to use the new installation.
+
+Version 0.14.2 fixes inherited Codex child-session headers; the next local scan reparses cached observations. **Update view** captures the latest indexed usage; **Rescan local logs** reads logs again. The dashboard shows scan/capture times and flags newer results without changing your open view.
 
 Installed binaries live in `%LOCALAPPDATA%\Programs\UsageTray\versions`; upgrades retain old binaries rather than overwriting a running app. Settings/history remain in `%LOCALAPPDATA%\UsageTray`. To disable sign-in startup, remove **Usage Tray.lnk** from the folder opened by `Win+R` → `shell:startup`. To remove the installation, Quit it, remove its Start menu/startup shortcuts, and remove the app's Programs folder; settings/history are separate.
 
@@ -38,13 +40,15 @@ Find the icon under **Show hidden icons**. Left- or right-click to open options,
 
 Or choose **Open usage dashboard...** from the ordinary live tray to share its cached limits. Standalone dashboard launch imports local metadata without polling providers. Normal tray startup opens no browser.
 
-- **Overview:** provider/period selection, daily charts, two-decimal fee comparisons with exact amounts, and collapsed **Data details**. Important unpriced/stale warnings stay visible. **Live limits** uses 12px remaining-capacity bars.
-- **Explore:** search/filter usage and open conversation details; Back retains the page/filters. Expand **Rates** beneath an entry for USD/1M rates, exact category charges, rounding and pricing sources. Mixed previews show up to eight rate groups; event pages expose the rest.
+- **Overview:** simultaneous estimated API value, app credits, recorded tokens and projects; Today/Last 7 days/Month to date and three chart metrics. Capacity shows cached five-hour remaining limits for active CLI accounts. Important unpriced/stale warnings stay visible; **Data details** starts closed.
+- **Explore:** independent single-app filters, primary-model/project pies, a full-width daily chart and paginated history. **Estimate methodology** explains input, reads, both writes, output, reasoning coverage, exact category charges, rounding and pricing sources. Rate groups are paged eight at a time; Back retains the query and position.
 - **Settings & data:** save fees and timezone (Automatic follows your system; manual IANA names remain available); **Applying / Applied** feedback stays visible. Use **Check progress** for a long-running job. Failed/conflicting changes retain the draft; reload to resolve concurrent edits.
 
 Repeated launches reuse one owner's mode and port. Close browser tabs freely; tray **Quit** stops the packaged service, while Ctrl+C stops the source dashboard. Quit/relaunch to change modes or load updates. Launch through the application to authenticate; a plain loopback URL grants no private access. `--no-browser` suppresses browser launch.
 
 `--dashboard --demo` explicitly selects isolated samples with read-only Settings. Real connection failures never substitute demo data. [Runtime/API details](../docs/s13-runtime-integration.md).
+
+The reviewed desktop dashboard selects Codex `gpt-6.1-sol` and Claude `claude-opus-5-5` using a versioned provider/model policy. Other retained models remain available to the existing CLI/API consumers; no matching primary model produces an empty dashboard. Model identity cannot distinguish a main agent from a helper using that model. Primary-model queries are ineligible for full monthly-fee comparisons. [Dashboard projection contract](../docs/b3-dashboard-contract.md).
 
 ## Estimated API value and plan comparison
 
@@ -81,6 +85,15 @@ CLI overrides are temporary unless `--save-settings` is explicit. `--config PATH
 Bundled rates are a versioned snapshot, not an automatic price feed. Reports identify applied rates, sources, unpriced models, and tier assumptions. Valuation uses exact decimal rates with per-event half-even rounding to 12 USD decimal places.
 
 For custom **USD-per-million-token** rates, use [prices.example.json](prices.example.json) with `--prices PATH`. Persist validated overrides with `--save-settings`; saved settings supersede automatic legacy `prices.json`. [Pricing policy and provenance](../docs/s04-exact-valuation.md).
+
+Tiered USD estimates use the labeled **Below-threshold context assumed** policy; recorded counters/context stay intact. Old indexed publications retain their policy until a normal import/reprice. The dashboard now shows normalized app credits beside USD. Optional offline credit commands remain available:
+
+```powershell
+.\.venv\Scripts\python.exe usage_credit_cli.py --demo --unit app
+.\.venv\Scripts\python.exe usage_credit_cli.py --index "$env:LOCALAPPDATA\UsageTray\usage-hub.sqlite3" --unit app --format json
+```
+
+One app credit = USD0.01 of estimated API value. Native Codex credits use separate rates and require speed evidence or an explicit scenario; neither measures actual allowance/balance. [Calculation contract and commands](../docs/b1-b2-calculation-foundation.md).
 
 ## Data and privacy
 

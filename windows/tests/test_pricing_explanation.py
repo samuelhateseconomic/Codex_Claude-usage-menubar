@@ -55,7 +55,7 @@ class PricingExplanationTests(unittest.TestCase):
 
     def test_tiers_context_assumptions_dated_mapping_and_mixed_models(self):
         catalog = build_catalog({'fixture': Price('2','10','.1',threshold=100,high=('4','15','.2')),
-                                 'other': Price('1','1','1')})
+                                 'other': Price('1','1','1')}, context_policy='event_context_compatibility')
         base = record('fixture-20261023',Tokens(100,20,30))
         low = value_event(canonical(base,context=100),catalog)
         high = value_event(canonical(base,context=101),catalog)

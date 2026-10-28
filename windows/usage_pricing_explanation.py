@@ -6,8 +6,9 @@ amount. Group adjustments SUM event adjustments; groups are never re-rounded.
 """
 from dataclasses import dataclass, replace
 from decimal import Decimal, localcontext
+from functools import lru_cache
 
-from usage_valuation import (ARITHMETIC, QUANTUM, POLICY_VERSION, applied_rates,
+from usage_valuation import (ARITHMETIC, QUANTUM, applied_rates,
                              aggregate_values, EventValuation, ValueSummary)
 
 CATEGORY_NAMES = ('uncached_input_tokens', 'output_tokens', 'cache_read_tokens',
@@ -38,11 +39,24 @@ def explain_event(value, catalog):
     if (catalog is None or value.pricing_version != catalog.version
             or value.catalog_version != catalog.catalog_version
             or value.override_version != catalog.override_version
-            or value.policy_version != POLICY_VERSION):
+            or value.policy_version != catalog.policy_version):
         return absent('pricing_provenance_unavailable')
     selected = catalog.lookup(value.requested_model)
     if selected is None:
         return absent('model_rate_unavailable')
+    try:
+        return _selected_explanation(value,selected)
+    except TypeError:
+        return _explain_selected(value,selected)
+
+
+@lru_cache(maxsize=4096)
+def _selected_explanation(value,selected):
+    return _explain_selected(value,selected)
+
+
+def _explain_selected(value,selected):
+    absent = lambda reason: PricingExplanation('unavailable', reason)
     if (value.requested_model != value.record.model
             or (value.rate_id, value.matched_model, value.model_mapping, value.source,
                 value.checked_date, value.custom) !=
@@ -91,20 +105,22 @@ class PricingBreakdown:
     shown_record_count: int
 
 
-def explain_values(values, catalog):
+def explain_values(values, catalog, *, offset=0, limit=GROUP_LIMIT):
     """Bound displayed rate groups; all omitted events remain in the summary.
 
     First occurrence follows the service's deterministic event order. Existing
     frozen chronological event pagination exposes every group's event evidence.
     Never synthesize a blended rate for mixed models/tiers/provenance.
     """
+    if type(offset) is not int or offset < 0 or type(limit) is not int or not 1 <= limit <= GROUP_LIMIT:
+        raise ValueError('Invalid pricing group page.')
     buckets = {}
     total = 0
     for value in values:
         total += 1
         key = provenance_key(value)
         if key not in buckets:
-            buckets[key] = [] if len(buckets) < GROUP_LIMIT else None
+            buckets[key] = [] if offset <= len(buckets) < offset + limit else None
         if buckets[key] is not None:
             buckets[key].append(value)
     groups = []

@@ -3,8 +3,8 @@ import {mountLocalDashboard} from '../local-app.js';
 export async function localDashboard(client,{hash='#view=explore'}={}){
   const handlers={},nodes=new Map(),timers=new Map(),focusLog=[],entries=[];let timer=0,index=-1;
   const location={hash,pathname:'/'};
-  const make=id=>({id,dataset:{},attributes:{},textContent:'',value:'',open:false,setAttribute(k,v){this.attributes[k]=v;},removeAttribute(k){delete this.attributes[k];},focus(){document.activeElement=this;focusLog.push(id);},showModal(){this.open=true;},close(){this.open=false;},closest(){return null;}});
-  for(const id of ['content','breadcrumb','mode','scope','capture','connection','notification','shortcuts'])nodes.set('#'+id,make(id));
+  const make=id=>({id,dataset:{},attributes:{},textContent:'',value:'',open:false,setAttribute(k,v){this.attributes[k]=v;},getAttribute(k){return this.attributes[k]??null;},removeAttribute(k){delete this.attributes[k];},focus(){document.activeElement=this;focusLog.push(id);},showModal(){this.open=true;},close(){this.open=false;},closest(){return null;}});
+  for(const id of ['content','breadcrumb','mode','scope','capture','connection','notification','shortcuts','publication-status','scan-status'])nodes.set('#'+id,make(id));
   const document={activeElement:null,querySelector:s=>nodes.get(s)??null,querySelectorAll:()=>[],addEventListener:(k,f)=>{handlers[k]=f;}};
   const content=nodes.get('#content');
   Object.defineProperty(content,'innerHTML',{get(){return this.html;},set(html){this.html=html;for(const key of ['#search','#settings-result','#operation-status'])nodes.delete(key);if(html.includes('id="search"'))nodes.set('#search',Object.assign(make('search'),{value:html.match(/id="search"[^>]*value="([^"]*)"/)[1]}));if(html.includes('id="settings-result"'))nodes.set('#settings-result',make('settings-result'));if(html.includes('id="operation-status"'))nodes.set('#operation-status',Object.assign(make('operation-status'),{innerHTML:html.match(/id="operation-status"[^>]*>([\s\S]*?)<\/section>/)[1]}));}});

@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Usage Hub · Personal console</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/overview.svg">
   <link rel="stylesheet" href="/style.css">
   <script src="/local-app.js" type="module"></script>
 </head>
@@ -17,12 +18,13 @@
       <a href="#limits" data-nav="limits"><img src="/assets/limits.svg" alt="" width="16" height="16">Live limits</a>
       <a href="#settings" data-nav="settings"><img src="/assets/settings.svg" alt="" width="16" height="16">Settings</a>
     </nav>
-    <div class="workspace"><small>THIS COMPUTER</small><p>Personal workspace</p><p class="muted">Local records · unmatched accounts</p></div>
     <footer><p id="connection" class="teal">Local dashboard</p><p id="capture" class="muted">Authenticating local session…</p><hr><button data-action="help">Keyboard shortcuts&nbsp; ?</button><p id="scope" class="amber mono">Local metadata · unmatched accounts</p></footer>
   </aside>
   <div class="main">
-    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumb">Usage overview</strong></div><div class="top-actions"><span id="mode" class="badge">LOCAL DATA</span><button data-action="search">Search projects or IDs&nbsp; /</button><button data-action="refresh-query">Refresh view</button><button data-action="refresh" id="refresh">Rescan local logs</button></div></header>
+    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumb">Usage overview</strong></div><div class="top-actions"><span id="mode" class="badge">LOCAL DATA</span><button data-action="search">Search projects or IDs&nbsp; /</button><button data-action="refresh-query">Update view</button><button data-action="refresh" id="refresh">Rescan local logs</button></div></header>
+    <div id="publication-status" role="status" aria-live="polite"></div>
     <main id="content" tabindex="-1" aria-busy="true"><p class="loading">Reading local usage metadata…</p></main>
+    <footer id="scan-status" aria-label="Local scan status"></footer>
     <div id="notification" role="status" aria-live="polite"></div>
   </div>
   <dialog id="shortcuts"><h2>Keyboard shortcuts</h2><p><kbd>/</kbd> Search projects and conversation IDs</p><p><kbd>?</kbd> Show keyboard shortcuts</p><p><kbd>Esc</kbd> Close this dialog or return from a conversation</p><p><kbd>Tab</kbd> Move through controls · <kbd>Enter</kbd> Activate</p><button data-action="close-help">Close</button></dialog>

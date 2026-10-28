@@ -228,14 +228,15 @@ class ReportTests(unittest.TestCase):
         self.assertIn("Unavailable (all usage unpriced)", html)
         self.assertIn("dollar subtotal incomplete", html)
 
-    def test_long_context_price_threshold(self):
+    def test_below_threshold_scenario_preserves_large_recorded_input(self):
         record = reports.Record("Codex", NOW, "s", "p", "gpt-5.4", reports.Tokens(250000, 1000, 30000))
-        self.assertAlmostEqual(reports.estimate(record), (250000 * 5 + 1000 * 22.5 + 30000 * .5) / 1e6)
+        self.assertAlmostEqual(reports.estimate(record), (250000 * 2.5 + 1000 * 15 + 30000 * .25) / 1e6)
+        self.assertEqual(record.tokens.total, 281000)
 
     def test_current_official_model_prices_and_context_tier(self):
         record = reports.Record("Codex", NOW, "s", "p", "gpt-6.1-sol", reports.Tokens(100000, 10000, 100000))
         self.assertAlmostEqual(reports.estimate(record), .31)
-        self.assertAlmostEqual(reports.estimate(replace(record, tokens=reports.Tokens(200000, 10000, 100000))), .97)
+        self.assertAlmostEqual(reports.estimate(replace(record, tokens=reports.Tokens(200000, 10000, 100000))), .51)
         claude = reports.Record("Claude", NOW, "c", "p", "claude-opus-5-5", reports.Tokens(1000000, 1000000, 1000000, 1000000, 1000000))
         self.assertAlmostEqual(reports.estimate(claude), 37.2)
         self.assertIsNone(reports.price_for("codex-auto-review"))

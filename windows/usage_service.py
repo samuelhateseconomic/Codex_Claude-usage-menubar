@@ -18,6 +18,9 @@ import time
 from zoneinfo import ZoneInfo
 
 from usage_config import default_roots
+from usage_credits import (APP_UNIT, NATIVE_UNIT, CREDIT_POLICY, DEFAULT_CREDIT_CATALOG,
+                           CreditValuation, CreditSummary, aggregate_credits,
+                           normalize_value, value_native, valuation_version)
 from usage_identity import APP_VERSION, BUILD_ID
 from usage_ingestion import ScanIssue, scan_observations
 from usage_observations import CanonicalEvent, PARSER_VERSION
@@ -46,8 +49,12 @@ class UsageFilters:
     search: str = ""
     selected_day: str | None = None
     project_ids: tuple[str, ...] = ()  # Dataset-scoped normalized identities from the index.
+    provider_models: tuple[tuple[str, str], ...] = ()
+    match_none: bool = False  # Explicitly deselected dashboard dimensions.
 
     def __post_init__(self):
+        if type(self.match_none) is not bool:
+            raise ValueError("Empty selection must be an explicit boolean.")
         for name in ("projects", "models", "efforts", "conversation_ids", "project_ids"):
             values = getattr(self, name)
             if isinstance(values, str) or any(not isinstance(v, str) for v in values):
@@ -57,6 +64,10 @@ class UsageFilters:
         if any(len(pair) != 2 or pair[0] not in DEFAULT_PLAN_FEES or not isinstance(pair[1], str) for pair in pairs):
             raise ValueError("Conversation filters require provider and full session identity.")
         object.__setattr__(self, "conversations", tuple(sorted(set(pairs))))
+        pairs = tuple(tuple(pair) for pair in self.provider_models)
+        if any(len(pair) != 2 or pair[0] not in DEFAULT_PLAN_FEES or not isinstance(pair[1], str) or not pair[1] for pair in pairs):
+            raise ValueError("Model pairs require supported providers and exact model identities.")
+        object.__setattr__(self, "provider_models", tuple(sorted(set(pairs))))
         if not isinstance(self.search, str) or len(self.search.strip()) > 200:
             raise ValueError("Metadata search is limited to 200 characters.")
         object.__setattr__(self, "search", self.search.strip().casefold())
@@ -66,12 +77,13 @@ class UsageFilters:
 
     @property
     def active(self):
-        return bool(self.projects or self.project_ids or self.models or self.efforts or self.conversations or self.conversation_ids or self.search or self.selected_day)
+        return bool(self.match_none or self.projects or self.project_ids or self.models or self.provider_models or self.efforts or self.conversations or self.conversation_ids or self.search or self.selected_day)
 
     def matches(self, record, timezone, conversation_id, project_id=None):
-        return (not self.projects or record.project in self.projects) and (
+        return not self.match_none and (not self.projects or record.project in self.projects) and (
             not self.project_ids or project_id in self.project_ids) and (
             not self.models or record.model in self.models) and (
+            not self.provider_models or (record.provider, record.model) in self.provider_models) and (
             not self.efforts or record.effort in self.efforts) and (
             not self.conversations or (record.provider, record.session) in self.conversations) and (
             not self.conversation_ids or conversation_id in self.conversation_ids) and (
@@ -205,6 +217,11 @@ class UsageResult:
     valuation_policy: str = POLICY_VERSION
     query_version: str = QUERY_VERSION
 
+    def credits(self, *, unit=APP_UNIT, catalog=DEFAULT_CREDIT_CATALOG,
+                speed_assumption=None, evidence=None, publication_versions=()):
+        return query_credits(self, unit=unit, catalog=catalog, speed_assumption=speed_assumption,
+                             evidence=evidence, publication_versions=publication_versions)
+
     def groups_for(self, dimension, sort="key"):
         if dimension not in DIMENSIONS:
             raise ValueError("Unsupported usage dimension.")
@@ -223,6 +240,88 @@ class UsageResult:
         else:
             raise ValueError("Unsupported usage sort.")
         return tuple(sorted(rows, key=key))
+
+
+@dataclass(frozen=True)
+class CreditDetail:
+    detail_id: str
+    conversation_id: str
+    valuation: CreditValuation
+
+
+@dataclass(frozen=True)
+class CreditGroup:
+    group_id: str
+    key: tuple[str, ...]
+    summary: CreditSummary
+    detail_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class CreditResult:
+    """Opt-in projection; existing USD wire responses and dashboard are unchanged."""
+    usage: UsageResult
+    context_id: str
+    unit: str
+    version: str
+    total: CreditSummary
+    details: tuple[CreditDetail, ...]
+    groups: tuple[tuple[str, tuple[CreditGroup, ...]], ...]
+    catalog: object | None
+    speed_assumption: str | None
+    publication_versions: tuple
+
+    def groups_for(self, dimension):
+        if dimension not in DIMENSIONS:
+            raise ValueError('Unsupported credit grouping dimension.')
+        return dict(self.groups)[dimension]
+
+
+def query_credits(result, *, unit=APP_UNIT, catalog=DEFAULT_CREDIT_CATALOG,
+                  speed_assumption=None, evidence=None, publication_versions=()):
+    """Value exactly the shared service's selection and partition memberships.
+
+    Native speed evidence is keyed by the full returned detail ID, never a display
+    label. Current log collectors do not prove speed; an explicit scenario is
+    optional, and remains qualified. No query initiates a scan/reprice/poll.
+    """
+    if not isinstance(result, UsageResult) or unit not in (APP_UNIT, NATIVE_UNIT):
+        raise ValueError('Credit queries require an authoritative usage result and unit.')
+    evidence = dict(evidence or {})
+    if evidence.keys() - {detail.detail_id for detail in result.details}:
+        raise ValueError('Credit evidence must match selected full detail identities.')
+    if unit == APP_UNIT and (evidence or speed_assumption is not None):
+        raise ValueError('App credits inherit the USD policy; native speed options do not apply.')
+    version = valuation_version(unit, usd_pricing_version=result.catalog.version,
+                                catalog=catalog, speed_assumption=speed_assumption)
+    details = tuple(CreditDetail(detail.detail_id, detail.conversation_id,
+        normalize_value(detail.valuation) if unit == APP_UNIT else
+        value_native(detail.event or detail.record, catalog, evidence=evidence.get(detail.detail_id),
+                     speed_assumption=speed_assumption)) for detail in result.details)
+    # Empty queries carry the same explicit policy identity as nonempty ones.
+    values = {detail.detail_id: detail.valuation for detail in details}
+    total = aggregate_credits(values.values(), unit=unit, version=version)
+    groups = tuple((dimension, tuple(CreditGroup(group.group_id, group.key,
+        aggregate_credits((values[key] for key in group.detail_ids), unit=unit, version=version),
+        group.detail_ids) for group in rows)) for dimension, rows in result.groups)
+    context = result.context
+    fingerprint = [CREDIT_POLICY, unit, version, result.catalog.version, result.settings_version,
+        publication_versions, context.period, context.timezone, context.captured_at, context.demo,
+        context.filtered, [(p, r.start, r.end, r.boundary_policy) for p, r in context.ranges],
+        context.filters.__dict__,
+        [(d.detail_id, d.record.provider, d.record.model, d.record.timestamp, d.record.project,
+          d.record.effort, d.record.effort_source,
+          d.record.tokens.input, d.record.tokens.cached, d.record.tokens.output,
+          d.record.tokens.write5m, d.record.tokens.write1h, d.record.reasoning_tokens,
+          None if d.valuation.amount_usd is None else format(d.valuation.amount_usd, 'f'),
+          d.valuation.assumptions) for d in result.details],
+        [(s.provider, s.state, s.issue_counts, len(s.accounting_issues)) for s in result.sources],
+        [(c.provider, c.available, c.reason, None if c.fee_usd is None else format(c.fee_usd, 'f'),
+          c.qualifications) for c in result.comparisons],
+        [(d.detail_id, d.valuation.evidence.__dict__ if d.valuation.evidence else None) for d in details]]
+    return CreditResult(result, 'credit-context-v1:' + _digest(fingerprint), unit, version, total,
+                        details, groups, catalog if unit == NATIVE_UNIT else None,
+                        speed_assumption, tuple(publication_versions))
 
 
 def summarize_values(values, conversation_ids=None):
@@ -341,7 +440,8 @@ def build_usage_result(entries, context, catalog=None, fees=None, sources=(), no
                        tuple(sorted({d.record.model for d in details if d.valuation.state == "unpriced"})),
                        tuple(sorted({d.record.model for d in details if d.record.tokens.write5m or d.record.tokens.write1h})),
                        sum(d.record.effort == "unknown" for d in details),
-                       sum(d.record.tokens.total for d in details if d.record.effort == "unknown"))
+                       sum(d.record.tokens.total for d in details if d.record.effort == "unknown"),
+                       valuation_policy=catalog.policy_version)
 
 
 @dataclass(frozen=True)

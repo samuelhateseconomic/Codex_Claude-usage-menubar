@@ -15,10 +15,11 @@ from usage_api_contract import ApiError, invalid, envelope, summary, comparison,
 from usage_service import QueryContext, UsageFilters, summarize_details, _conversation_id
 from usage_time import resolve_range
 from usage_pricing_explanation import explain_event, explain_values
+from usage_dashboard_projection import PROJECTION, PRIMARY_MODELS, descriptor, analysis
 
-FILTERS = ('provider','project_id','model','effort','q','selected_day')
-SCALARS = ('dataset_id','period','timezone','q','selected_day','sort','page_size','cursor','query_context_id','base_query_context_id')
-ALLOWED = set(SCALARS) | {'provider','project_id','model','effort'}
+FILTERS = ('provider','project_id','model','effort','q','selected_day','empty_selection')
+SCALARS = ('dataset_id','period','timezone','q','selected_day','sort','page_size','cursor','query_context_id','base_query_context_id','projection')
+ALLOWED = set(SCALARS) | {'provider','project_id','model','effort','empty_selection'}
 SORTS = ('value_desc','tokens_desc','last_activity_desc')
 
 
@@ -31,10 +32,12 @@ class FrozenQuery:
     timezone: str
     filters: tuple
     expires: float
+    projection: str = ''
+    primary_models: tuple = ()
 
     @property
     def applied(self):
-        return {key:list(value) if isinstance(value,tuple) else value.casefold() if key=='q' else value for key,value in self.filters}
+        return {key:list(value) if isinstance(value,tuple) else value.casefold() if key=='q' else value for key,value in self.filters if key != 'empty_selection' or value}
 
 
 class CommittedReader:
@@ -126,13 +129,15 @@ class QueryService:
         if params.keys()-ALLOWED: raise invalid()
         if any(not isinstance(values,list) or not values or any(not isinstance(v,str) or len(v)>32767 for v in values) for values in params.values()): raise invalid()
         if any(len(params.get(key,[]))>1 for key in SCALARS): raise invalid()
+        if 'projection' in params and params['projection'] != [PROJECTION]: raise invalid('projection')
+        if base and 'projection' in params and params['projection'][0] != base.projection: raise invalid('projection')
         if 'sort' in params and params['sort'][0] not in (*SORTS,'events'): raise invalid('sort')
         if 'page_size' in params:
             value=params['page_size'][0]
             if not value.isascii() or not value.isdecimal() or not 1<=int(value)<=100: raise invalid('page_size')
         if params.get('dataset_id',[snapshot.dataset_id])[0] != snapshot.dataset_id:
             raise ApiError(404,'dataset_not_found','Unknown dataset.')
-        defaults={'provider':('claude','codex'),'project_id':(),'model':(),'effort':(),'q':'','selected_day':None}
+        defaults={'provider':('claude','codex'),'project_id':(),'model':(),'effort':(),'q':'','selected_day':None,'empty_selection':()}
         filters=dict(base.filters) if base else defaults.copy()
         for key in FILTERS:
             if key not in params: continue
@@ -148,8 +153,10 @@ class QueryService:
                     except ValueError: raise invalid(key) from None
                 filters[key]=value
             else:
-                if len(values)>64 or any(not value or len(value)>1024 for value in values): raise invalid(key)
+                limit=3 if key=='empty_selection' else 64
+                if len(values)>limit or any(not value or len(value)>1024 for value in values): raise invalid(key)
                 filters[key]=tuple(sorted(set(values)))
+        if set(filters['empty_selection']) - {'project_id','model','effort'}: raise invalid('empty_selection')
         if not filters['provider'] or set(filters['provider'])-PROVIDERS.keys(): raise invalid('provider')
         projects={row[0] for row in snapshot.projects}
         if set(filters['project_id'])-projects: raise ApiError(404,'project_not_found','Unknown project ID in this dataset.')
@@ -184,8 +191,10 @@ class QueryService:
             filters,period,zone=self._normalize(params,snapshot)
             # Freeze to the documented microsecond wire precision.
             captured=datetime.fromtimestamp(self.clock(),ZoneInfo('UTC')).timestamp()
+        projection = frozen.projection if existing or derived else params.get('projection',[''])[0]
+        pairs = frozen.primary_models if existing or derived else PRIMARY_MODELS if projection else ()
         frozen=FrozenQuery(secrets.token_urlsafe(24),snapshot.versions,captured,period,zone,
-                           tuple((key,filters[key]) for key in FILTERS),self.monotonic()+1800)
+                           tuple((key,filters[key]) for key in FILTERS),self.monotonic()+1800,projection,pairs)
         self.context(snapshot,frozen)  # Validate selected-day intersection before issuing a context.
         with self.lock:
             self.contexts[frozen.id]=frozen
@@ -209,7 +218,8 @@ class QueryService:
             core_ids=tuple({_conversation_id(event) for event in snapshot.events if ids[event.event_id]==conversation})
             if not core_ids: raise ApiError(404,'conversation_not_found','Unknown conversation ID in this dataset.')
         selected=UsageFilters(project_ids=filters['project_id'],models=filters['model'],efforts=filters['effort'],
-                              search=filters['q'],selected_day=filters['selected_day'],conversation_ids=core_ids)
+                              search=filters['q'],selected_day=filters['selected_day'],conversation_ids=core_ids,
+                              provider_models=frozen.primary_models,match_none=bool(filters['empty_selection']))
         return QueryContext(ranges,frozen.captured,frozen.period,frozen.timezone,selected,snapshot.mode=='demo')
 
     def _metadata(self, frozen, context):
@@ -248,8 +258,8 @@ class QueryService:
         return (value is None,value.copy_negate() if value is not None else 0,row['id'])
 
     @staticmethod
-    def row_dto(row, snapshot):
-        return {'id':row['id'],'label':row['label'],'summary':summary(row['summary']),
+    def row_dto(row, snapshot, projected=False):
+        return {'id':row['id'],'label':row['label'],'summary':summary(row['summary'],projected=projected),
                 'last_activity_at':utc(row['last_activity']),'project_ids':row['project_ids'],
                 'models':row['models'],'efforts':row['efforts'],
                 'pricing':pricing_breakdown(explain_values((d.valuation for d in row['members']),snapshot.catalog))}
@@ -267,6 +277,10 @@ class QueryService:
             if not hmac.compare_digest(signature,hmac.new(self.secret,encoded.encode(),hashlib.sha256).hexdigest()): raise ValueError()
             return json.loads(base64.urlsafe_b64decode(encoded+'='*((-len(encoded))%4)))
         except (ValueError,UnicodeError,TypeError): raise invalid('cursor') from None
+
+    def analysis_pagination(self,frozen,count,*,size=8,offset=0):
+        cursor=self._cursor({'context':frozen.id,'endpoint':'/usage/analysis','size':size,'offset':offset+size}) if offset+size<count else None
+        return {'page_size':size,'sort':'groups','next_cursor':cursor,'matched_count':count}
 
     def page(self, rows, params, frozen, endpoint, *, event=False):
         sort=params.get('sort',['events' if event else 'value_desc'])[0]
@@ -289,7 +303,7 @@ class QueryService:
         return page,{'page_size':size,'sort':sort,'next_cursor':cursor,'matched_count':len(rows)}
 
     def read(self, path, params):
-        paginated=path in ('/usage/conversations','/usage/projects') or path.endswith('/events')
+        paginated=path in ('/usage/conversations','/usage/projects','/usage/analysis') or path.endswith('/events')
         if 'cursor' in params and not paginated: raise invalid('cursor')
         if params.get('sort')==['events'] and not path.endswith('/events'): raise invalid('sort')
         if self.reader is None:
@@ -297,6 +311,9 @@ class QueryService:
         else:
             snapshot,snapshot_token=self.reader.read()
         frozen=self.resolve(params,snapshot)
+        projected=bool(frozen.projection)
+        wire_summary=lambda value: summary(value,projected=projected)
+        row_dto=lambda row: self.row_dto(row,snapshot,projected)
         context=self.context(snapshot,frozen)
         result=self._result(snapshot,context,snapshot_token)
         if path=='/overview':
@@ -304,24 +321,41 @@ class QueryService:
             projects=self._groups(result,snapshot,'projects')
             coverage=[{'provider':s.provider.lower(),'state':s.state,'ingestion_issues':s.issue_counts,
                        'accounting_issues':dict(Counter(i.code for i in s.accounting_issues))} for s in result.sources]
-            model_rows=[{'provider':g.key[0].lower(),'model':g.key[1],'effort':g.key[2],'summary':summary(g.summary)} for g in result.groups_for('model_effort','value_desc')]
+            model_rows=[{'provider':g.key[0].lower(),'model':g.key[1],'effort':g.key[2],'summary':wire_summary(g.summary)} for g in result.groups_for('model_effort','value_desc')]
             if len(model_rows)>1000: raise ApiError(503,'query_budget','Query exceeds the supported response work budget.')
-            data={'scope':context.scope,'summary':summary(result.total),'freshness':snapshot.freshness,'coverage':coverage,
+            data={'scope':context.scope,'summary':wire_summary(result.total),'freshness':snapshot.freshness,'coverage':coverage,
                   'comparisons':[comparison(c) for c in result.comparisons],'combined_comparison':comparison(result.combined_comparison),
-                  'days':[{'day':g.key[0],'summary':summary(g.summary)} for g in result.groups_for('day')],
-                  'providers':[{'provider':g.key[0].lower(),'summary':summary(g.summary)} for g in result.groups_for('provider')],
-                  'models':model_rows,'top_projects':[self.row_dto(row,snapshot) for row in sorted(projects,key=lambda r:self.sort_key(r,'value_desc'))[:10]],
-                  'recent_conversations':[self.row_dto(row,snapshot) for row in sorted(conversations,key=lambda r:self.sort_key(r,'last_activity_desc'))[:10]]}
+                  'days':[{'day':g.key[0],'summary':wire_summary(g.summary)} for g in result.groups_for('day')],
+                  'providers':[{'provider':g.key[0].lower(),'summary':wire_summary(g.summary)} for g in result.groups_for('provider')],
+                  'models':model_rows,'top_projects':[row_dto(row) for row in sorted(projects,key=lambda r:self.sort_key(r,'value_desc'))[:10]],
+                  'recent_conversations':[row_dto(row) for row in sorted(conversations,key=lambda r:self.sort_key(r,'last_activity_desc'))[:10]]}
+            if projected:
+                data['analysis']=analysis(result,snapshot)
+                data['analysis_pagination']=self.analysis_pagination(frozen,data['analysis']['methodology']['pricing']['group_count'])
             kind='overview'
         elif path in ('/usage/conversations','/usage/projects'):
             rows,pagination=self.page(self._groups(result,snapshot,'conversations' if path.endswith('conversations') else 'projects'),params,frozen,path)
-            data={'summary':summary(result.total),'items':[self.row_dto(row,snapshot) for row in rows],'pagination':pagination};kind='list'
+            data={'summary':wire_summary(result.total),'items':[row_dto(row) for row in rows],'pagination':pagination};kind='list'
+        elif path=='/usage/analysis':
+            if not projected: raise invalid('projection')
+            size=int(params.get('page_size',['8'])[0])
+            if size > 8 or 'sort' in params: raise invalid('page_size')
+            offset=0
+            if 'cursor' in params:
+                cursor=self._cursor_data(params['cursor'][0])
+                if cursor.get('context') != frozen.id: raise ApiError(409,'cursor_context_changed','Cursor belongs to another query; restart pagination.')
+                if cursor.get('endpoint') != path or cursor.get('size') != size or type(cursor.get('offset')) is not int or cursor['offset'] < 0: raise invalid('cursor')
+                offset=cursor['offset']
+            value=analysis(result,snapshot,offset=offset,limit=size)
+            count=value['methodology']['pricing']['group_count']
+            if offset and offset >= count: raise invalid('cursor')
+            data={'summary':wire_summary(result.total),'analysis':value,'pagination':self.analysis_pagination(frozen,count,size=size,offset=offset)};kind='analysis'
         elif path=='/usage/facets':
             data={}
             for field,dimension in (('project_id','projects'),('model','models'),('effort','efforts')):
                 # Self-omission only changes a query with an active filter.
                 # Reuse this request's immutable authoritative result otherwise.
-                facet=self._result(snapshot,self.context(snapshot,frozen,changes={field:()}),snapshot_token) if dict(frozen.filters)[field] else result
+                facet=self._result(snapshot,self.context(snapshot,frozen,changes={field:(),'empty_selection':()}),snapshot_token) if dict(frozen.filters)[field] or dict(frozen.filters)['empty_selection'] else result
                 membership=dict(snapshot.event_project_ids)
                 buckets=defaultdict(set)
                 for detail in facet.details:
@@ -340,7 +374,7 @@ class QueryService:
             lifetime=[event for event in snapshot.events if all_ids[event.event_id]==conversation]
             label=next(row[-1] for row in snapshot.conversations if row[0]==conversation)
             if len(parts)==3:
-                data={'id':conversation,'label':label,'summary':summary(scoped.total),
+                data={'id':conversation,'label':label,'summary':wire_summary(scoped.total),
                       'lifetime_first_at':utc(min(e.record.timestamp for e in lifetime)),'lifetime_last_at':utc(max(e.record.timestamp for e in lifetime)),
                       'lifetime_scope':'all_retained_accepted_usage','project_ids':sorted({dict(snapshot.event_project_ids)[d.detail_id] for d in scoped.details}),
                       'models':sorted({d.record.model for d in scoped.details}),'efforts':sorted({d.record.effort for d in scoped.details}),
@@ -358,9 +392,13 @@ class QueryService:
                                  'tier':v.tier,'assumptions':list(v.assumptions),'request_context_tokens':None if v.request_context_tokens is None else str(v.request_context_tokens),
                                  'request_context_source':v.request_context_source,'pricing_version':v.pricing_version,'policy_version':v.policy_version,
                                  'explanation':pricing_explanation(v,explain_event(v,snapshot.catalog))}})
-                data={'summary':summary(scoped.total),'items':items,'pagination':pagination};kind='events'
+                if projected:
+                    from usage_api_contract import app_credits
+                    for item,row in zip(items,page): item['value']['app_credits']=app_credits(row['detail'].valuation.amount_usd)
+                data={'summary':wire_summary(scoped.total),'items':items,'pagination':pagination};kind='events'
         else:
             raise ApiError(404,'not_found','Unknown API route.')
         response=envelope(snapshot.dataset_id,snapshot.mode,self.clock(),kind,data)
         response.update(self._metadata(frozen,context))
+        if projected: response['projection']=descriptor(frozen.primary_models,snapshot.catalog.policy_version)
         return response

@@ -101,6 +101,12 @@ class IndexSnapshot:
         return Publication(self.dataset_id, self.installation_id, self.mode, self.usage_revision,
                            self.pricing_version, self.configuration_version, self.freshness, result)
 
+    def query_credits(self, context, **policy):
+        """Read-only credit projection of this frozen committed publication."""
+        if 'publication_versions' in policy:
+            raise ValueError('Index snapshot owns publication identity.')
+        return self.query(context).result.credits(publication_versions=self.versions, **policy)
+
 
 class UsageIndex:
     def __init__(self, path=None, *, mode='real', config_path=None):
@@ -131,6 +137,27 @@ class UsageIndex:
     def connection(self, readonly=False):
         # sqlite Connection context managers do not close handles; use explicit closer.
         return closing(connect(self.path, readonly))
+
+    @classmethod
+    def read_existing_snapshot(cls, path, *, mode='real'):
+        """Explicit read-only entry point: no initialize, migration, lock or settings IO.
+
+        Older schema versions require the normal owner's recovery/migration path.
+        Catalogs under the previous supported valuation policy remain readable.
+        """
+        if mode not in ('real', 'demo'):
+            raise ValueError('Select an explicit index namespace.')
+        view = cls.__new__(cls)
+        view.path, view.mode = Path(path).absolute(), mode
+        with view.connection(True) as connection:
+            verify(connection)
+            installation = connection.execute("SELECT value FROM metadata WHERE key='installation'").fetchone()
+            if installation is None:
+                raise IndexRecoveryError('Committed index identity is missing; preserve the index.')
+            view.dataset_id = 'dataset-v1:' + digest(installation[0], mode)
+            if view._dataset(connection) is None:
+                raise IndexUnavailable('The selected index namespace has no publication.')
+            return view.read_snapshot(_connection=connection)
 
     def _dataset(self, connection):
         return connection.execute('SELECT * FROM datasets WHERE id=?', (self.dataset_id,)).fetchone()

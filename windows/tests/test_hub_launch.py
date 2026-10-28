@@ -36,7 +36,7 @@ class ProductionAssets(HttpFixture):
         for directive in ("script-src 'self'", "style-src 'self'", "font-src 'self'", "connect-src 'self'"):
             self.assertIn(directive, csp)
         self.assertNotIn("unsafe-inline", csp)
-        for path in ('/local-app.js', '/local-session.js', '/local-view.js', '/v1-client.js', '/v1-schema.js', '/format.js', '/style.css', '/api-bootstrap.js',
+        for path in ('/local-app.js', '/local-session.js', '/local-view.js', '/local-freshness.js', '/v1-client.js', '/v1-schema.js', '/format.js', '/style.css', '/api-bootstrap.js',
                      '/assets/overview.svg', '/assets/Geist.woff2', '/assets/GeistMono.woff2', '/service'):
             with self.subTest(path=path):
                 status, headers, body = self.request('GET', path)

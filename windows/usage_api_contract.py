@@ -22,7 +22,7 @@ class ApiError(ValueError):
 
 
 def invalid(field=None):
-    if field not in {'provider','period','timezone','q','selected_day','sort','page_size','cursor','query_context_id','base_query_context_id','dataset_id','project_id','model','effort','root_ids','providers','changes','plan_fees_usd','rate_overrides','enabled_root_ids','job_id'}:
+    if field not in {'provider','period','timezone','q','selected_day','sort','page_size','cursor','query_context_id','base_query_context_id','dataset_id','project_id','model','effort','empty_selection','root_ids','providers','changes','plan_fees_usd','rate_overrides','enabled_root_ids','job_id'}:
         field=None
     return ApiError(422, 'invalid_input', 'Invalid or unsupported input; check the documented field bounds.', field)
 
@@ -40,14 +40,21 @@ def tokens(value, reasoning=None):
             'total_tokens':str(count(value.total)), 'reasoning_tokens':None if reasoning is None else str(count(reasoning))}
 
 
-def summary(value):
+def app_credits(amount):
+    from usage_credits import APP_UNIT, APP_UNIT_USD, app_credit_amount
+    return {'unit': APP_UNIT, 'amount': money(app_credit_amount(amount)), 'usd_per_credit': money(APP_UNIT_USD)}
+
+
+def summary(value, *, projected=False):
     v=value.value
-    return {'tokens':tokens(value.tokens,value.reasoning.known_tokens),
+    data = {'tokens':tokens(value.tokens,value.reasoning.known_tokens),
         'reasoning':{'known_records':value.reasoning.known_records,'unknown_records':value.reasoning.unknown_records},
         'record_count':value.record_count,'conversation_count':value.conversation_count,'project_count':value.project_count,
         'value':{'state':v.state,'amount_usd':money(v.amount_usd),'priced_records':v.priced_records,'unpriced_records':v.unpriced_records,
                  'priced_tokens':str(v.priced_tokens),'unpriced_tokens':str(v.unpriced_tokens),
                  'assumed_records':v.assumed_records,'assumptions':list(v.assumptions)}}
+    if projected: data['app_credits'] = app_credits(v.amount_usd)
+    return data
 
 
 def pricing_explanation(value, explanation):

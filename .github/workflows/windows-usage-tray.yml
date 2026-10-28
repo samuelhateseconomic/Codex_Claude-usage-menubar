@@ -30,6 +30,11 @@ jobs:
       - name: Test, build and smoke-test executable
         shell: powershell
         run: ./windows/build.ps1
+      - name: Test packaged calculation foundation
+        shell: powershell
+        run: |
+          ./windows/.venv/Scripts/python.exe windows/tests/packaged_credit_foundation.py --exe windows/dist/UsageTray.exe
+          if ($LASTEXITCODE -ne 0) { throw "Packaged calculation foundation regression failed." }
       - name: Test dashboard interactions and packaged launchers
         shell: powershell
         run: |
@@ -39,6 +44,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Packaged dashboard smoke failed." }
           ./windows/.venv/Scripts/python.exe windows/tests/packaged_local_hub_smoke.py --exe windows/dist/UsageTray.exe
           if ($LASTEXITCODE -ne 0) { throw "Packaged local hub smoke failed." }
+          ./windows/.venv/Scripts/python.exe windows/tests/packaged_codex_fork_smoke.py --exe windows/dist/UsageTray.exe
+          if ($LASTEXITCODE -ne 0) { throw "Packaged Codex fork regression failed." }
           ./windows/.venv/Scripts/python.exe windows/tests/packaged_hub_release.py --exe windows/dist/UsageTray.exe --measurements windows/build/hub-release-measurements.json
           if ($LASTEXITCODE -ne 0) { throw "Packaged hub release acceptance failed." }
       - uses: actions/upload-artifact@v4

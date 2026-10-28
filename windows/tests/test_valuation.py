@@ -162,13 +162,14 @@ class ExactValuationTests(unittest.TestCase):
             val.aggregate_values([first,second])
 
     def test_tier_threshold_and_missing_context_are_separate_from_price_coverage(self):
+        catalog = val.build_catalog(context_policy=val.LEGACY_CONTEXT)
         for count,tier in [(271999,"standard"),(272000,"standard"),(272001,"high_context")]:
-            value=val.value_event(canonical(record("gpt-5.4",Tokens(10,1)),count))
+            value=val.value_event(canonical(record("gpt-5.4",Tokens(10,1)),count), catalog)
             self.assertEqual(value.tier,tier)
             self.assertEqual(value.assumptions,())
             self.assertEqual(value.request_context_source,"fixture request input")
-        known=val.value_event(canonical(record("gpt-5.4",Tokens(500000,100)),100))
-        assumed=val.value_event(canonical(record("gpt-5.4",Tokens(500000,100))))
+        known=val.value_event(canonical(record("gpt-5.4",Tokens(500000,100)),100), catalog)
+        assumed=val.value_event(canonical(record("gpt-5.4",Tokens(500000,100))), catalog)
         self.assertEqual(known.tier,"standard")
         self.assertEqual(assumed.tier,"high_context")
         self.assertIsNone(assumed.request_context_tokens)
@@ -178,11 +179,12 @@ class ExactValuationTests(unittest.TestCase):
         self.assertGreater(assumed.amount_usd,known.amount_usd)
 
     def test_events_are_never_merged_into_a_synthetic_context_tier(self):
+        catalog = val.build_catalog(context_policy=val.LEGACY_CONTEXT)
         item=record("gpt-5.4",Tokens(200000,1000))
-        values=[val.value_event(item) for _ in range(2)]
+        values=[val.value_event(item, catalog) for _ in range(2)]
         self.assertEqual(val.aggregate_values(values).amount_usd,D("1.030000000000"))
         self.assertNotEqual(val.aggregate_values(values).amount_usd,
-                            val.value_event(record("gpt-5.4",Tokens(400000,2000))).amount_usd)
+                            val.value_event(record("gpt-5.4",Tokens(400000,2000)), catalog).amount_usd)
 
     def test_reasoning_and_effort_do_not_add_tokens_or_multiplier(self):
         event=fixture_events()[0]
@@ -198,8 +200,8 @@ class ExactValuationTests(unittest.TestCase):
         for model,price in val.PRICES.items():
             for tokens in (Tokens(1,1,1),Tokens(10000,1000,189000),Tokens(250000,1000,30000)):
                 rec=record(model,tokens)
-                rates=(price.high if price.threshold and tokens.input+tokens.cached>price.threshold else
-                       (price.input,price.output,price.cached))
+                # The current policy explicitly assumes below-threshold context.
+                rates=(price.input,price.output,price.cached)
                 legacy=(tokens.input*float(rates[0])+tokens.output*float(rates[1])+tokens.cached*float(rates[2])
                         +tokens.write5m*float(price.write5m or 0)+tokens.write1h*float(price.write1h or 0))/1000000
                 self.assertLessEqual(abs(D(str(legacy))-val.value_event(rec).amount_usd),D("0.000000000001"))
@@ -304,7 +306,7 @@ class ReportValuationTests(unittest.TestCase):
         report=reports.Report([event.record],{"Codex":reports.period_bounds("month",NOW)},NOW,events=(event,),period="month")
         value=report.valuation_view()[id(event.record)]
         self.assertEqual(value.tier,"standard")
-        self.assertEqual(value.assumptions,())
+        self.assertEqual(value.assumptions,("below_threshold_context_assumed",))
         self.assertEqual(value.event_id,event.event_id)
         repriced=replace(report,prices={"gpt-5.4":val.Price(2,10,0)})
         self.assertEqual(repriced.events,report.events)
@@ -356,9 +358,9 @@ class ReportValuationTests(unittest.TestCase):
             value=report.valuation_view()[id(event.record)]
             self.assertIsNone(value.request_context_tokens)
             self.assertEqual(value.tier,"standard")
-            self.assertEqual(value.assumptions,("event_input_tier_compatibility",))
-            self.assertIn("request-context tier assumed",reports.render_text_report(report))
-            self.assertIn("request-context tier assumed",reports.render_report(report))
+            self.assertEqual(value.assumptions,("below_threshold_context_assumed",))
+            self.assertIn("Below-threshold context assumed",reports.render_text_report(report))
+            self.assertIn("Below-threshold context assumed",reports.render_report(report))
 
     def test_real_claude_legacy_ttl_assumption_survives_report_projection(self):
         from datetime import datetime, timezone

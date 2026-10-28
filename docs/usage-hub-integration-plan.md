@@ -1,5 +1,7 @@
 # AI Usage Hub: integration contract and delivery plan
 
+Current implementation note (October 27): the baseline/proposed-state descriptions below are historical. The local SQLite index, authenticated v1 API and real-data dashboard exist; use [S12](s12-local-api.md), [S13](s13-runtime-integration.md), [S14 evidence](s14-hub-release.md) and the main refinement ledger for actual gate status. [The dashboard refresh plan](dashboard-refresh-plan.md) owns the Windows migration to the reviewed desktop design; its [credit projection contract](b3-dashboard-contract.md) now supplies opt-in normalized app credits, primary-model selection and bounded full-query analysis without a schema migration. The subsequent user replacement request authorizes that implementation; the original planning update did not. Older layout/mobile/unit-switch proposals are superseded while accounting, privacy and lifecycle semantics remain authoritative.
+
 Status: proposed contract and work sequence; no application, database, or Figma fixes are implemented by this document.
 
 Implementation work order and session gates: [engineering refinement plan](project-refinement-plan.md). Agent working instructions: [AGENTS.md](../AGENTS.md). This document remains the detailed contract for the optional hub integration track.

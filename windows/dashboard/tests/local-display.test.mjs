@@ -43,16 +43,16 @@ test('ineligible comparisons never show an equation or a derived difference',()=
   assert.match(comparison({fee_usd:null,available:false,difference_usd:null}),/full monthly fee <strong>Unavailable/);
 });
 
-test('closed data details retain visible empty, partial, unpriced, stale and incomplete coverage qualifications',()=>{
+test('closed Overview Report Log retains empty, partial, unpriced, stale and incomplete coverage details',()=>{
   for(const [name,essential]of [['empty','No recorded activity matches'],['partial','Unpriced:'],['unpriced','API value is unavailable']]){
     const html=render(fixtures[name]);
-    assert.ok(html.indexOf(essential)<html.indexOf('<details class="banner quality-details">'));
+    assert.ok(html.indexOf(essential)>html.indexOf('<summary>Report Log</summary>'));
     assert.doesNotMatch(html,/<details[^>]*\bopen(?:[ >])/);
   }
   const wire=structuredClone(fixtures.partial);wire.data.freshness='stale';wire.data.coverage[0].state='partial';
-  const html=render(wire),visible=html.split('<details class="banner quality-details">')[0];
-  assert.match(visible,/Retained local usage is stale/);assert.match(visible,/Excluded token amounts are unknown/);
-  assert.match(visible,/Pricing uses assumptions/);assert.match(html,/<summary>Data details<\/summary>/);
+  const html=render(wire),visible=html.split('<details class="banner quality-details">')[0],log=html.split('<summary>Report Log</summary>')[1].split('</details>')[0];
+  assert.doesNotMatch(visible,/Retained local usage is stale|Excluded token amounts are unknown/);assert.match(log,/Retained local usage is stale/);assert.match(log,/Excluded token amounts are unknown/);
+  assert.match(log,/Pricing uses assumptions/);assert.match(html,/<summary>Report Log<\/summary>/);
   assert.match(html,/report counter quality/);
   assert.match(render(fixtures.priced_zero),/<span class="currency">USD<\/span>0\.00/);
   assert.match(comparison({pricing_state:'partial'}),/priced records only; unpriced usage is excluded/);

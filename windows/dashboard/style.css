@@ -16,3 +16,109 @@
 @media(max-width:700px){.usage-rate-row .usage-rates{max-width:calc(100vw - 90px)}.rate-table td.number{min-width:60px}}
 
 .local-dashboard .settings-row select{width:min(260px,75%);min-width:0}
+/* Source scans and frozen report captures have separate clocks. */
+#publication-status{margin:16px 32px 0;overflow-wrap:anywhere}
+#publication-status:empty{display:none}
+#publication-status p:last-child{margin-bottom:0}
+.local-dashboard .card small{font-size:12px;font-weight:400}
+.local-dashboard .card .metric{letter-spacing:0}
+.local-dashboard .chart .zero-baseline{stroke:var(--muted);stroke-width:2}
+.local-dashboard .daily-column{fill:var(--teal)}
+.local-dashboard .chart g:focus-visible .daily-column,.local-dashboard .chart g:hover .daily-column{fill:var(--text);stroke:var(--teal);stroke-width:1}
+.local-dashboard .chart .selected .daily-column{fill:var(--rust)}
+.local-dashboard .chart g:hover rect,.local-dashboard .chart g:focus-visible rect{fill-opacity:0}
+.local-dashboard .capacity-remaining{color:var(--teal);margin:4px 0}
+.local-dashboard .claude-capacity .capacity-remaining{color:var(--amber)}
+.local-dashboard .claude-capacity .progress::-webkit-progress-value{background:var(--amber)}
+.local-dashboard .claude-capacity .progress::-moz-progress-bar{background:var(--amber)}
+.local-dashboard .capacity-item .progress{border-radius:0;box-shadow:none;background:var(--raised)}
+.local-dashboard .capacity-item .progress::-webkit-progress-bar{border-radius:0;background:var(--raised)}
+.local-dashboard .explore-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+.local-dashboard .pie-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:stretch}
+.local-dashboard .pie-panel{padding:24px;display:flex;flex-direction:column;gap:16px}
+.local-dashboard .pie-panel h2{margin:0}
+.local-dashboard .pie-content{display:flex;gap:24px;align-items:center;flex:1;min-width:0}
+.local-dashboard .donut{width:200px;height:200px;flex:0 0 200px;overflow:visible}
+.local-dashboard .donut circle{fill:none;stroke-width:40}
+.local-dashboard .donut-track{stroke:var(--raised)}
+.local-dashboard .donut text{fill:var(--muted);font:12px var(--sans)}
+.local-dashboard .slice-0{--slice:var(--teal)}.local-dashboard .slice-1{--slice:var(--amber)}.local-dashboard .slice-2{--slice:#eba086}.local-dashboard .slice-3{--slice:#9aa9e9}.local-dashboard .slice-4{--slice:#a0cd88}.local-dashboard .slice-5{--slice:#d7a4d7}.local-dashboard .slice-6{--slice:#70b8d4}.local-dashboard .slice-7{--slice:#c6bd83}.local-dashboard .slice-8{--slice:#b5a4f0}.local-dashboard .slice-9{--slice:#b4c4bc}.local-dashboard .slice-10{--slice:#e2ae91}.local-dashboard .slice-11{--slice:#74859d}
+.local-dashboard .slice{stroke:var(--slice)}
+.local-dashboard .pie-legend{display:flex;flex-direction:column;gap:16px;min-width:0;flex:1}
+.local-dashboard .legend-item{display:flex;gap:8px;min-width:0;overflow-wrap:anywhere}
+.local-dashboard .legend-item>div{min-width:0}
+.local-dashboard .legend-item p{margin:0 0 4px;font-size:12px}
+.local-dashboard .legend-item button{padding:0;border:0;background:none;text-align:left;min-height:24px;font-size:13px;overflow-wrap:anywhere;color:var(--text)}
+.local-dashboard .legend-dot{background:var(--slice);width:8px;height:8px;border-radius:50%;flex:0 0 8px;margin-top:8px}
+.local-dashboard .full-chart{min-height:360px;padding:24px}
+.local-dashboard .history-panel{padding:24px}
+.local-dashboard .history-panel>.table-scroll{padding:0;border:0;margin-top:16px}
+.local-dashboard .history-table{min-width:800px}
+.local-dashboard .history-table td,.local-dashboard .history-table th{padding:12px 8px}
+.local-dashboard .history-table td:first-child{width:26%}
+.local-dashboard .history-table td:nth-child(2){width:23%}
+.local-dashboard .estimate-methodology{padding:24px}
+.local-dashboard .methodology-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px}
+.local-dashboard .methodology-card{border:1px solid var(--border);border-radius:10px;background:var(--raised);padding:16px;min-width:0}
+.local-dashboard .methodology-card h3{font-size:16px;font-weight:600;line-height:24px;margin:0 0 8px}
+.local-dashboard .methodology-card p{margin:6px 0}
+.local-dashboard .methodology-table{font-size:12px;min-width:500px}
+.local-dashboard .methodology-table td,.local-dashboard .methodology-table th{padding:6px 4px;border:0;font-size:12px;max-width:none}
+.local-dashboard .methodology-table td.number{font-family:var(--mono)}
+.local-dashboard .estimate-results,.local-dashboard .estimate-coverage{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:12px}
+.local-dashboard .estimate-results{background:var(--raised);border-radius:6px;padding:12px}
+.local-dashboard .estimate-results p{display:flex;gap:12px;justify-content:space-between;font-size:12px;margin:0 0 8px;overflow-wrap:anywhere}
+.local-dashboard .estimate-results strong{overflow-wrap:anywhere;text-align:right}
+.local-dashboard .estimate-results .note{display:block}
+.local-dashboard .estimate-coverage p{font-size:12px;margin:6px 0}
+.local-dashboard .methodology-evidence{margin-top:16px;font-size:12px}
+.local-dashboard .methodology-evidence>.usage-rates{margin:12px 0}
+.local-dashboard .fee-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.local-dashboard .fee-input-label{display:flex;flex-direction:column;gap:12px;font-size:12px;color:var(--muted);margin:12px 0 20px}
+.local-dashboard .fee-input{width:100%;font-size:28px;line-height:40px;color:var(--text);padding:8px 12px;min-width:0}
+@media(max-width:850px){.local-dashboard .fee-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:1250px){.local-dashboard .pie-content{flex-wrap:wrap}.local-dashboard .donut{width:160px;height:160px;flex-basis:160px}.local-dashboard .methodology-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:850px){.local-dashboard .pie-grid,.local-dashboard .estimate-results,.local-dashboard .estimate-coverage{grid-template-columns:minmax(0,1fr)}.local-dashboard .explore-cards{grid-template-columns:minmax(0,1fr)}.local-dashboard .pagination{flex-wrap:wrap}.local-dashboard .pie-content{flex-wrap:nowrap}}
+@media(max-width:700px){#publication-status{margin:16px 16px 0}}
+
+/* Keep scan timestamps below each page; publication actions stay above it. */
+.local-dashboard .main{display:flex;flex-direction:column;min-height:100vh}
+.local-dashboard #content{width:100%;flex:1;margin:0 auto}
+.local-dashboard #scan-status{width:100%;max-width:1600px;margin:0 auto;padding:0 28px 20px;text-align:left;overflow-wrap:anywhere}
+@media(max-width:1100px){.local-dashboard #scan-status{padding:0 20px 20px}}
+@media(max-width:700px){.local-dashboard #scan-status{padding:0 16px 16px}}
+
+.local-dashboard .history-controls{flex-wrap:wrap}
+.local-dashboard .chart .average-line{stroke:var(--amber);stroke-width:1.5;stroke-dasharray:6 4;pointer-events:none}
+.local-dashboard .chart .average-label{fill:var(--amber);pointer-events:none}
+
+.local-dashboard .overview-filters{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.local-dashboard .overview-filters #period{min-height:34px}
+.local-dashboard .chart .average-axis-value{fill:var(--amber);font-weight:600;pointer-events:none}
+.local-dashboard .chart .average-axis-background{fill:var(--surface);pointer-events:none}
+
+/* Scoped checkbox filters retain native keyboard/checkbox behavior. */
+.local-dashboard .multi-filter{position:relative;flex:1;min-width:140px;max-width:100%}
+.local-dashboard .multi-filter>summary{width:100%;list-style:revert;cursor:pointer;min-height:34px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface)}
+.local-dashboard .multi-filter[open]>summary{border-color:var(--teal)}
+.local-dashboard .filter-menu{position:absolute;z-index:4;top:calc(100% + 6px);left:0;width:100%;min-width:140px;max-width:340px;padding:12px;background:var(--raised);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px #0006}
+.local-dashboard .filter-options{max-height:260px;overflow-y:auto;margin:8px 0}
+.local-dashboard .filter-menu label{display:flex;gap:8px;align-items:flex-start;padding:5px 0;overflow-wrap:anywhere;cursor:pointer}
+.local-dashboard .filter-menu input[type=checkbox]{appearance:auto;width:16px;min-width:16px;height:16px;min-height:16px;margin:2px 0;padding:0;accent-color:var(--teal)}
+.local-dashboard .filter-menu small{color:var(--muted)}
+.local-dashboard .filter-all{border-bottom:1px solid var(--border)}
+.local-dashboard .history-heading,.local-dashboard .timezone-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.local-dashboard .history-heading h2,.local-dashboard .timezone-heading p{margin:0}
+.local-dashboard .timezone-heading .settings-row{margin:0}
+
+/* Overview project labels never compete with their authoritative values. */
+.local-dashboard .overview-project-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto);align-items:center;gap:12px;padding:10px 0;margin-bottom:8px}
+.local-dashboard .project-heading{display:flex;align-items:flex-start;gap:5px;min-width:0}
+.local-dashboard .project-name{min-width:0;max-width:100%;padding:0;border:0;background:none;text-align:left;min-height:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.local-dashboard .project-name:hover{background:none;color:var(--teal);text-decoration:underline}
+.local-dashboard .project-path{flex:none;margin-top:-2px}
+.local-dashboard .project-path>summary{display:block;list-style:none;padding:2px;min-width:20px;min-height:24px;text-align:center;font-size:13px;color:var(--muted);border-radius:4px}
+.local-dashboard .project-path>summary::-webkit-details-marker{display:none}
+.local-dashboard .project-path>summary:hover,.local-dashboard .project-path[open]>summary{color:var(--teal);background:var(--raised)}
+.local-dashboard .project-full-path{position:absolute;top:100%;left:0;right:0;z-index:4;margin:0;padding:12px;border:1px solid var(--border);border-radius:6px;background:var(--raised);box-shadow:0 8px 24px #0006;font-size:12px;white-space:normal;overflow-wrap:anywhere;user-select:text}
+.local-dashboard .project-values{min-width:0;text-align:right;overflow-wrap:anywhere;color:var(--teal)}

@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Windows_version-0.14.1-e8775a" alt="Windows version 0.14.1">
+  <img src="https://img.shields.io/badge/Windows_version-0.16.7-e8775a" alt="Windows version 0.16.7">
   <img src="https://img.shields.io/badge/Windows-10%2F11-0078D4" alt="Windows 10/11">
   <a href="#build-from-source"><img src="https://img.shields.io/badge/Python-3.11%E2%80%933.14-3776AB?logo=python&logoColor=white" alt="Python 3.11–3.14"></a>
   <img src="https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white" alt="macOS 13+">
@@ -39,7 +39,7 @@
 - **Local dashboard.** Daily token/value charts, provider/date filters, searchable projects and conversations, detail/Back navigation, and saved fee/timezone settings. Automatic timezone follows your system; live-limit times use the same zone. Expand **Rates** below a usage entry to inspect applied token rates and exact charges.
 - **One-click Windows setup.** Installs for your account, starts the tray, and runs it automatically at sign-in without a terminal.
 - **Terminal reports.** Compact summaries, ranked details, full audit output, and optional HTML. Normal tray startup opens no browser.
-- **Reliable accounting.** Reconciles supported duplicate histories, resets, forks, and streamed updates. Unknown models stay unpriced; reasoning is included in output once.
+- **Reliable accounting.** Reconciles supported duplicate histories, resets, forks, and streamed updates. Version 0.14.2 fixes Codex child-agent attribution and flags newer indexed usage with **Update view**. Unknown models stay unpriced; reasoning is included in output once.
 - **Persistent local service.** Shared settings, recoverable SQLite storage, and authenticated browser access. Version 0.14.0 adds durable settings feedback, clearer fee comparisons, 12px limit bars, and collapsed data details.
 - **Original macOS app.** Multiple Claude accounts, menu-bar styles, weekly reports, Keychain login, and launch at login. Windows Codex/Usage Hub features have not been ported to Mac.
 

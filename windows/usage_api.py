@@ -54,7 +54,7 @@ class ApiService:
             identity=path.removeprefix('/jobs/')
             if '/' in identity: raise ApiError(404,'not_found','Unknown API route.')
             return self.respond('job',self.jobs.get(identity))
-        if path not in ('/overview','/usage/conversations','/usage/projects','/usage/facets') and not path.startswith('/conversations/'):
+        if path not in ('/overview','/usage/conversations','/usage/projects','/usage/facets','/usage/analysis') and not path.startswith('/conversations/'):
             raise ApiError(404,'not_found','Unknown API route.')
         return self.queries.read(path,params)
 

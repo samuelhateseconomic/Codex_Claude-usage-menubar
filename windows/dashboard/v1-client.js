@@ -32,12 +32,18 @@ export function validateV1(kind,value){
   }
   visit(v1Schema.$defs[kind],value);
   if(kind!=='error'&&value.mode!=='real')fail(); // Demo has its own explicit entry point.
+  if(value.projection){
+    if(JSON.stringify(value.projection.primary_models)!==JSON.stringify([{provider:'codex',model:'gpt-6.1-sol'},{provider:'claude',model:'claude-opus-5-5'}]))fail();
+    if(kind==='overview'&&(!value.data.analysis||!value.data.analysis_pagination))fail();
+  }
   function semantics(item,key=''){
     if(!item||typeof item!=='object')return;
+    if(value.projection&&Object.hasOwn(item,'record_count')&&item.tokens&&item.value&&!item.app_credits)fail();
+    if(value.projection&&key==='value'&&item.pricing_version&&!item.app_credits)fail();
     if(['timezone_info','system_timezone_info'].includes(key)){
       try{new Intl.DateTimeFormat('en',{timeZone:item.name});}catch{fail();}
     }
-    if(key==='tokens')for(const value of Object.values(item))if(value!==null&&BigInt(value)>9223372036854775807n)fail();
+    if(key==='tokens'&&Object.hasOwn(item,'total_tokens'))for(const value of Object.values(item))if(value!==null&&BigInt(value)>9223372036854775807n)fail();
     if(key==='explanation'&&item.pricing_version!==value.pricing_version)fail();
     if(key==='explanation'&&item.state==='available'){
       const categories=['uncached_input_tokens','output_tokens','cache_read_tokens','cache_write_5m_tokens','cache_write_1h_tokens'];
@@ -55,9 +61,10 @@ export function validateV1(kind,value){
   semantics(value);return structuredClone(value);
 }
 
-const route={overview:'/overview',conversations:'/usage/conversations',projects:'/usage/projects',facets:'/usage/facets',detail:'/conversations/',events:'/conversations/'};
+const route={overview:'/overview',analysis:'/usage/analysis',conversations:'/usage/conversations',projects:'/usage/projects',facets:'/usage/facets',detail:'/conversations/',events:'/conversations/'};
 const responseKind={conversations:'list',projects:'list',detail:'conversation'};
-export function usagePath(kind,{contextId,baseContextId,query={},cursor=null,pageSize=50,sort='value_desc',conversationId}={}){
+export function usagePath(kind,{contextId,baseContextId,query={},cursor=null,pageSize,sort='value_desc',conversationId}={}){
+  pageSize??=kind==='analysis'?8:50;
   if(!Object.hasOwn(route,kind)||contextId&&baseContextId||!Number.isInteger(pageSize)||pageSize<1||pageSize>100||!['value_desc','tokens_desc','last_activity_desc'].includes(sort))throw new TypeError('Invalid query');
   const p=new URLSearchParams();
   if(contextId)p.set('query_context_id',contextId);
@@ -65,10 +72,12 @@ export function usagePath(kind,{contextId,baseContextId,query={},cursor=null,pag
     if(baseContextId)p.set('base_query_context_id',baseContextId);
     else{p.set('period',query.period??'month');if(query.timezone)p.set('timezone',query.timezone);}
     if(query.dataset_id)p.set('dataset_id',query.dataset_id);
-    for(const key of ['provider','project_id','model','effort'])for(const v of query[key]??[])p.append(key,v);
+    if(query.projection)p.set('projection',query.projection);
+    for(const key of ['provider','project_id','model','effort','empty_selection'])for(const v of query[key]??[])p.append(key,v);
     if(query.q)p.set('q',query.q.trim());if(query.selected_day)p.set('selected_day',query.selected_day);
   }
   if(['conversations','projects','events'].includes(kind)){p.set('page_size',String(pageSize));p.set('sort',kind==='events'?'events':sort);if(cursor)p.set('cursor',cursor);}
+  if(kind==='analysis'){if(pageSize>8)throw new TypeError('Analysis page size exceeds eight groups');p.set('page_size',String(pageSize));if(cursor)p.set('cursor',cursor);}
   let path=route[kind];
   if(['detail','events'].includes(kind)){
     if(typeof conversationId!=='string'||!conversationId||conversationId.length>1024)throw new TypeError('Missing conversation');
@@ -107,6 +116,7 @@ export function createLocalClient({fetchImpl=globalThis.fetch}={}){
     async usage(kind,args,signal){
       const wire=await send(usagePath(kind,args).slice(7),responseKind[kind]??kind,{signal});
       if(args.contextId&&wire.query_context_id!==args.contextId||kind==='detail'&&wire.data.id!==args.conversationId)fail();
+      if(args.query?.projection&&wire.projection?.id!==args.query.projection)fail();
       if(kind==='events'&&wire.data.items.some(e=>e.value.pricing_version!==wire.pricing_version))fail();
       return wire;
     },

@@ -41,6 +41,9 @@
     },
     {
       "$ref": "#/$defs/error"
+    },
+    {
+      "$ref": "#/$defs/analysis"
     }
   ],
   "$defs": {
@@ -223,6 +226,9 @@
         },
         "value": {
           "$ref": "#/$defs/value"
+        },
+        "app_credits": {
+          "$ref": "#/$defs/app_credits"
         }
       },
       "required": [
@@ -506,6 +512,19 @@
               "type": "null"
             }
           ]
+        },
+        "empty_selection": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "project_id",
+              "model",
+              "effort"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 3
         }
       },
       "required": [
@@ -645,6 +664,9 @@
         },
         "explanation": {
           "$ref": "#/$defs/pricing_explanation"
+        },
+        "app_credits": {
+          "$ref": "#/$defs/app_credits"
         }
       },
       "required": [
@@ -1324,6 +1346,12 @@
                 "$ref": "#/$defs/row"
               },
               "maxItems": 10
+            },
+            "analysis": {
+              "$ref": "#/$defs/analysis_data"
+            },
+            "analysis_pagination": {
+              "$ref": "#/$defs/analysis_pagination"
             }
           },
           "required": [
@@ -1359,6 +1387,9 @@
         },
         "applied_filters": {
           "$ref": "#/$defs/filters"
+        },
+        "projection": {
+          "$ref": "#/$defs/projection"
         }
       },
       "required": [
@@ -1446,6 +1477,9 @@
         },
         "applied_filters": {
           "$ref": "#/$defs/filters"
+        },
+        "projection": {
+          "$ref": "#/$defs/projection"
         }
       },
       "required": [
@@ -1541,6 +1575,9 @@
         },
         "applied_filters": {
           "$ref": "#/$defs/filters"
+        },
+        "projection": {
+          "$ref": "#/$defs/projection"
         }
       },
       "required": [
@@ -1667,6 +1704,9 @@
         },
         "applied_filters": {
           "$ref": "#/$defs/filters"
+        },
+        "projection": {
+          "$ref": "#/$defs/projection"
         }
       },
       "required": [
@@ -1754,6 +1794,9 @@
         },
         "applied_filters": {
           "$ref": "#/$defs/filters"
+        },
+        "projection": {
+          "$ref": "#/$defs/projection"
         }
       },
       "required": [
@@ -2750,6 +2793,511 @@
         "source"
       ],
       "additionalProperties": false
+    },
+    "credit_amount": {
+      "type": "string",
+      "pattern": "(0|[1-9][0-9]{0,25})(\\.[0-9]{1,10})?",
+      "maxLength": 37
+    },
+    "app_credits": {
+      "type": "object",
+      "properties": {
+        "unit": {
+          "const": "app_api_value_credit"
+        },
+        "amount": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/credit_amount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "usd_per_credit": {
+          "const": "0.01"
+        }
+      },
+      "required": [
+        "unit",
+        "amount",
+        "usd_per_credit"
+      ],
+      "additionalProperties": false
+    },
+    "projection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "const": "app_api_value_v1"
+        },
+        "unit": {
+          "const": "app_api_value_credit"
+        },
+        "usd_per_credit": {
+          "const": "0.01"
+        },
+        "credit_policy": {
+          "const": "credits-event12-v1"
+        },
+        "primary_model_policy": {
+          "const": "desktop-primary-models-v1"
+        },
+        "primary_models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "enum": [
+                  "codex",
+                  "claude"
+                ]
+              },
+              "model": {
+                "type": "string",
+                "maxLength": 1024
+              }
+            },
+            "required": [
+              "provider",
+              "model"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 2
+        },
+        "valuation_policy": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "basis": {
+          "const": "estimated_api_value_not_spend_or_allowance"
+        }
+      },
+      "required": [
+        "id",
+        "unit",
+        "usd_per_credit",
+        "credit_policy",
+        "primary_model_policy",
+        "primary_models",
+        "valuation_policy",
+        "basis"
+      ],
+      "additionalProperties": false
+    },
+    "percent": {
+      "type": "string",
+      "pattern": "((0|[1-9][0-9]?)(\\.[0-9]{1,6})?|100(\\.0{1,6})?)",
+      "maxLength": 10
+    },
+    "distribution": {
+      "type": "object",
+      "properties": {
+        "denominator": {
+          "enum": [
+            "all_recorded_tokens",
+            "priced_subtotal"
+          ]
+        },
+        "state": {
+          "enum": [
+            "available",
+            "zero",
+            "unavailable"
+          ]
+        },
+        "group_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "slices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 32767
+              },
+              "other": {
+                "type": "boolean"
+              },
+              "summary": {
+                "$ref": "#/$defs/summary"
+              },
+              "percent": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/percent"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "other",
+              "summary",
+              "percent"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 12
+        }
+      },
+      "required": [
+        "denominator",
+        "state",
+        "group_count",
+        "slices"
+      ],
+      "additionalProperties": false
+    },
+    "distributions": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "$ref": "#/$defs/distribution"
+        },
+        "usd": {
+          "$ref": "#/$defs/distribution"
+        },
+        "app_credits": {
+          "$ref": "#/$defs/distribution"
+        }
+      },
+      "required": [
+        "tokens",
+        "usd",
+        "app_credits"
+      ],
+      "additionalProperties": false
+    },
+    "methodology_category": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "enum": [
+            "uncached_input_tokens",
+            "output_tokens",
+            "cache_read_tokens",
+            "cache_write_5m_tokens",
+            "cache_write_1h_tokens"
+          ]
+        },
+        "tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "priced_tokens": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "rate_usd_per_million": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/rate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mixed_rates": {
+          "type": "boolean"
+        },
+        "unrounded_priced_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/explanation_money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "category",
+        "tokens",
+        "priced_tokens",
+        "rate_usd_per_million",
+        "mixed_rates",
+        "unrounded_priced_usd"
+      ],
+      "additionalProperties": false
+    },
+    "methodology": {
+      "type": "object",
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/methodology_category"
+          },
+          "maxItems": 5,
+          "minItems": 5
+        },
+        "rounding_adjustment_usd": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/explanation_money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contribution_basis": {
+          "const": "priced_events_only"
+        },
+        "pricing": {
+          "$ref": "#/$defs/pricing_breakdown"
+        },
+        "input_tokens": {
+          "$ref": "#/$defs/integer_string"
+        }
+      },
+      "required": [
+        "categories",
+        "rounding_adjustment_usd",
+        "contribution_basis",
+        "pricing",
+        "input_tokens"
+      ],
+      "additionalProperties": false
+    },
+    "analysis_data": {
+      "type": "object",
+      "properties": {
+        "app_credit_amount": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/credit_amount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "models": {
+          "$ref": "#/$defs/distributions"
+        },
+        "projects": {
+          "$ref": "#/$defs/distributions"
+        },
+        "methodology": {
+          "$ref": "#/$defs/methodology"
+        },
+        "daily_average": {
+          "$ref": "#/$defs/daily_average"
+        }
+      },
+      "required": [
+        "app_credit_amount",
+        "models",
+        "projects",
+        "methodology"
+      ],
+      "additionalProperties": false
+    },
+    "analysis_pagination": {
+      "type": "object",
+      "properties": {
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "sort": {
+          "const": "groups"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "matched_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        }
+      },
+      "required": [
+        "page_size",
+        "sort",
+        "next_cursor",
+        "matched_count"
+      ],
+      "additionalProperties": false
+    },
+    "analysis": {
+      "type": "object",
+      "properties": {
+        "contract_version": {
+          "const": "usage-hub-v1"
+        },
+        "dataset_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "real",
+            "demo"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/instant"
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "kind": {
+          "const": "analysis"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "summary": {
+              "$ref": "#/$defs/summary"
+            },
+            "analysis": {
+              "$ref": "#/$defs/analysis_data"
+            },
+            "pagination": {
+              "$ref": "#/$defs/analysis_pagination"
+            }
+          },
+          "required": [
+            "summary",
+            "analysis",
+            "pagination"
+          ],
+          "additionalProperties": false
+        },
+        "query_context_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "usage_revision": {
+          "$ref": "#/$defs/integer_string"
+        },
+        "pricing_version": {
+          "$ref": "#/$defs/id"
+        },
+        "configuration_version": {
+          "$ref": "#/$defs/id"
+        },
+        "range": {
+          "$ref": "#/$defs/range"
+        },
+        "applied_filters": {
+          "$ref": "#/$defs/filters"
+        },
+        "projection": {
+          "$ref": "#/$defs/projection"
+        }
+      },
+      "required": [
+        "contract_version",
+        "dataset_id",
+        "mode",
+        "generated_at",
+        "request_id",
+        "kind",
+        "data",
+        "query_context_id",
+        "usage_revision",
+        "pricing_version",
+        "configuration_version",
+        "range",
+        "applied_filters",
+        "projection"
+      ],
+      "additionalProperties": false
+    },
+    "daily_average": {
+      "type": "object",
+      "properties": {
+        "calendar_days": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 32
+        },
+        "basis": {
+          "const": "selected_calendar_days_including_empty"
+        },
+        "rounding": {
+          "const": "half_even_18_decimal_places"
+        },
+        "tokens_per_day": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/average_amount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "usd_per_day": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/average_amount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "app_credits_per_day": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/average_amount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "calendar_days",
+        "basis",
+        "rounding",
+        "tokens_per_day",
+        "usd_per_day",
+        "app_credits_per_day"
+      ],
+      "additionalProperties": false
+    },
+    "average_amount": {
+      "type": "string",
+      "pattern": "(0|[1-9][0-9]{0,25})(\\.[0-9]{1,18})?",
+      "maxLength": 45
     }
   }
 }
